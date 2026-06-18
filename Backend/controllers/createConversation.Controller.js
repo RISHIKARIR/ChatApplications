@@ -14,6 +14,8 @@ export const createConversation = async (req, res) => {
       });
     }
 
+
+
     const existinguser = await createUser.findOne({ where: { email: email } });
 
     if (!existinguser) {
@@ -31,30 +33,44 @@ export const createConversation = async (req, res) => {
         success: false,
       });
     }
-
+    console.log("yaha tk chlaaaa")
     const existingconversation = await conversation_members.findAll({
       where: {
         user_id: { [Op.in]: [loggedInUserId, existinguser.id] },
       },
-      attributes: [
-        Sequelize.col("conversation_members_table.conversation_id"),
-        "conversation_id",
-      ],
-
-      include: [
-        {
-          model: conversation,
-          as: "conversations",
-        },
-      ],
-      group: [
-        Sequelize.col("conversation_members_table.conversation_id"),
-        Sequelize.col("conversations.id"),
-        Sequelize.col("conversations.createdAt"),
-        Sequelize.col("conversations.updatedAt"),
-      ],
-      having: Sequelize.literal('COUNT("user_id") = 2'),
     });
+
+
+    const conversationIds = existingconversation.map((item)=>{
+      return item.conversation_id
+    })
+
+    const countIds = conversationIds.reduce((acc,curr)=>{
+      if(acc[curr]){
+        acc[curr] = acc[curr] + 1;
+      }else {
+        acc[curr] = 1;
+      }
+
+      return acc;
+
+    },{})
+
+    const sameIds = Object.entries(countIds).filter(([conversationId,count])=>{
+      return count==2
+    }).map(([conversationId])=>{
+      return Number(conversationId)
+    })
+    
+
+
+
+    return res.status(200).json({
+      message : "jatin ji",
+      data : sameIds
+    })
+
+
 
     if (existingconversation.length>0) {
       return res.status(400).json({
