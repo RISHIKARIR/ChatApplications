@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext,useRef } from "react";
+import React, { useEffect, useState, useContext, useRef } from "react";
 import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
@@ -10,128 +10,86 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
+  console.log(conversationUserData, "convooooooo");
 
+  const convoData = conversationUserData;
 
-  console.log(conversationUserData,"convooooooo");
+  console.log(convoData, "ceojoifjoir");
 
-    const convoData = conversationUserData;
-
-
-
-  console.log(convoData,"ceojoifjoir")
-
-   const otherUser = convoData?.user_members?.find((value) => {
+  const otherUser = convoData?.user_members?.find((value) => {
     return value.id !== user.id;
-  })
-
+  });
 
   const conversationData = {
-  
-    id : convoData?.id,
-    chatName : !convoData?.isGroup ? otherUser?.name :  "Group Chat",
-    users : convoData?.user_members
-  
- }
+    id: convoData?.id,
+    chatName: !convoData?.isGroup ? otherUser?.name : "Group Chat",
+    users: convoData?.user_members,
+  };
 
-  
-
-
-  console.log(conversationData,"covvoiv0f9f")
-
+  console.log(conversationData, "covvoiv0f9f");
 
   const [showChats, setShowChats] = useState(null);
 
   const [message, setMessage] = useState("");
 
-
-  
-  useEffect(()=>{
-   
-    const socket =  io("http://localhost:5000",{
-      withCredentials : true,
-      query : {
-        UserId : user?.id
-      }}
-
-
-
-    )
-
-    
-      
-
+  useEffect(() => {
+    const socket = io("http://localhost:5000", {
+      withCredentials: true,
+      query: {
+        UserId: user?.id,
+      },
+    });
 
     socketRef.current = socket;
 
-    socket.on('connect',()=>{
-        console.log("connected",socket.id)
+    socket.on("connect", () => {
+      console.log("connected", socket.id);
+    });
 
-    })
+    socket.on("new_message", (data) => {
+      console.log(data, "mt kr lala");
 
-     socket.on("new_message",(data)=>{
-        console.log(data,"mt kr lala");
-      
-  
-       const newMessage = {
-    id: data.data.id,
-    senderId: data.data.senderId,
-    conversation_id: data.data.conversation_id,
-    message: data.data.message,
-    updatedAt: data.data.updatedAt,
-    createdAt: data.data.createdAt,
-  };  
+      const newMessage = {
+        id: data.data.id,
+        senderId: data.data.senderId,
+        conversation_id: data.data.conversation_id,
+        message: data.data.message,
+        updatedAt: data.data.updatedAt,
+        createdAt: data.data.createdAt,
+      };
+
+      console.log(newMessage, "newwwwww");
+
+      setShowChats((prev) => {
+        return {
+          ...prev,
+          data: [...(prev?.data || []), newMessage],
+        };
+      });
+    });
 
 
-
-
-      console.log(newMessage,"newwwwww")
-
-
-  setShowChats((prev) => {
-    return {
-      ...prev,
-      data: [...(prev?.data || []), newMessage],
-    };
-  });
-        
+    return () =>{
+    
+      socket.on("disconnect",()=>{
+        console.log("connection disconnected")
       })
 
-
-   
-
+    }
 
 
 
+  }, [user?.id]);
 
-
-
-
-  },[user?.id])
-
-
-
-
-
-  console.log(showChats,'femifhiufheius')
-
-
-
-
-
-
+  console.log(showChats, "femifhiufheius");
 
   useEffect(() => {
     async function loadchats() {
-    
       if (!selectedConversation) return;
 
-      const response = await Apifetch(
-        `user/${selectedConversation}/messages`,
-        {
-          method: "GET",
-     
-        }
-      );
+      const response = await Apifetch(`user/${selectedConversation}/messages`, {
+        method: "GET",
+      });
 
       const data = await response.json();
 
@@ -141,47 +99,32 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     loadchats();
   }, [selectedConversation]);
 
+  console.log(showChats, "show chatssss");
 
-
-  console.log(showChats,"show chatssss");
-
-
-
-  useEffect(()=>{
+  useEffect(() => {
     bottomRef.current?.scrollIntoView({
-      ScrollBehavior : "smooth"
-    })
+      ScrollBehavior: "smooth",
+    });
+  }, [selectedConversation, showChats?.data?.length]);
 
-
-
-  },[selectedConversation,showChats?.data?.length])
-
-  async function sendMessage(){
-
+  async function sendMessage() {
     if (message.trim() === "") {
       return;
     }
 
     const socket = socketRef.current;
 
-
-    
-    socket.emit("send_message",{
-      message : message,
-      conversation_id : selectedConversation
-
-    })
+    socket.emit("send_message", {
+      message: message,
+      conversation_id: selectedConversation,
+    });
     // if(!socket || socket.readyState != WebSocket.OPEN){
 
     //   console.log("Connection is not open");
 
     // }
 
-
-    console.log(user,"userrrrr");
-
-
-
+    console.log(user, "userrrrr");
 
     // socket.send(JSON.stringify({
     //   type : "message",
@@ -189,29 +132,19 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     //   senderId : user.id,
     //   conversationId : selectedConversation
     // })
-  
-  
-  // );
 
-
+    // );
 
     // console.log(conversationUserData.userTwoId, "iddddd");
     try {
+      const response = await Apifetch(`user/${selectedConversation}/message`, {
+        method: "POST",
 
+        body: JSON.stringify({
+          message: message,
+        }),
+      });
 
-      const response = await Apifetch(
-        `user/${selectedConversation}/message`,
-        {
-          method: "POST",
-        
-          body: JSON.stringify({
-            message: message,
-          }),
-        }
-      );
-
-
-      
       const data = await response.json();
 
       if (!response.ok) {
@@ -229,7 +162,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
   }
 
-  console.log(conversationData,"convooodataaa")
+  console.log(conversationData, "convooodataaa");
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -238,7 +171,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           <div className="flex items-center gap-3">
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#1b1b1d] text-sm font-black uppercase text-white ring-1 ring-white/10">
               {selectedConversation
-                ?    conversationData?.chatName?.charAt(0)
+                ? conversationData?.chatName?.charAt(0)
                 : "C"}
 
               {selectedConversation && (
@@ -249,7 +182,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
             <div>
               <h3 className="text-sm font-bold text-white">
                 {selectedConversation
-                  ? `${ conversationData?.chatName}`
+                  ? `${conversationData?.chatName}`
                   : "No Conversation Selected"}
               </h3>
 
@@ -300,7 +233,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 </h2>
 
                 <p className="mt-2 text-sm leading-6 text-zinc-500">
-                  Choose any conversation from the sidebar to view messages here.
+                  Choose any conversation from the sidebar to view messages
+                  here.
                 </p>
               </div>
             </div>
@@ -320,7 +254,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 {showChats &&
                   showChats?.data.map((item) => {
                     return (
-                      <li ref={bottomRef}
+                      <li
+                        ref={bottomRef}
                         key={item.id}
                         className={`flex ${
                           user.id === item.senderId
@@ -358,7 +293,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                   {
                                     hour: "2-digit",
                                     minute: "2-digit",
-                                  }
+                                  },
                                 )}
                               </p>
                             </div>

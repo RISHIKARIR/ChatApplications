@@ -19,7 +19,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
       const data = await response.json();
 
-      console.log(data, "data rndi");
+      console.log(data, "data ");
 
       setConversationData(data.data.conversations);
       setFilteredData(data.data.conversations);

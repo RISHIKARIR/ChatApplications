@@ -20,6 +20,9 @@ function Logout() {
       router.push("/login");
       toast.success("Logout successfull");
     }
+
+    Socket
+
   }
 
   return (
