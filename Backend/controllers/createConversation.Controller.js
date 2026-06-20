@@ -89,6 +89,7 @@ export const createConversation = async (req, res) => {
     return res.status(401).json({
       message: "Something went wrong",
       success: false,
+      error : err
     });
   }
 };
