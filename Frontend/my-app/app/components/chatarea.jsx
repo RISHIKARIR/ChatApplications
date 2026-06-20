@@ -4,9 +4,25 @@ import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { io } from "socket.io-client";
 import { ScrollBehavior } from "next/dist/client/components/router-reducer/router-reducer-types";
+import { SocketContext } from "../context/socketContext";
+
+
+
+
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
+  const { connectSocket } = useContext(SocketContext);  
+
+useEffect(()=>{
+  if(user){
+  connectSocket();
+  }
+},[user])
+
+
+
+
   const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
@@ -32,54 +48,56 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
-    const socket = io("http://localhost:5000", {
-      withCredentials: true,
-      query: {
-        UserId: user?.id,
-      },
-    });
+  // useEffect(() => {
+  //   const socket = io("http://localhost:5000", {
+  //     withCredentials: true,
+  //     query: {
+  //       UserId: user?.id,
+  //     },
+  //   });
 
-    socketRef.current = socket;
+  //   socketRef.current = socket;
 
-    socket.on("connect", () => {
-      console.log("connected", socket.id);
-    });
-
-    socket.on("new_message", (data) => {
-      console.log(data, "mt kr lala");
-
-      const newMessage = {
-        id: data.data.id,
-        senderId: data.data.senderId,
-        conversation_id: data.data.conversation_id,
-        message: data.data.message,
-        updatedAt: data.data.updatedAt,
-        createdAt: data.data.createdAt,
-      };
-
-      console.log(newMessage, "newwwwww");
-
-      setShowChats((prev) => {
-        return {
-          ...prev,
-          data: [...(prev?.data || []), newMessage],
-        };
-      });
-    });
+  //   socket.on("connect", () => {
+  //     console.log("connected", socket.id);
+  //   });
 
 
-    return () =>{
+
+  //   socket.on("new_message", (data) => {
+  //     console.log(data, "mt kr lala");
+
+  //     const newMessage = {
+  //       id: data.data.id,
+  //       senderId: data.data.senderId,
+  //       conversation_id: data.data.conversation_id,
+  //       message: data.data.message,
+  //       updatedAt: data.data.updatedAt,
+  //       createdAt: data.data.createdAt,
+  //     };
+
+  //     console.log(newMessage, "newwwwww");
+
+  //     setShowChats((prev) => {
+  //       return {
+  //         ...prev,
+  //         data: [...(prev?.data || []), newMessage],
+  //       };
+  //     });
+  //   });
+
+
+  //   return () =>{
     
-      socket.on("disconnect",()=>{
-        console.log("connection disconnected")
-      })
+  //     socket.on("disconnect",()=>{
+  //       console.log("connection disconnected")
+  //     })
 
-    }
+  //   }
 
 
 
-  }, [user?.id]);
+  // }, [user?.id]);
 
   console.log(showChats, "femifhiufheius");
 

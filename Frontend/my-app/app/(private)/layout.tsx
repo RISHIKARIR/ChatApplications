@@ -5,6 +5,9 @@ import "../globals.css";
 import { cn } from "@/lib/utils";
 import  Logout  from "../components/logout"
 import { Authprovider } from "../context/authContext";
+import { SocketProvider } from "../context/socketContext"
+
+
 
 const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
@@ -35,10 +38,15 @@ export default function RootLayout({
     >
       <body className="h-full flex flex-col">
         
-        <Logout/>
- <Authprovider>
-        {children}
      
+
+
+  
+ <Authprovider>
+  <SocketProvider>
+       <Logout/>  
+        {children}
+     </SocketProvider>
   </Authprovider>
     <Toaster position="top-center"/>
   
