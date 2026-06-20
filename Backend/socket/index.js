@@ -19,6 +19,15 @@ export const initialiseSocket =  (io)=>{
 
 
         socket.join(userId);
+
+
+     const onlineMembers = new Map();
+
+    onlineMembers.set(userId,socket.id)
+
+        console.log(onlineMembers,"onlineeeee");
+
+
         
 
     socket.on("send_message",async (data)=>{

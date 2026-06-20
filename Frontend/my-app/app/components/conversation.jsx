@@ -6,6 +6,7 @@ import { ModalContext } from "../context/modalContext";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 
+
 function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [conversationData, setConversationData] = useState(null);
   const [filteredData, setFilteredData] = useState(null);
@@ -19,7 +20,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
       const data = await response.json();
 
-      console.log(data, "data rndi");
+      console.log(data, "data ");
 
       setConversationData(data.data.conversations);
       setFilteredData(data.data.conversations);

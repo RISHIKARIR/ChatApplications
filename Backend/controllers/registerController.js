@@ -40,7 +40,7 @@ export const register = async (req, res) => {
       { email: email },
       process.env.JWT_ACCESS_SECRET_KEY,
       {
-        expiresIn: "15m",
+        expiresIn: "15h",
       },
     );
 
@@ -57,7 +57,7 @@ export const register = async (req, res) => {
     res.cookie("accesstoken", accesstokentoken, {
       httpOnly: true,
       secure: false,
-      maxAge: 15 * 60 * 1000,
+      maxAge: 15 * 6000 * 1000,
     });
 
     res.cookie("refreshtoken", refreshtoken, {

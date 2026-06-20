@@ -26,7 +26,22 @@ export const messageModel = seq.define(
         message : {
             type : DataTypes.TEXT,
             allowNull : false
+        },
+        isSent : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : true
+        },
+        isDelivered : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : false
+        },
+        isSeen : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : false
         }
+        
+
+
 },
 
 { tableName : "message_table" })

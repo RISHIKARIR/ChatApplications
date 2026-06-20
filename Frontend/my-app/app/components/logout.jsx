@@ -3,11 +3,25 @@
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
+import { useContext } from "react";
+import { SocketContext } from "../context/socketContext";
+
+
+
 
 function Logout() {
   const router = useRouter();
+  const { disconnectSocket } = useContext(SocketContext)
+
+
 
   async function logoutbtn() {
+
+    disconnectSocket();
+
+
+    
+
     const response = await fetch("http://localhost:5000/auth/logout", {
       method: "POST",
       headers: {
@@ -20,6 +34,9 @@ function Logout() {
       router.push("/login");
       toast.success("Logout successfull");
     }
+
+    Socket
+
   }
 
   return (

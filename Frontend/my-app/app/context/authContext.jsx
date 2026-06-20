@@ -14,7 +14,7 @@ export const userAuthContext = createContext();
 
   async function checkAuth(){
 
-
+   
 
 
  const response =  await Apifetch("auth/me",{
