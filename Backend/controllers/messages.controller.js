@@ -93,19 +93,21 @@ import { conversation_members } from "../models/conversation.js";
 
 
 
-const createMessage = async(req,res)=>{
+const createMessage = async ( req,res ) => {
     
-    const {message } = req.body;
+    const { message } = req.body;
     const { conversationId } = req.params;
 
     try{
 
-    if( !conversationId || !message){
+    if( !conversationId || !message ){
         return res.status(400).json({
             message : "All fields are required",
             success : false
         })
     }
+
+
 
     if(message.trim() === ""){
         return res.status(400).json({
@@ -113,6 +115,9 @@ const createMessage = async(req,res)=>{
             success : false
         })
     }
+
+    
+
     const existingConversation = await conversation_members.findOne({
         where : {
             conversation_id : conversationId,

@@ -13,10 +13,10 @@ createUser.hasMany(messageModel,{
 
   
 
-createUser.hasMany(messageModel,{
-  foreignKey : "receiverId",
-  as : "receivedMessages"
-})
+// createUser.hasMany(messageModel,{
+//   foreignKey : "receiverId",
+//   as : "receivedMessages"
+// })
 
 
 messageModel.belongsTo(createUser,{
@@ -26,11 +26,11 @@ messageModel.belongsTo(createUser,{
 
 
 
-messageModel.belongsTo(createUser,{
-  foreignKey : "receiverId",
-  as : "receiver"
+// messageModel.belongsTo(createUser,{
+//   foreignKey : "receiverId",
+//   as : "receiver"
 
-})
+// })
 
 
 // for group chats
