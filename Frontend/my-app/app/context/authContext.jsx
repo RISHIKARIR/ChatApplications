@@ -1,61 +1,36 @@
-"use client" 
+"use client";
 import { Apifetch } from "@/lib/apifetch";
-import { createContext,useEffect,useState } from "react"
-
+import { createContext, useEffect, useState } from "react";
 
 export const userAuthContext = createContext();
 
+export function Authprovider({ children }) {
+  const [user, setUser] = useState(null);
 
-
- export function Authprovider({children}){
-
-    const [user,setUser] = useState(null);
-
-
-  async function checkAuth(){
-
-   
-
-
- const response =  await Apifetch("auth/me",{
-        method : "GET",
-      
-    },)
+  async function checkAuth() {
+    const response = await Apifetch("auth/me", {
+      method: "GET",
+    });
 
     const data = await response.json();
-   
 
-
-    if(!response.ok){
-    console.log("Something went wrong");
-    return;
+    if (!response.ok) {
+      console.log("Something went wrong");
+      return;
     }
 
-    setUser(data.User)
+    setUser(data.User);
+  }
 
-    
-
-}
-
-
-useEffect(()=>{
-
-
+  useEffect(() => {
     console.log("Use effect chla kya?");
 
+    checkAuth();
+  }, []);
 
-
-checkAuth();
-
-},[])
-
-
-return(
-
-    <userAuthContext.Provider value={{user}}>
-        {children}
+  return (
+    <userAuthContext.Provider value={{ user }}>
+      {children}
     </userAuthContext.Provider>
-    
-)
-    
+  );
 }

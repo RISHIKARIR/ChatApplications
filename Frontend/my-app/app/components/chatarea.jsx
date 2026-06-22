@@ -2,8 +2,6 @@ import React, { useEffect, useState, useContext, useRef } from "react";
 import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
-import { io } from "socket.io-client";
-import { ScrollBehavior } from "next/dist/client/components/router-reducer/router-reducer-types";
 import { SocketContext } from "../context/socketContext";
 
 
@@ -12,7 +10,7 @@ import { SocketContext } from "../context/socketContext";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket } = useContext(SocketContext);  
+  const { connectSocket,socketRef } = useContext(SocketContext);  
 
 useEffect(()=>{
   if(user){
@@ -22,8 +20,6 @@ useEffect(()=>{
 
 
 
-
-  const socketRef = useRef(null);
   const bottomRef = useRef(null);
 
   console.log(conversationUserData, "convooooooo");
@@ -42,62 +38,45 @@ useEffect(()=>{
     users: convoData?.user_members,
   };
 
+useEffect(() => {
+  const socket = socketRef.current;
+
+  if (!socket) return;
+
+  const handleNewMessage = (data) => {
+    const newMessage = {
+      id: data.data.id,
+      senderId: data.data.senderId,
+      conversation_id: data.data.conversation_id,
+      message: data.data.message,
+      createdAt: data.data.createdAt,
+      updatedAt: data.data.updatedAt,
+    };
+
+    setShowChats((prev) => {
+      return {
+        ...prev,
+        data: [...(prev?.data || []), newMessage],
+      };
+    });
+  };
+
+  socket.on("new_message", handleNewMessage);
+
+  return () => {
+    socket.off("new_message", handleNewMessage);
+  };
+}, [sendMessage]);
+
+
+
+
   console.log(conversationData, "covvoiv0f9f");
 
   const [showChats, setShowChats] = useState(null);
 
   const [message, setMessage] = useState("");
 
-  // useEffect(() => {
-  //   const socket = io("http://localhost:5000", {
-  //     withCredentials: true,
-  //     query: {
-  //       UserId: user?.id,
-  //     },
-  //   });
-
-  //   socketRef.current = socket;
-
-  //   socket.on("connect", () => {
-  //     console.log("connected", socket.id);
-  //   });
-
-
-
-  //   socket.on("new_message", (data) => {
-  //     console.log(data, "mt kr lala");
-
-  //     const newMessage = {
-  //       id: data.data.id,
-  //       senderId: data.data.senderId,
-  //       conversation_id: data.data.conversation_id,
-  //       message: data.data.message,
-  //       updatedAt: data.data.updatedAt,
-  //       createdAt: data.data.createdAt,
-  //     };
-
-  //     console.log(newMessage, "newwwwww");
-
-  //     setShowChats((prev) => {
-  //       return {
-  //         ...prev,
-  //         data: [...(prev?.data || []), newMessage],
-  //       };
-  //     });
-  //   });
-
-
-  //   return () =>{
-    
-  //     socket.on("disconnect",()=>{
-  //       console.log("connection disconnected")
-  //     })
-
-  //   }
-
-
-
-  // }, [user?.id]);
 
   console.log(showChats, "femifhiufheius");
 
@@ -125,60 +104,28 @@ useEffect(()=>{
     });
   }, [selectedConversation, showChats?.data?.length]);
 
-  async function sendMessage() {
-    if (message.trim() === "") {
-      return;
-    }
+  function sendMessage() {
+  if (message.trim() === "") return;
 
-    const socket = socketRef.current;
-
-    socket.emit("send_message", {
-      message: message,
-      conversation_id: selectedConversation,
-    });
-    // if(!socket || socket.readyState != WebSocket.OPEN){
-
-    //   console.log("Connection is not open");
-
-    // }
-
-    console.log(user, "userrrrr");
-
-    // socket.send(JSON.stringify({
-    //   type : "message",
-    //   message : message,
-    //   senderId : user.id,
-    //   conversationId : selectedConversation
-    // })
-
-    // );
-
-    // console.log(conversationUserData.userTwoId, "iddddd");
-    try {
-      const response = await Apifetch(`user/${selectedConversation}/message`, {
-        method: "POST",
-
-        body: JSON.stringify({
-          message: message,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        toast.error(response.error);
-        return;
-      }
-
-      toast.success("Message Sent successfully");
-
-      setMessage("");
-    } catch (err) {
-      console.log(err);
-
-      toast.error(err);
-    }
+  if (!selectedConversation) {
+    toast.error("Please select a conversation");
+    return;
   }
+
+  const socket = socketRef.current;
+
+  if (!socket?.connected) {
+    toast.error("Socket not connected");
+    return;
+  }
+
+  socket.emit("send_message", {
+    message: message.trim(),
+    conversation_id: selectedConversation,
+  });
+
+  setMessage("");
+}
 
   console.log(conversationData, "convooodataaa");
 
@@ -288,6 +235,8 @@ useEffect(()=>{
                             </p>
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
+                          <span>{item.isSeen ? "seen" :  item.isDelivered ? "Delivered " : "Sent "}</span>
+
                               {new Date(item.createdAt).toLocaleTimeString([], {
                                 hour: "2-digit",
                                 minute: "2-digit",
