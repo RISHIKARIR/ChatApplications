@@ -44,7 +44,7 @@ export const login = async (req, res) => {
       },
       process.env.JWT_ACCESS_SECRET_KEY,
       {
-        expiresIn: "15h",
+        expiresIn: "15m",
       },
     );
 
@@ -61,7 +61,7 @@ export const login = async (req, res) => {
     res.cookie("accesstoken", accesstoken, {
       httpOnly: true,
       secure: false,
-      maxAge:  15 * 60 * 60 * 1000,
+      maxAge:  15 * 60 * 1000,
     });
 
     res.cookie("refreshtoken", refreshtoken, {

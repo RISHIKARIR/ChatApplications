@@ -9,6 +9,7 @@ export const showConversations = async (req, res) => {
       where: {
         id: req.user.id,
       },
+      attributes : [],
       include: [
         {
           model: conversation,
@@ -16,6 +17,7 @@ export const showConversations = async (req, res) => {
             {
               model: createUser,
               as: "user_members",
+              attributes : ["id","name","email"],
               through: { model: conversation_members, attributes: [] },
             },
           ],

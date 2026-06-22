@@ -3,7 +3,7 @@ import { messageModel } from "../models/message.js";
 import { conversation } from "../models/conversation.js";
 import { Op } from "sequelize";
 import { createUser } from "../models/userModel.js";
-
+import { conversation_members } from "../models/conversation.js";
 
 
 
@@ -34,23 +34,17 @@ import { createUser } from "../models/userModel.js";
     })
  }
 
-    const existingConversation = await conversation.findOne({
+    const isMember = await conversation_members.findOne({
         where : {
-            id : conversationId,
+            conversation_id : conversationId,
+            user_id : req.user.id
+            },
             
-
-        [Op.or] : 
-            [
-                { userOneId : req.user.id },
-                { userTwoId : req.user.id }
-
-            ]  
-            }        
         
     })
 
 
-    if(!existingConversation){
+    if(!isMember){
         return res.status(401).json({
             message : "User is not authorized to access chat",
             success : false
@@ -69,11 +63,7 @@ import { createUser } from "../models/userModel.js";
                 as : "sender",
                 attributes : ["email","name","id"]
             },
-            {
-                model : createUser,
-                as : "receiver",
-                 attributes : ["email","name","id"]
-            }
+          
         ]
     })
 
@@ -103,19 +93,21 @@ import { createUser } from "../models/userModel.js";
 
 
 
-const createMessage = async(req,res)=>{
+const createMessage = async ( req,res ) => {
     
-    const { receiverId,message } = req.body;
+    const { message } = req.body;
     const { conversationId } = req.params;
 
     try{
 
-    if(!receiverId || !conversationId || !message){
+    if( !conversationId || !message ){
         return res.status(400).json({
             message : "All fields are required",
             success : false
         })
     }
+
+
 
     if(message.trim() === ""){
         return res.status(400).json({
@@ -123,9 +115,13 @@ const createMessage = async(req,res)=>{
             success : false
         })
     }
-    const existingConversation = await conversation.findOne({
+
+    
+
+    const existingConversation = await conversation_members.findOne({
         where : {
-            id : conversationId,[Op.or] : [ { userOneId : req.user.id},{ userTwoId : req.user.id }]
+            conversation_id : conversationId,
+            user_id : req.user.id
         }
     })
     if(!existingConversation){
@@ -135,23 +131,10 @@ const createMessage = async(req,res)=>{
         })
     }
 
-    const loggedinUserId = Number(req.user.id);
-    const receiverUserId = Number(receiverId);
-    
-    
-
-    const validreceiver = receiverUserId === existingConversation.userOneId || receiverUserId === existingConversation.userTwoId;
-
-
-    if(!validreceiver || receiverUserId == loggedinUserId)return res.status(400).json({
-        message : "Receiver Id is not valid",
-        success : false
-    })
 
 
     // await messageModel.create({
     //     senderId : req.user.id,
-    //     receiverId : receiverId,
     //     conversation_id : conversationId,
     //     message : message.trim()
 

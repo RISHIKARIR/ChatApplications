@@ -17,45 +17,6 @@ export const conversation = seq.define(
       type : DataTypes.BOOLEAN,
       defaultValue : false
     }
-
-    // userOneId: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    //   references: {
-    //     model: "user_table",
-    //     key: "id",
-    //   },
-    //   onDelete: "CASCADE",
-    //   onUpdate: "CASCADE",
-    // },
-
-    // userId : {
-    //   type : DataTypes.INTEGER,
-    //   allowNull : false,
-    //   references : {
-    //     model : "user_table",
-    //     key : "id"
-    //   },
-    //   onDelete : "CASCADE",
-    //   onUpdate : "CASCADE"
-    // },
-
-
-
-
-    // userTwoId: {
-    //   type: DataTypes.INTEGER,
-    //   allowNull: false,
-    //   references: {
-    //     model: "user_table",
-    //     key: "id",
-    //   },
-    //   onDelete: "CASCADE",
-    //   onUpdate: "CASCADE",
-    // } 
-
-
-
   },
   {
     tableName: "conversation_table",

@@ -14,9 +14,7 @@ export const messageModel = seq.define(
         senderId : {
             type : DataTypes.INTEGER
         },
-        receiverId : {
-            type : DataTypes.INTEGER
-        },
+   
         conversation_id : {
             type : DataTypes.INTEGER,
             allowNull : false,
@@ -28,7 +26,22 @@ export const messageModel = seq.define(
         message : {
             type : DataTypes.TEXT,
             allowNull : false
+        },
+        isSent : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : true
+        },
+        isDelivered : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : false
+        },
+        isSeen : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : false
         }
+        
+
+
 },
 
 { tableName : "message_table" })

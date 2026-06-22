@@ -31,53 +31,73 @@ export const createConversation = async (req, res) => {
         success: false,
       });
     }
-
+    console.log("yaha tk chlaaaa");
     const existingconversation = await conversation_members.findAll({
       where: {
         user_id: { [Op.in]: [loggedInUserId, existinguser.id] },
       },
-      attributes: [
-        Sequelize.col("conversation_members_table.conversation_id"),
-        "conversation_id",
-      ],
-
-      include: [
-        {
-          model: conversation,
-          as: "conversations",
-        },
-      ],
-      group: [
-        Sequelize.col("conversation_members_table.conversation_id"),
-        Sequelize.col("conversations.id"),
-        Sequelize.col("conversations.createdAt"),
-        Sequelize.col("conversations.updatedAt"),
-      ],
-      having: Sequelize.literal('COUNT("user_id") = 2'),
     });
 
-    if (existingconversation.length>0) {
+    const conversationIds = existingconversation.map((item) => {
+      return item.conversation_id;
+    });
+
+    const countIds = conversationIds.reduce((acc, curr) => {
+      if (acc[curr]) {
+        acc[curr] = acc[curr] + 1;
+      } else {
+        acc[curr] = 1;
+      }
+
+      return acc;
+    }, {});
+
+    const sameIds = Object.entries(countIds)
+      .filter(([conversationId, count]) => {
+        return count == 2;
+      })
+      .map(([conversationId]) => {
+        return Number(conversationId);
+      });
+
+    const isConversationAlreadyExist = await conversation.findAll({
+      where: {
+        id: { [Op.in]: sameIds },
+        isGroup: false,
+      },
+    });
+
+    console.log(isConversationAlreadyExist, "kya ayaaaa");
+
+    if (isConversationAlreadyExist.length > 0) {
       return res.status(400).json({
         message: "Conversation already exists",
         success: false,
       });
     }
 
-    const ConversationId =  await conversation.create({});
+    const Conversation = await conversation.create({});
 
-    const date = new Date();
+    const Bothids = {
+      user_id: loggedInUserId,
+      conversation_id: Conversation.id,
+      joined_at: new Date(),
+    };
 
+    const Converation_members = await conversation_members.bulkCreate(
+      [{
+        user_id: loggedInUserId,
+        conversation_id: Conversation.id,
+        joined_at: new Date(),
+      },
+      {
+        user_id: existinguser.id,
+        conversation_id: Conversation.id,
+        joined_at: new Date(),
+      }]
 
+    );
 
-    const Bothids = { user_id :  loggedInUserId,conversation_id : ConversationId.id ,joined_at : date}
-
-   const Converation_members =  await conversation_members.create(Bothids)
-
-
-
-    console.log(existingconversation, "iidhihi");
-
-    
 
     return res.status(200).json({
       message: "Conversation created successfully",
@@ -89,7 +109,6 @@ export const createConversation = async (req, res) => {
     return res.status(401).json({
       message: "Something went wrong",
       success: false,
-      error : err
     });
   }
 };

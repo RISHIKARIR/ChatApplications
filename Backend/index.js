@@ -29,7 +29,6 @@ const io = new Server(server,{
 
 
 
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
