@@ -12,6 +12,7 @@ export const initialiseSocket = (io) => {
     socket.join(userId);
 
 
+        await markPendingMessages(io,userId)
 
 
 
@@ -30,6 +31,7 @@ export const initialiseSocket = (io) => {
       const message = data.message;
 
       try {
+
         const savedMessage = await messageModel.create({
           senderId: userId,
           conversation_id: conversationId,
@@ -62,14 +64,16 @@ export const initialiseSocket = (io) => {
         console.log(isReceiverOnline, "user online haiiii???");
 
         if (isReceiverOnline) {
-          await messageModel.update(
+          await messageModel.update(    
             { isDelivered: true },
             {
               where: {
-                id: savedMessage.id,
+                conversation_id : conversationId
               },
             },
           );
+
+
 
           savedMessage.isDelivered = true;
         }
