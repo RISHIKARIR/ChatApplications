@@ -17,7 +17,7 @@ export function SocketProvider({ children }) {
 
     if (!user) return;
 
-    if (socketRef.current.connected) return;
+    if (socketRef?.current?.connected) return;
 
     const socket = io("http://localhost:5000", {
       withCredentials: true,
@@ -54,7 +54,7 @@ export function SocketProvider({ children }) {
 
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socket: socketRef.current,disconnectSocket}}
+      value={{ connectSocket, socketRef ,disconnectSocket}}
     >
       {children}
     </SocketContext.Provider>
