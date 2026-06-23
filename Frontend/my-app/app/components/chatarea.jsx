@@ -141,8 +141,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
-  console.log(deliveredMessages,"deliveredddd")
 
+
+useEffect(()=>{
+  socketRef.current.emit("mark_seen",{
+    conversationId : selectedConversation
+  })
+
+
+},[])
+
+
+  
 
 
   return (
