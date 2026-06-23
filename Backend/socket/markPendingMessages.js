@@ -10,7 +10,7 @@ const markPendingMessages = async (io,userId)=>{
 
     const conversationMembers = await conversation_members.findAll({
     where : {
-        senderId : userId
+        user_id : userId
     },
     attributes : ["conversation_id"]
     })
