@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, useCallback } from "react";
+import { createContext, useContext, useRef, useCallback, useEffect, useState } from "react";
 import { userAuthContext } from "./authContext";
 import { io } from "socket.io-client";
 
@@ -9,6 +9,9 @@ export const SocketContext = createContext();
 export function SocketProvider({ children }) {
   const { user } = useContext(userAuthContext);
   const socketRef = useRef();
+  const [deliveredMessages,setDeliveredMessages] = useState(null);
+
+
 
   console.log(user, "userrrr ayaa to dikha");
 
@@ -31,6 +34,22 @@ export function SocketProvider({ children }) {
     socket.on("connect", () => {
       console.log("connection established");
     });
+
+
+                                
+    socketRef?.current?.on("delivered_messages",(data)=>{
+      setDeliveredMessages(data.messageIds);
+    })
+
+
+
+
+
+
+
+
+
+
   }, [user]);
 
 
@@ -52,9 +71,29 @@ export function SocketProvider({ children }) {
 
 
 
+  // useEffect(()=>{
+
+  //   console.log("socket reff se pehle")
+
+  //   if(!socketRef.current)return;
+
+  //   console.log(socketRef.current,"socket reffff");
+
+
+
+  //     console.log("effect chlaaaaa")
+    
+
+
+  // },[deliveredMessages,socketRef.current])
+
+
+  console.log(deliveredMessages,"delivered")
+
+
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socketRef ,disconnectSocket}}
+      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages}}
     >
       {children}
     </SocketContext.Provider>

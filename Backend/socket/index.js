@@ -1,6 +1,8 @@
 import { Op, where } from "sequelize";
 import { conversation, conversation_members } from "../models/conversation.js";
 import { messageModel } from "../models/message.js";
+import { markPendingMessages } from "./markPendingMessages.js";
+
 
 const onlineMembers = new Map();
 
@@ -12,7 +14,7 @@ export const initialiseSocket = (io) => {
     socket.join(userId);
 
 
-        await markPendingMessages(io,userId)
+          markPendingMessages(io,userId)
 
 
 
