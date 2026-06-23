@@ -4,21 +4,16 @@ import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { SocketContext } from "../context/socketContext";
 
-
-
-
-
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket,socketRef } = useContext(SocketContext);  
+  const { connectSocket, socketRef, deliveredMessages } =
+    useContext(SocketContext);
 
-useEffect(()=>{
-  if(user){
-  connectSocket();
-  }
-},[user])
-
-
+  useEffect(() => {
+    if (user) {
+      connectSocket();
+    }
+  }, [user]);
 
   const bottomRef = useRef(null);
 
@@ -38,45 +33,41 @@ useEffect(()=>{
     users: convoData?.user_members,
   };
 
-useEffect(() => {
-  const socket = socketRef.current;
+  useEffect(() => {
+    const socket = socketRef.current;
 
-  if (!socket) return;
+    if (!socket) return;
 
-  const handleNewMessage = (data) => {
-    const newMessage = {
-      id: data.data.id,
-      senderId: data.data.senderId,
-      conversation_id: data.data.conversation_id,
-      message: data.data.message,
-      createdAt: data.data.createdAt,
-      updatedAt: data.data.updatedAt,
+    const handleNewMessage = (data) => {
+      const newMessage = {
+        id: data.data.id,
+        senderId: data.data.senderId,
+        conversation_id: data.data.conversation_id,
+        message: data.data.message,
+        createdAt: data.data.createdAt,
+        updatedAt: data.data.updatedAt,
+      };
+
+      setShowChats((prev) => {
+        return {
+          ...prev,
+          data: [...(prev?.data || []), newMessage],
+        };
+      });
     };
 
-    setShowChats((prev) => {
-      return {
-        ...prev,
-        data: [...(prev?.data || []), newMessage],
-      };
-    });
-  };
+    socket.on("new_message", handleNewMessage);
 
-  socket.on("new_message", handleNewMessage);
-
-  return () => {
-    socket.off("new_message", handleNewMessage);
-  };
-}, [sendMessage]);
-
-
-
+    return () => {
+      socket.off("new_message", handleNewMessage);
+    };
+  }, [sendMessage]);
 
   console.log(conversationData, "covvoiv0f9f");
 
   const [showChats, setShowChats] = useState(null);
 
   const [message, setMessage] = useState("");
-
 
   console.log(showChats, "femifhiufheius");
 
@@ -105,29 +96,54 @@ useEffect(() => {
   }, [selectedConversation, showChats?.data?.length]);
 
   function sendMessage() {
-  if (message.trim() === "") return;
+    if (message.trim() === "") return;
 
-  if (!selectedConversation) {
-    toast.error("Please select a conversation");
-    return;
+    if (!selectedConversation) {
+      toast.error("Please select a conversation");
+      return;
+    }
+
+    const socket = socketRef.current;
+
+    if (!socket?.connected) {
+      toast.error("Socket not connected");
+      return;
+    }
+
+    socket.emit("send_message", {
+      message: message.trim(),
+      conversation_id: selectedConversation,
+    });
+
+    setMessage("");
   }
 
-  const socket = socketRef.current;
+  useEffect(() => {
 
-  if (!socket?.connected) {
-    toast.error("Socket not connected");
-    return;
-  }
 
-  socket.emit("send_message", {
-    message: message.trim(),
-    conversation_id: selectedConversation,
-  });
+  
+    setShowChats((prev) => {
+      return {
+        ...prev,
+        data: prev?.data?.map((item) => {
+          
+       return  deliveredMessages?.includes(item.id)
+            ? { ...item, isDelivered: true }
+            : item;
+        }),
+      };
+    });
 
-  setMessage("");
-}
 
-  console.log(conversationData, "convooodataaa");
+
+    
+  }, [deliveredMessages]);
+
+
+
+  console.log(deliveredMessages,"deliveredddd")
+
+
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -217,7 +233,7 @@ useEffect(() => {
 
               <ul className="space-y-6">
                 {showChats &&
-                  showChats?.data.map((item) => {
+                  showChats?.data?.map((item) => {
                     return (
                       <li
                         ref={bottomRef}
@@ -235,7 +251,13 @@ useEffect(() => {
                             </p>
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
-                          <span>{item.isSeen ? "seen" :  item.isDelivered ? "Delivered " : "Sent "}</span>
+                              <span>
+                                {item.isSeen
+                                  ? "seen"
+                                  : item.isDelivered
+                                    ? "Delivered "
+                                    : "Sent "}
+                              </span>
 
                               {new Date(item.createdAt).toLocaleTimeString([], {
                                 hour: "2-digit",
