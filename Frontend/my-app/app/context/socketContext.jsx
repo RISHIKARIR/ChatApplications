@@ -10,6 +10,9 @@ export function SocketProvider({ children }) {
   const { user } = useContext(userAuthContext);
   const socketRef = useRef();
   const [deliveredMessages,setDeliveredMessages] = useState(null);
+  const [seenMessages,setSeenMessages] = useState(null);
+
+
 
 
 
@@ -42,13 +45,9 @@ export function SocketProvider({ children }) {
     })
 
 
-
-
-
-
-
-
-
+    socketRef.current.on("seen_messages",(data)=>{
+      setSeenMessages(data)
+    })
 
   }, [user]);
 
@@ -93,7 +92,7 @@ export function SocketProvider({ children }) {
 
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages}}
+      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages,seenMessages}}
     >
       {children}
     </SocketContext.Provider>

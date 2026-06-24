@@ -6,7 +6,7 @@ import { SocketContext } from "../context/socketContext";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket, socketRef, deliveredMessages } =
+  const { connectSocket, socketRef, deliveredMessages,seenMessages } =
     useContext(SocketContext);
 
   useEffect(() => {
@@ -44,9 +44,15 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         senderId: data.data.senderId,
         conversation_id: data.data.conversation_id,
         message: data.data.message,
+        isDelivered : data.data.isDelivered,
+        isSeen : data.data.isSeen,
+        isSent : data.data.isSent,
         createdAt: data.data.createdAt,
         updatedAt: data.data.updatedAt,
       };
+        console.log(data,"datatatatatat")
+      console.log(newMessage,"newwwwwwwwwwwww")
+
 
       setShowChats((prev) => {
         return {
@@ -74,6 +80,11 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   useEffect(() => {
     async function loadchats() {
       if (!selectedConversation) return;
+
+      socketRef?.current?.emit("mark_seen",{
+    conversationId : selectedConversation
+  })
+
 
       const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
@@ -120,8 +131,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   useEffect(() => {
 
-
-  
     setShowChats((prev) => {
       return {
         ...prev,
@@ -136,24 +145,28 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
+    setShowChats((prev) => {
+      return {
+        ...prev,
+        data: prev?.data?.map((item) => {
+          
+       return seenMessages?.MessageIds?.includes(item.id)
+            ? { ...item, isSeen: true }
+            : item;
+        }),
+      };
+    });
+
+
+
     
-  }, [deliveredMessages]);
+  }, [deliveredMessages,seenMessages]);
 
 
-
-
-
-useEffect(()=>{
-  socketRef.current.emit("mark_seen",{
-    conversationId : selectedConversation
-  })
-
-
-},[])
+  console.log(seenMessages,"joiweijeijei");
 
 
   
-
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -243,7 +256,7 @@ useEffect(()=>{
 
               <ul className="space-y-6">
                 {showChats &&
-                  showChats?.data.map((item) => {
+                  showChats?.data?.map((item) => {
                     return (
                       <li
                         ref={bottomRef}
