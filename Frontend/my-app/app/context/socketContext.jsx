@@ -34,6 +34,22 @@ export function SocketProvider({ children }) {
     socket.on("connect", () => {
       console.log("connection established");
     });
+
+
+                                
+    socketRef?.current?.on("delivered_messages",(data)=>{
+      setDeliveredMessages(data.messageIds);
+    })
+
+
+
+
+
+
+
+
+
+
   }, [user]);
 
 
@@ -51,15 +67,25 @@ export function SocketProvider({ children }) {
 
 
 
-  useEffect(()=>{
-
-    socketRef?.current?.on("delivered_messages",(data)=>{
-      console.log(data,"delivered Messages");
-      setDeliveredMessages(data);
-    })
 
 
-  },[])
+
+
+  // useEffect(()=>{
+
+  //   console.log("socket reff se pehle")
+
+  //   if(!socketRef.current)return;
+
+  //   console.log(socketRef.current,"socket reffff");
+
+
+
+  //     console.log("effect chlaaaaa")
+    
+
+
+  // },[deliveredMessages,socketRef.current])
 
 
   console.log(deliveredMessages,"delivered")
