@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useRef, useCallback } from "react";
+import { createContext, useContext, useRef, useCallback, useEffect, useState } from "react";
 import { userAuthContext } from "./authContext";
 import { io } from "socket.io-client";
 
@@ -9,6 +9,9 @@ export const SocketContext = createContext();
 export function SocketProvider({ children }) {
   const { user } = useContext(userAuthContext);
   const socketRef = useRef();
+  const [deliveredMessages,setDeliveredMessages] = useState(null);
+
+
 
   console.log(user, "userrrr ayaa to dikha");
 
@@ -48,13 +51,23 @@ export function SocketProvider({ children }) {
 
 
 
+  useEffect(()=>{
+
+    socketRef?.current?.on("delivered_messages",(data)=>{
+      console.log(data,"delivered Messages");
+      setDeliveredMessages(data);
+    })
 
 
+  },[])
+
+
+  console.log(deliveredMessages,"delivered")
 
 
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socketRef ,disconnectSocket}}
+      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages}}
     >
       {children}
     </SocketContext.Provider>
