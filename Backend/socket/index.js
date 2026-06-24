@@ -96,6 +96,63 @@ export const initialiseSocket = (io) => {
       }
     });
 
+
+    socket.on("mark_seen",async(data)=>{
+      const conversationId = data.conversationId;
+
+      const Messages = await messageModel.findAll(
+       {
+        where:{
+          conversation_id : conversationId,
+          senderId : {
+            [Op.ne] : userId
+          },
+          isSeen : false
+        }
+        }
+      )
+
+      const MarkMessages = await messageModel.update({
+        isSeen : true
+      },
+      {
+        where : {
+          conversation_id : conversationId,
+          senderId : {
+            [Op.ne] : userId
+          },
+          isSeen : false
+        }
+      }
+    
+    )
+
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    })
+
+
+
+
+
+
+
+
+
+
+
+
     socket.on("disconnect", (reason) => {
       const isUserStillonApp = onlineMembers.get(userId);
       if (isUserStillonApp) {
