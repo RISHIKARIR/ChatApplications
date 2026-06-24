@@ -48,7 +48,8 @@ console.log(messages,"ferefrfrf");
         messagesPerSender[Message.senderId] = []
     }
 
-        messagesPerSender[Message.senderId].push(Message.id);
+      messagesPerSender[Message.senderId].push(Message.id);
+      
 
   }
 
