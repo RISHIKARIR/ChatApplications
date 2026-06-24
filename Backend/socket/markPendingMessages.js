@@ -41,14 +41,15 @@ export const markPendingMessages = async (io, userId) => {
 
   const messagesPerSender = {}
 
-console.log(messages,"Messagesss");
+console.log(messages,"ferefrfrf");
 
   for(let Message of messages){
     if(!messagesPerSender[Message.senderId]){
         messagesPerSender[Message.senderId] = []
-       
     }
-        messagesPerSender[Message.senderId].push(Message.id);
+
+      messagesPerSender[Message.senderId].push(Message.id);
+      
 
   }
 

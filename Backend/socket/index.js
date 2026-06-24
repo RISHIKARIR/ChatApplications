@@ -96,6 +96,78 @@ export const initialiseSocket = (io) => {
       }
     });
 
+
+    socket.on("mark_seen",async(data)=>{
+      const conversationId = data.conversationId;
+
+      console.log(data,"user has seen the message");
+
+
+
+      const Messages = await messageModel.findAll(
+       {
+        where:{
+          conversation_id : conversationId,
+          senderId : {
+            [Op.ne] : userId
+          },
+          isSeen : false
+        }
+        }
+      )
+
+
+
+      console.log(Messages,"ihuehe")
+
+      const MarkMessages = await messageModel.update({
+        isSeen : true
+      },
+      {
+        where : {
+          conversation_id : conversationId,
+          senderId : {
+            [Op.ne] : userId
+          },
+          isSeen : false
+        }
+      }
+    
+    )
+
+    let markSeenSender = {};
+
+   for(let Message of Messages){
+    if(!markSeenSender[Message.senderId]){
+      markSeenSender[Message.senderId] = [];
+    }
+
+    markSeenSender[Message.senderId].push(Message.id);
+
+   }
+
+  
+   for(const Sender in markSeenSender){
+
+    console.log(markSeenSender[Sender],"senderrrrrrrrrrrrrrr")
+
+
+    io.to(String(Sender)).emit("seen_messages",{
+      MessageIds : markSeenSender[Sender]
+    })
+  
+
+   }
+
+
+    })
+
+
+
+
+
+
+
     socket.on("disconnect", (reason) => {
       const isUserStillonApp = onlineMembers.get(userId);
       if (isUserStillonApp) {

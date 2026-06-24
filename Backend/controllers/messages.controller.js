@@ -63,8 +63,11 @@ import { conversation_members } from "../models/conversation.js";
                 as : "sender",
                 attributes : ["email","name","id"]
             },
+            
           
-        ]
+        ],
+
+        order:[["createdAt","ASC"]]
     })
 
     
