@@ -89,7 +89,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
       });
-
+      
       const data = await response.json();
 
       setShowChats(data);
@@ -276,7 +276,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
                               <span>
                                 {item.isSeen
-                                  ? "seen"
+                                  ? "seen "
                                   : item.isDelivered
                                     ? "Delivered "
                                     : "Sent "}

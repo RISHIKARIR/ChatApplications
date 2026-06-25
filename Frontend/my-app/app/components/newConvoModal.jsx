@@ -14,7 +14,7 @@ function NewConvoModal() {
   async function addNewUser(e) {
     e.preventDefault();
 
-    if (email.trim() === "") {
+    if (email.trim() === ""){
       toast.error("Email cannot be empty");
       return;
     }
