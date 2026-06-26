@@ -1,5 +1,5 @@
 import { createUser } from "../models/userModel.js";
-import { conversation } from "../models/conversation.js";
+import { conversation, groupTable } from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { Op, Sequelize } from "sequelize";
 
@@ -112,3 +112,79 @@ export const createConversation = async (req, res) => {
     });
   }
 };
+
+
+export const createGroup = async(req,res)=>{
+  try{
+  const { groupName,groupDescription,Members } = req.body;
+
+  if(!groupName || !groupDescription || Members.length==0){
+    return res.status(401).json({
+      message : "Both fields and Members are required to create a group",
+      success : false
+    })
+  }
+
+  const Conversation = await conversation.create({
+    isGroup : true
+  })
+
+
+  if(!Conversation)return res.status(400).json({
+    message : "Conversation couldn't be created",
+    success : false
+  })
+
+  const Group = await groupTable.create({
+    Group_name : groupName,
+    Group_image : "",
+    Group_Description : groupDescription,
+    conversation_id : Conversation.id
+  })
+
+  const mappedMembers = Members.map((Member=>{Conversation.id,Member.id}))
+
+
+  const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
+
+
+  
+
+
+
+  return res.status(200).json({
+    message : "Conversation has been created succesfully",
+    success : true
+  })
+
+
+
+
+
+
+
+
+
+
+
+}catch(err){
+
+  console.log(err,"errorrr")
+
+  return res.status(500).json({
+
+    message : "Something went wrong",
+    success : false,
+    error : err
+  })
+}
+
+
+}
+
+
+
+
+
+
+
