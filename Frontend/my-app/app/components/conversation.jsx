@@ -52,13 +52,8 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     setFilteredData(filtered);
   }
 
-  async function startConversation() {
-    const response = await Apifetch("user/conversations", {
-      method: "POST",
-    });
-  }
 
-  console.log(conversationData, "filteredddd");
+
 
   return (
     <>
