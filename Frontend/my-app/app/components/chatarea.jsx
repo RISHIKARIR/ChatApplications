@@ -144,12 +144,11 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
 
 
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-          
+                
        return seenMessages?.MessageIds?.includes(item.id)
             ? { ...item, isSeen: true }
             : item;

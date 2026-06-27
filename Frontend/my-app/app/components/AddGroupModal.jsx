@@ -29,6 +29,9 @@ function NewGroupChatModal({
     return onlyMembers;
   }, [conversationData]);
   const [selectedMembers, setSelectedMembers] = useState([]);
+  const [groupDetails,setGroupDetails] = useState({ title : "", description : "" });
+
+
 
   function AddOrRemoveMembers(Member) {
     setSelectedMembers((prev) => {
@@ -40,6 +43,33 @@ function NewGroupChatModal({
       return [...prev, Member];
     });
   }
+
+  async function createGroup(e){
+
+
+
+
+  }
+
+  function handleInput(e){
+
+    
+
+    if(e.target.name == "Title"){
+      setGroupDetails((prev)=>{
+        return {...prev,title : e.target.value}
+      })
+      
+
+      }
+
+
+
+  }
+
+  console.log(groupDetails,"sidioiod")
+
+
 
   console.log(selectedMembers, "selectedd");
 
@@ -103,6 +133,8 @@ function NewGroupChatModal({
 
                 <input
                   type="text"
+                  onChange={(e)=>{ handleInput(e) }}
+                  name="Title"
                   placeholder="What's is the Name of the Group?"
                   className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-500"
                 />
@@ -115,6 +147,7 @@ function NewGroupChatModal({
 
                 <input
                   type="text"
+                  name="Description"
                   placeholder="What's this group about?"
                   className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-500"
                 />
