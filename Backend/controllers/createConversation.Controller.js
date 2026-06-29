@@ -31,7 +31,7 @@ export const createConversation = async (req, res) => {
         success: false,
       });
     }
-    console.log("yaha tk chlaaaa");
+    
     const existingconversation = await conversation_members.findAll({
       where: {
         user_id: { [Op.in]: [loggedInUserId, existinguser.id] },
@@ -142,7 +142,7 @@ export const createGroup = async(req,res)=>{
     conversation_id : Conversation.id
   })
 
-  const mappedMembers = Members.map((Member=>{Conversation.id,Member.id}))
+  const mappedMembers = Members.map((Member=>{ Conversation.id,Member.id }))
 
 
   const conversationMembers = await conversation_members.bulkCreate(mappedMembers);

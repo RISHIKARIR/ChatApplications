@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { conversation } from "../models/conversation.js";
+import { conversation, groupTable } from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { createUser } from "../models/userModel.js";
 
@@ -9,7 +9,7 @@ export const showConversations = async (req, res) => {
       where: {
         id: req.user.id,
       },
-      attributes : [],
+      attributes: [],
       include: [
         {
           model: conversation,
@@ -17,9 +17,15 @@ export const showConversations = async (req, res) => {
             {
               model: createUser,
               as: "user_members",
-              attributes : ["id","name","email"],
+              attributes: ["id", "name", "email"],
               through: { model: conversation_members, attributes: [] },
             },
+            { 
+              model : groupTable,
+              as : "group_table"
+            }
+
+
           ],
           as: "conversations",
           through: { model: conversation_members, attributes: [] },
@@ -28,44 +34,32 @@ export const showConversations = async (req, res) => {
     });
 
     return res.status(200).json({
-      message: "returbed",
+      message: "All conversations Returned",
+      succss : true,
       data: conversations,
     });
 
-    const conversationdIds = conversations.map((item) => {
-      return item.conversation_id;
-    });
+    // const conversationdIds = conversations.map((item) => {
+    //   return item.conversation_id;
+    // });
 
-    const member_details = await conversation_members.findAll({
-      include: {
-        model: createUser,
-        as: "user_members",
-      },
-    });
+    // const member_details = await conversation_members.findAll({
+    //   include: [
+    //     {
+    //       model: createUser,
+    //       as: "user_members",
+    //     }
+    //   ],
+    // });
 
-    // console.log(member_details, "convvovovoov");
 
     return res.status(200).json({
       message: "returned",
       data: conversationdIds,
     });
 
-    // const conversations = await conversation.findAll({
-    //   where: {
-    //     [Op.or]: [{ userOneId: req.user.id }, { userTwoId: req.user.id }],
-    //   },
 
-    //   include:[
-    //     {
-    //       model : createUser,
-    //       as : "userOne"
-    //     },
-    //     {
-    //       model : createUser,
-    //       as : "userTwo"
-    //     }
-    //   ]
-    // });
+
 
     return res.status(200).json({
       message: "All conversations",
