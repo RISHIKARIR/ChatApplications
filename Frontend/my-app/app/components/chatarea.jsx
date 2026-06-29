@@ -145,6 +145,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
+    
+
+
     setShowChats((prev) => {
       return {
         ...prev,
@@ -164,6 +167,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
   console.log(seenMessages,"joiweijeijei");
+
+
 
 
   
@@ -355,115 +360,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         </div>
       </div>
 
-      {/* <aside className="hidden h-full w-[280px] shrink-0 border-l border-white/10 bg-[#0d0e10] xl:block">
-        <div className="flex h-full flex-col px-5 py-6">
-          {selectedConversation ? (
-            <>
-              <div className="text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-[#1b1b1d] text-2xl font-black uppercase text-white ring-1 ring-white/10">
-                  {conversationUserData.userTwo.name.charAt(0)}
-                </div>
 
-                <h3 className="mt-4 text-sm font-bold text-white">
-                  {conversationUserData.userTwo.name}
-                </h3>
-
-                <p className="mt-1 text-xs text-zinc-500">
-                  {conversationUserData.userTwo.email}
-                </p>
-
-                <div className="mx-auto mt-3 w-fit rounded-full bg-[#22c55e]/10 px-3 py-1 text-xs font-bold text-[#22c55e]">
-                  Online
-                </div>
-              </div>
-
-              <div className="mt-8 grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Call
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Video
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Mute
-                </button>
-              </div>
-
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-700">
-                  Email
-                </p>
-
-                <p className="mt-3 break-all text-xs font-medium text-zinc-300">
-                  {conversationUserData.userTwo.email}
-                </p>
-              </div>
-
-              <div className="mt-6 border-t border-white/10 pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-700">
-                    Shared Files
-                  </p>
-
-                  <button
-                    type="button"
-                    className="text-[10px] font-bold uppercase text-[#22c55e]"
-                  >
-                    See all
-                  </button>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-xl border border-white/10 bg-[#050505] p-3">
-                    <p className="truncate text-xs font-bold text-white">
-                      component-audit.pdf
-                    </p>
-                    <p className="mt-1 text-[10px] text-zinc-600">
-                      2 min ago
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-white/10 bg-[#050505] p-3">
-                    <p className="truncate text-xs font-bold text-white">
-                      design-notes.fig
-                    </p>
-                    <p className="mt-1 text-[10px] text-zinc-600">
-                      1 day ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center text-center">
-              <div>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#050505] text-2xl ring-1 ring-white/10">
-                  👤
-                </div>
-
-                <p className="mt-4 text-sm font-bold text-white">
-                  No profile selected
-                </p>
-
-                <p className="mt-2 text-xs leading-5 text-zinc-500">
-                  Select a conversation to view user details.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside> */}
     </div>
   );
 }
