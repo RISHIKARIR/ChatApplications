@@ -9,9 +9,11 @@ import {
   Users,
   CirclePlus,
   CircleCheck,
-  CircleX
+  CircleX,
 } from "lucide-react";
 import Image from "next/image";
+import { toast } from "sonner";
+import { Apifetch } from "../../lib/apifetch";
 
 function NewGroupChatModal({
   setGroupModal,
@@ -19,6 +21,17 @@ function NewGroupChatModal({
   user,
   conversationData,
 }) {
+
+  const [selectedMembers, setSelectedMembers] = useState([]);
+  const [searchMembers, setSearchMembers] = useState([]);
+  const [groupDetails, setGroupDetails] = useState({
+    title: "",
+    description: "",
+  });
+
+
+
+
   const allMembers = useMemo(() => {
     let onlyMembers = conversationData.filter((Member) => !Member.isGroup);
     onlyMembers = onlyMembers.flatMap((Members) => {
@@ -26,9 +39,10 @@ function NewGroupChatModal({
         return Number(Member.id) != Number(user.id);
       });
     });
+    setSearchMembers(onlyMembers)
     return onlyMembers;
   }, [conversationData]);
-  const [selectedMembers, setSelectedMembers] = useState([]);
+
 
   function AddOrRemoveMembers(Member) {
     setSelectedMembers((prev) => {
@@ -41,9 +55,77 @@ function NewGroupChatModal({
     });
   }
 
-  console.log(selectedMembers, "selectedd");
+  async function createGroup() {
+    if (
+      groupDetails.title.trim() == "" ||
+      groupDetails.description.trim() == ""
+    ) {
+      toast.error("Group title and Description are required");
+      return;
+    }
 
-  console.log(allMembers, "9ierhj998h");
+    try {
+      const response = await Apifetch("user/conversations/group", {
+        method: "POST",
+        body: JSON.stringify({
+          groupName: groupDetails.title,
+          groupDescription: groupDetails.description,
+          Members : selectedMembers
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        toast.error("Something went Wrong");
+        return;
+      }
+
+      console.log(data, "");
+
+      toast.success("Group created succesfully");
+      setGroupModal(false);
+    } catch (err) {
+      toast.error(err);
+    }
+  }
+
+  function SearchUser(e) {
+    let value = e.target.value.toLowerCase();
+
+    const filtered = allMembers.filter((Member)=>{
+      return Member.name.toLowerCase().includes(value);
+    })
+
+
+
+    setSearchMembers(filtered);
+   
+
+  }
+
+
+  console.log(searchMembers,"diidiododnm");
+
+
+
+  function handleInput(e) {
+    if (e.target.name == "Title") {
+      setGroupDetails((prev) => {
+        return { ...prev, title: e.target.value };
+      });
+    }
+
+    if (e.target.name == "Description") {
+      setGroupDetails((prev) => {
+        return { ...prev, description: e.target.value };
+      });
+    }
+  }
+
+  console.log(allMembers,"allmembers")
+
+
 
   return (
     <div
@@ -103,6 +185,10 @@ function NewGroupChatModal({
 
                 <input
                   type="text"
+                  onChange={(e) => {
+                    handleInput(e);
+                  }}
+                  name="Title"
                   placeholder="What's is the Name of the Group?"
                   className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-500"
                 />
@@ -115,6 +201,10 @@ function NewGroupChatModal({
 
                 <input
                   type="text"
+                  onChange={(e) => {
+                    handleInput(e);
+                  }}
+                  name="Description"
                   placeholder="What's this group about?"
                   className="h-12 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none placeholder:text-white/30 focus:border-blue-500"
                 />
@@ -146,12 +236,11 @@ function NewGroupChatModal({
               {selectedMembers.length == 0 ? (
                 <div> No Members added </div>
               ) : (
-                <div className="flex  flex-col rounded-xl border border-white/10 bg-white/[0.03]">
+                <div className="flex flex-col rounded-xl border border-white/10 bg-white[003]">
                   {selectedMembers.map((Member) => {
                     return (
                       <div
                         key={Member.id}
-                      
                         className={
                           selectedMembers.some((item) => Member.id == item.id)
                             ? " flex items-center justify-between border-b first:rounded-t-xl last:rounded-b-xl px-4 py-3 border-white/10 bg-green-500 "
@@ -172,8 +261,12 @@ function NewGroupChatModal({
                           </p>
                         </div>
 
-                        <CircleX onClick={()=>{AddOrRemoveMembers(Member)}} className="h-5 w-5 shrink-0 text-white/60" />
-                       
+                        <CircleX
+                          onClick={() => {
+                            AddOrRemoveMembers(Member);
+                          }}
+                          className="h-5 w-5 shrink-0 text-white/60"
+                        />
                       </div>
                     );
                   })}
@@ -193,6 +286,7 @@ function NewGroupChatModal({
             <input
               type="text"
               placeholder="Search people..."
+              onChange={(e)=>{SearchUser(e)}}
               className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-blue-500"
             />
           </div>
@@ -205,7 +299,7 @@ function NewGroupChatModal({
             </p>
 
             <div className="flex  flex-col rounded-xl border border-white/10 bg-white/[0.03]">
-              {allMembers.map((Member) => {
+              {searchMembers?.map((Member) => {
                 return (
                   <div
                     key={Member.id}
@@ -228,11 +322,11 @@ function NewGroupChatModal({
                       </p>
                     </div>
 
-                    {  selectedMembers.some((item) => Member.id == item.id) ? (
+                    {selectedMembers.some((item) => Member.id == item.id) ? (
                       <CircleCheck className="h-5 w-5 shrink-0 text-white/60" />
                     ) : (
-                    <CirclePlus className="h-5 w-5 shrink-0 text-white/60" />
-                     )}
+                      <CirclePlus className="h-5 w-5 shrink-0 text-white/60" />
+                    )}
                   </div>
                 );
               })}
@@ -248,6 +342,7 @@ function NewGroupChatModal({
 
           <div className="flex items-center gap-3">
             <button
+            onClick={()=>{setGroupModal(false)}}
               type="button"
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
             >
@@ -255,10 +350,10 @@ function NewGroupChatModal({
             </button>
 
             <button
-            // disabled={selectedMembers.length<=0}
+              // disabled={selectedMembers.length<=0}
               type="button"
-              disabled={selectedMembers.length<=0}
-              onClick={()=>{console.log("button clicked")}}
+              disabled={selectedMembers.length <= 0}
+              onClick={createGroup}
               className="flex items-center gap-2 rounded-xl disabled:bg-blue-600/40 bg-blue-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-blue-700"
             >
               <Users size={15} />

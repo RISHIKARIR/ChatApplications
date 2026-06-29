@@ -124,6 +124,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     socket.emit("send_message", {
       message: message.trim(),
       conversation_id: selectedConversation,
+      isGroup : conversationUserData.isGroup
     });
 
   setMessage("");
@@ -144,15 +145,11 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
 
 
-
-    
-
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-          
+                
        return seenMessages?.MessageIds?.includes(item.id)
             ? { ...item, isSeen: true }
             : item;
