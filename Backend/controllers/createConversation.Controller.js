@@ -125,6 +125,16 @@ export const createGroup = async(req,res)=>{
     })
   }
 
+
+  const User = req.user;
+
+
+  Members.push({id : User.id,name : User.name, email : User.email})
+
+
+
+
+
   const Conversation = await conversation.create({
     isGroup : true
   })
@@ -142,13 +152,16 @@ export const createGroup = async(req,res)=>{
     conversation_id : Conversation.id
   })
 
-  const mappedMembers = Members.map((Member=>{ Conversation.id,Member.id }))
+  const mappedMembers = Members.map((Member=>{ 
+    return {
+    user_id : Member.id,conversation_id : Conversation.id,
 
-
-  const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
-
+    joined_at : new Date()
+  }
+}))
 
   
+  const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
 
 
 
@@ -156,16 +169,6 @@ export const createGroup = async(req,res)=>{
     message : "Conversation has been created succesfully",
     success : true
   })
-
-
-
-
-
-
-
-
-
-
 
 }catch(err){
 

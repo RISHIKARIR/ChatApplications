@@ -3,10 +3,24 @@ import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { SocketContext } from "../context/socketContext";
+import { EllipsisVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { SquarePen } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket, socketRef, deliveredMessages,seenMessages } =
+  const { connectSocket, socketRef, deliveredMessages, seenMessages } =
     useContext(SocketContext);
 
   useEffect(() => {
@@ -44,15 +58,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         senderId: data.data.senderId,
         conversation_id: data.data.conversation_id,
         message: data.data.message,
-        isDelivered : data.data.isDelivered,
-        isSeen : data.data.isSeen,
-        isSent : data.data.isSent,
+        isDelivered: data.data.isDelivered,
+        isSeen: data.data.isSeen,
+        isSent: data.data.isSent,
         createdAt: data.data.createdAt,
         updatedAt: data.data.updatedAt,
+        sender: data.data.sender,
       };
-        console.log(data,"datatatatatat")
-      console.log(newMessage,"newwwwwwwwwwwww")
-
+      console.log(data, "datatatatatat");
 
       setShowChats((prev) => {
         return {
@@ -81,15 +94,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     async function loadchats() {
       if (!selectedConversation) return;
 
-      socketRef?.current?.emit("mark_seen",{
-    conversationId : selectedConversation
-  })
-
+      socketRef?.current?.emit("mark_seen", {
+        conversationId: selectedConversation,
+      });
 
       const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
       });
-      
+
       const data = await response.json();
 
       setShowChats(data);
@@ -124,51 +136,35 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     socket.emit("send_message", {
       message: message.trim(),
       conversation_id: selectedConversation,
-      isGroup : conversationUserData.isGroup
+      isGroup: conversationUserData.isGroup,
     });
 
-  setMessage("");
-}
+    setMessage("");
+  }
 
   useEffect(() => {
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-          
-       return  deliveredMessages?.includes(item.id)
+          return deliveredMessages?.includes(item.id)
             ? { ...item, isDelivered: true }
             : item;
         }),
       };
     });
 
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-                
-       return seenMessages?.MessageIds?.includes(item.id)
+          return seenMessages?.MessageIds?.includes(item.id)
             ? { ...item, isSeen: true }
             : item;
         }),
       };
     });
-
-
-
-    
-  }, [deliveredMessages,seenMessages]);
-
-
-  console.log(seenMessages,"joiweijeijei");
-
-
-
-
-  
+  }, [deliveredMessages, seenMessages]);
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -188,7 +184,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
             <div>
               <h3 className="text-sm font-bold text-white">
                 {selectedConversation
-                  ? `${conversationData?.chatName}`
+                  ? conversationUserData.isGroup
+                    ? conversationUserData.group_table.Group_name
+                    : `${conversationData?.chatName}`
                   : "No Conversation Selected"}
               </h3>
 
@@ -270,9 +268,33 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                         }`}
                       >
                         {user.id === item.senderId ? (
-                          <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-2 text-white">
-                            <p className="text-sm font-medium leading-relaxed text-zinc-100">
+                          <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-4 text-white">
+                            <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
                               {item.message}
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <EllipsisVertical
+                                    size={15}
+                                    className="opacity-50"
+                                    variant="ghost"
+                                    // size="icon"
+                                  />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="text-white bg-black">
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                    onClick={()=>{console.log("clicked edit")}}>
+                                      <SquarePen/> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                    onClick={()=>{console.log("clicked delete")}}
+                                    className="text-red-500 focus:bg-red-400 focus:text-white">
+                                      <Trash2 /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </p>
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
@@ -297,6 +319,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                             </div>
 
                             <div className="border-l border-white/20 bg-transparent px-4 py-2 text-white">
+                              {conversationUserData.isGroup && (
+                                <p className="text-xs text-green-500">
+                                  {" "}
+                                  {item?.sender?.name}
+                                </p>
+                              )}
+
                               <p className="text-sm font-medium leading-relaxed text-zinc-200">
                                 {item.message}
                               </p>
@@ -356,8 +385,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           </p>
         </div>
       </div>
-
-
     </div>
   );
 }
