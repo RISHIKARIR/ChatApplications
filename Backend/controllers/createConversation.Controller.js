@@ -152,7 +152,13 @@ export const createGroup = async(req,res)=>{
     conversation_id : Conversation.id
   })
 
-  const mappedMembers = Members.map((Member=>{ Conversation.id,Member.id }))
+  const mappedMembers = Members.map((Member=>{ 
+    return {
+    user_id : Member.id,conversation_id : Conversation.id,
+
+    joined_at : new Date()
+  }
+}))
 
   
   const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
