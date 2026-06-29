@@ -3,10 +3,24 @@ import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { SocketContext } from "../context/socketContext";
+import { EllipsisVertical } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
+import { SquarePen } from "lucide-react";
+
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket, socketRef, deliveredMessages,seenMessages } =
+  const { connectSocket, socketRef, deliveredMessages, seenMessages } =
     useContext(SocketContext);
 
   useEffect(() => {
@@ -44,15 +58,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         senderId: data.data.senderId,
         conversation_id: data.data.conversation_id,
         message: data.data.message,
-        isDelivered : data.data.isDelivered,
-        isSeen : data.data.isSeen,
-        isSent : data.data.isSent,
+        isDelivered: data.data.isDelivered,
+        isSeen: data.data.isSeen,
+        isSent: data.data.isSent,
         createdAt: data.data.createdAt,
         updatedAt: data.data.updatedAt,
+        sender: data.data.sender,
       };
-        console.log(data,"datatatatatat")
-      console.log(newMessage,"newwwwwwwwwwwww")
-
+      console.log(data, "datatatatatat");
 
       setShowChats((prev) => {
         return {
@@ -81,15 +94,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     async function loadchats() {
       if (!selectedConversation) return;
 
-      socketRef?.current?.emit("mark_seen",{
-    conversationId : selectedConversation
-  })
-
+      socketRef?.current?.emit("mark_seen", {
+        conversationId: selectedConversation,
+      });
 
       const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
       });
-      
+
       const data = await response.json();
 
       setShowChats(data);
@@ -124,48 +136,35 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     socket.emit("send_message", {
       message: message.trim(),
       conversation_id: selectedConversation,
+      isGroup: conversationUserData.isGroup,
     });
 
-  setMessage("");
-}
+    setMessage("");
+  }
 
   useEffect(() => {
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-          
-       return  deliveredMessages?.includes(item.id)
+          return deliveredMessages?.includes(item.id)
             ? { ...item, isDelivered: true }
             : item;
         }),
       };
     });
 
-
     setShowChats((prev) => {
       return {
         ...prev,
         data: prev?.data?.map((item) => {
-                
-       return seenMessages?.MessageIds?.includes(item.id)
+          return seenMessages?.MessageIds?.includes(item.id)
             ? { ...item, isSeen: true }
             : item;
         }),
       };
     });
-
-
-
-    
-  }, [deliveredMessages,seenMessages]);
-
-
-  console.log(seenMessages,"joiweijeijei");
-
-
-  
+  }, [deliveredMessages, seenMessages]);
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -185,7 +184,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
             <div>
               <h3 className="text-sm font-bold text-white">
                 {selectedConversation
-                  ? `${conversationData?.chatName}`
+                  ? conversationUserData.isGroup
+                    ? conversationUserData.group_table.Group_name
+                    : `${conversationData?.chatName}`
                   : "No Conversation Selected"}
               </h3>
 
@@ -267,9 +268,33 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                         }`}
                       >
                         {user.id === item.senderId ? (
-                          <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-2 text-white">
-                            <p className="text-sm font-medium leading-relaxed text-zinc-100">
+                          <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-4 text-white">
+                            <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
                               {item.message}
+
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <EllipsisVertical
+                                    size={15}
+                                    className="opacity-50"
+                                    variant="ghost"
+                                    // size="icon"
+                                  />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="text-white bg-black">
+                                  <DropdownMenuGroup>
+                                    <DropdownMenuItem
+                                    onClick={()=>{console.log("clicked edit")}}>
+                                      <SquarePen/> Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem 
+                                    onClick={()=>{console.log("clicked delete")}}
+                                    className="text-red-500 focus:bg-red-400 focus:text-white">
+                                      <Trash2 /> Delete
+                                    </DropdownMenuItem>
+                                  </DropdownMenuGroup>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
                             </p>
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
@@ -294,6 +319,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                             </div>
 
                             <div className="border-l border-white/20 bg-transparent px-4 py-2 text-white">
+                              {conversationUserData.isGroup && (
+                                <p className="text-xs text-green-500">
+                                  {" "}
+                                  {item?.sender?.name}
+                                </p>
+                              )}
+
                               <p className="text-sm font-medium leading-relaxed text-zinc-200">
                                 {item.message}
                               </p>
@@ -353,116 +385,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           </p>
         </div>
       </div>
-
-      {/* <aside className="hidden h-full w-[280px] shrink-0 border-l border-white/10 bg-[#0d0e10] xl:block">
-        <div className="flex h-full flex-col px-5 py-6">
-          {selectedConversation ? (
-            <>
-              <div className="text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-2xl bg-[#1b1b1d] text-2xl font-black uppercase text-white ring-1 ring-white/10">
-                  {conversationUserData.userTwo.name.charAt(0)}
-                </div>
-
-                <h3 className="mt-4 text-sm font-bold text-white">
-                  {conversationUserData.userTwo.name}
-                </h3>
-
-                <p className="mt-1 text-xs text-zinc-500">
-                  {conversationUserData.userTwo.email}
-                </p>
-
-                <div className="mx-auto mt-3 w-fit rounded-full bg-[#22c55e]/10 px-3 py-1 text-xs font-bold text-[#22c55e]">
-                  Online
-                </div>
-              </div>
-
-              <div className="mt-8 grid grid-cols-3 gap-3">
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Call
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Video
-                </button>
-
-                <button
-                  type="button"
-                  className="rounded-xl border border-white/10 bg-[#050505] py-3 text-[10px] font-bold uppercase text-zinc-500 transition hover:text-white"
-                >
-                  Mute
-                </button>
-              </div>
-
-              <div className="mt-8 border-t border-white/10 pt-6">
-                <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-700">
-                  Email
-                </p>
-
-                <p className="mt-3 break-all text-xs font-medium text-zinc-300">
-                  {conversationUserData.userTwo.email}
-                </p>
-              </div>
-
-              <div className="mt-6 border-t border-white/10 pt-6">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-zinc-700">
-                    Shared Files
-                  </p>
-
-                  <button
-                    type="button"
-                    className="text-[10px] font-bold uppercase text-[#22c55e]"
-                  >
-                    See all
-                  </button>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div className="rounded-xl border border-white/10 bg-[#050505] p-3">
-                    <p className="truncate text-xs font-bold text-white">
-                      component-audit.pdf
-                    </p>
-                    <p className="mt-1 text-[10px] text-zinc-600">
-                      2 min ago
-                    </p>
-                  </div>
-
-                  <div className="rounded-xl border border-white/10 bg-[#050505] p-3">
-                    <p className="truncate text-xs font-bold text-white">
-                      design-notes.fig
-                    </p>
-                    <p className="mt-1 text-[10px] text-zinc-600">
-                      1 day ago
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex h-full items-center justify-center text-center">
-              <div>
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#050505] text-2xl ring-1 ring-white/10">
-                  👤
-                </div>
-
-                <p className="mt-4 text-sm font-bold text-white">
-                  No profile selected
-                </p>
-
-                <p className="mt-2 text-xs leading-5 text-zinc-500">
-                  Select a conversation to view user details.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </aside> */}
     </div>
   );
 }

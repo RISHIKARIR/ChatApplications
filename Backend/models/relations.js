@@ -2,6 +2,7 @@ import { createUser } from "./userModel.js";
 import { conversation } from "./conversation.js";
 import { messageModel } from "./message.js";
 import { conversation_members } from "./conversation.js";
+import { groupTable } from "./conversation.js"; 
 
 
 
@@ -50,6 +51,18 @@ conversation.belongsToMany(createUser,{
   as : "user_members"
 })
   
+conversation.hasOne(groupTable,{
+  foreignKey : "conversation_id",
+  as : "group_table"
+})
+
+groupTable.belongsTo(conversation,{
+  foreignKey : "conversation_id",
+  as : "conversation"
+})
+
+
+
 
 
 // conversation.hasMany(conversation_members,{

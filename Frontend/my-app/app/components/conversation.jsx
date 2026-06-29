@@ -52,7 +52,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     setFilteredData(filtered);
   }
 
-
+  
 
 
   return (
@@ -73,17 +73,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
             C
           </div>
 
-          {/* <div className="mt-8 flex flex-1 flex-col items-center gap-5">
-          <button className="flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-xs text-white">
-            💬
-          </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-xl text-xs text-zinc-500 hover:bg-white/10 hover:text-white">
-            🔎
-          </button>
-          <button className="flex h-9 w-9 items-center justify-center rounded-xl text-xs text-zinc-500 hover:bg-white/10 hover:text-white">
-            ⚙
-          </button>
-        </div> */}
+      
 
           <div className="relative h-9 w-9 rounded-xl bg-[#1f2937]">
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#090a0c] bg-[#22c55e]" />
@@ -146,10 +136,11 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
               {filteredData?.map((item) => {
                 const otherUser =
                   user?.id === item.userOneId ? item.userTwo : item.userOne;
-                let chatName;
+                let chatName = {name : ""};
 
-                if (chatName?.isGroup === true) {
-                  chatName = "Group chat";
+                if (item.isGroup) {
+                  chatName.name = item?.group_table?.Group_name
+
                 } else {
                   chatName = item?.user_members?.find((value) => {
                     return value?.id != user.id;

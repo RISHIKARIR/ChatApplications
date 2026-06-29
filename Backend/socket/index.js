@@ -2,6 +2,7 @@ import { Op, where } from "sequelize";
 import { conversation, conversation_members } from "../models/conversation.js";
 import { messageModel } from "../models/message.js";
 import { markPendingMessages } from "./markPendingMessages.js";
+import { createUser } from "../models/userModel.js";
 
 
 const onlineMembers = new Map();
@@ -14,9 +15,7 @@ export const initialiseSocket = (io) => {
     socket.join(userId);
 
 
-          markPendingMessages(io,userId)
-
-
+      markPendingMessages(io,userId)
 
 
 
@@ -31,6 +30,8 @@ export const initialiseSocket = (io) => {
 
       const conversationId = data.conversation_id;
       const message = data.message;
+      const isGroup = data.isGroup;
+      const senderId = userId;
 
       try {
 
@@ -39,6 +40,19 @@ export const initialiseSocket = (io) => {
           conversation_id: conversationId,
           message: message,
         });
+
+        const messageWithReceiver = await messageModel.findOne({
+          where : {
+            id : savedMessage.id
+          },
+          include : {
+            model : createUser,
+            as : "sender"
+          }
+        })
+  
+
+
 
         const members = await conversation_members.findAll({
           where: {
@@ -61,6 +75,11 @@ export const initialiseSocket = (io) => {
           }
         }
 
+
+
+
+
+
         console.log(onlineMembers, "online usersss");
 
         console.log(isReceiverOnline, "user online haiiii???");
@@ -75,14 +94,12 @@ export const initialiseSocket = (io) => {
             },
           );
 
-
-
           savedMessage.isDelivered = true;
         }
 
         receiverIds.forEach((receiverid) => {
           io.to(String(receiverid)).emit("new_message", {
-            data: savedMessage,
+            data: messageWithReceiver,
             response: "Sent from backend",
           });
         });
@@ -118,6 +135,10 @@ export const initialiseSocket = (io) => {
 
 
 
+      
+
+
+
       console.log(Messages,"ihuehe")
 
       const MarkMessages = await messageModel.update({
@@ -148,8 +169,6 @@ export const initialiseSocket = (io) => {
 
   
    for(const Sender in markSeenSender){
-
-    console.log(markSeenSender[Sender],"senderrrrrrrrrrrrrrr")
 
 
     io.to(String(Sender)).emit("seen_messages",{
