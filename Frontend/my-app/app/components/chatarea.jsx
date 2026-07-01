@@ -17,6 +17,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { EditDialog } from "../../components/ui/editDialog";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -87,6 +96,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [showChats, setShowChats] = useState(null);
 
   const [message, setMessage] = useState("");
+
+  const [open, setOpen] = useState(false);
+
+  const [editMessage, setEditmessage] = useState(null);
 
   console.log(showChats, "femifhiufheius");
 
@@ -165,6 +178,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       };
     });
   }, [deliveredMessages, seenMessages]);
+
+  async function editUserMessage(item) {
+    setOpen(true);
+    setEditmessage(item);
+    console.log(item, "fknbhfj");
+
+    // const resonse = await Apifetch(`user/message/${item.id}`,{
+    //   method : "PUT"
+    // })
+  }
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -284,12 +307,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                 <DropdownMenuContent className="text-white bg-black">
                                   <DropdownMenuGroup>
                                     <DropdownMenuItem
-                                    onClick={()=>{console.log("clicked edit")}}>
-                                      <SquarePen/> Edit
+                                      onClick={() => {
+                                        editUserMessage(item);
+                                      }}
+                                    >
+                                      <SquarePen /> Edit
                                     </DropdownMenuItem>
-                                    <DropdownMenuItem 
-                                    onClick={()=>{console.log("clicked delete")}}
-                                    className="text-red-500 focus:bg-red-400 focus:text-white">
+                                    <DropdownMenuItem
+                                      onClick={() => {
+                                        console.log("clicked delete");
+                                      }}
+                                      className="text-red-500 focus:bg-red-400 focus:text-white"
+                                    >
                                       <Trash2 /> Delete
                                     </DropdownMenuItem>
                                   </DropdownMenuGroup>
@@ -345,6 +374,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                       </li>
                     );
                   })}
+              
+                <EditDialog
+                  open={open}
+                  setOpen={setOpen}
+                  editMessage={editMessage}
+                  setEditmessage={setEditmessage}
+                />
               </ul>
             </div>
           )}
