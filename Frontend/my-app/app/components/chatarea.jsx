@@ -44,7 +44,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const convoData = conversationUserData;
 
-  console.log(convoData, "ceojoifjoir");
 
   const otherUser = convoData?.user_members?.find((value) => {
     return value.id !== user.id;
@@ -84,7 +83,32 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       });
     };
 
+
+  function handleditedmessage(data){
+
+    console.log("edited message")
+      setShowChats((prev)=>{
+        
+
+        return {
+          ...prev,
+            data : prev.data.map((item=> item.id === data.message_id ? data : item))
+        }
+
+      })
+
+
+  }
+
+
+
+
     socket.on("new_message", handleNewMessage);
+
+    socket.on("edited_message",handleditedmessage);
+
+
+
 
     return () => {
       socket.off("new_message", handleNewMessage);
@@ -111,7 +135,11 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         conversationId: selectedConversation,
       });
 
-      const response = await Apifetch(`user/${selectedConversation}/messages`, {
+      socketRef?.current?.emit("join_conversation",selectedConversation)
+
+    
+
+    const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
       });
 
@@ -121,6 +149,15 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
 
     loadchats();
+
+
+    return  () =>{
+
+      socketRef?.current?.emit("leave_conversation",selectedConversation)
+    
+    }
+
+
   }, [selectedConversation]);
 
   console.log(showChats, "show chatssss");
@@ -184,15 +221,12 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     setEditmessage(item);
     console.log(item, "fknbhfj");
 
-    // const resonse = await Apifetch(`user/message/${item.id}`,{
-    //   method : "PUT"
-    // })
   }
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
       <div className="flex h-full min-w-0 flex-1 flex-col bg-[#050505]">
-        <div className="flex h-[72px] items-center justify-between border-b border-white/10 bg-[#050505] px-6">
+        <div className="flex h-18 items-center justify-between border-b border-white/10 bg-[#050505] px-6">
           <div className="flex items-center gap-3">
             <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#1b1b1d] text-sm font-black uppercase text-white ring-1 ring-white/10">
               {selectedConversation

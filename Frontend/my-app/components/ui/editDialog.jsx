@@ -11,11 +11,36 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
+import { useState } from "react";
+import { Apifetch } from "../../lib/apifetch";
+import { useContext } from "react";
+import { SocketContext } from "../../app/context/socketContext";
 export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
+    const [message,setMessage] = useState("");
 
-    async function editusermessage(){
+    const { socketRef }   = useContext(SocketContext);
 
+
+    
+
+    async function editusermessage(e){
+        e.preventDefault();
+        if(message.trim() === "")return;
+        try{
+        if(!socketRef.current)return;
+        
+        socketRef.current.emit("edit_message",{
+            message : message,
+            message_id : editMessage.id,
+            conversation_id : editMessage.conversation_id
+        })
+        
+
+        }catch(err){
+
+            console.log(err);
+
+        }
 
 
 
@@ -25,7 +50,7 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
         
-      <DialogContent className="sm:max-w-md text-white bg-black">
+      <DialogContent  className="sm:max-w-md text-white bg-black">
         <DialogHeader>
           <DialogTitle>Edit message</DialogTitle>
           <DialogDescription>
@@ -39,8 +64,8 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
             </Label>
             <Input
               id="link"
-              defaultValue={editMessage.message}
-             
+              defaultValue={editMessage?.message}
+                onChange={(e)=>{setMessage(e.target.value)}}
             />
           </div>
         </div>
@@ -48,7 +73,9 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
           <DialogClose asChild>
             <Button className="bg-red-500"  type="button">Cancel</Button>
           </DialogClose>
-          <Button className="bg-green-600" type="submit">Edit Message</Button>
+          <Button className="bg-green-600" 
+        onClick={setOpen}
+          type="submit" onClick={editusermessage}   >Edit Message</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
