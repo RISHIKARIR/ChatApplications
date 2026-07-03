@@ -4,20 +4,18 @@ import { messageModel } from "../models/message.js";
 import { markPendingMessages } from "./markPendingMessages.js";
 import { createUser } from "../models/userModel.js";
 
-
 const onlineMembers = new Map();
 
 export const initialiseSocket = (io) => {
   io.on("connection", (socket) => {
     console.log("user is connected", socket.id, socket.handshake.query.UserId);
     const userId = socket.handshake.query.UserId;
-
     socket.join(userId);
+    socket.on("join_conversation", async (conversationId) => {
+      socket.join(`conversation${conversationId}`);
+    });
 
-
-      markPendingMessages(io,userId)
-
-
+    markPendingMessages(io, userId);
 
     if (!onlineMembers.has(userId)) {
       onlineMembers.set(userId, new Set());
@@ -34,7 +32,6 @@ export const initialiseSocket = (io) => {
       const senderId = userId;
 
       try {
-
         const savedMessage = await messageModel.create({
           senderId: userId,
           conversation_id: conversationId,
@@ -42,17 +39,14 @@ export const initialiseSocket = (io) => {
         });
 
         const messageWithReceiver = await messageModel.findOne({
-          where : {
-            id : savedMessage.id
+          where: {
+            id: savedMessage.id,
           },
-          include : {
-            model : createUser,
-            as : "sender"
-          }
-        })
-  
-
-
+          include: {
+            model: createUser,
+            as: "sender",
+          },
+        });
 
         const members = await conversation_members.findAll({
           where: {
@@ -75,21 +69,16 @@ export const initialiseSocket = (io) => {
           }
         }
 
-
-
-
-
-
         console.log(onlineMembers, "online usersss");
 
         console.log(isReceiverOnline, "user online haiiii???");
 
         if (isReceiverOnline) {
-          await messageModel.update(    
+          await messageModel.update(
             { isDelivered: true },
             {
               where: {
-                conversation_id : conversationId
+                conversation_id: conversationId,
               },
             },
           );
@@ -113,79 +102,145 @@ export const initialiseSocket = (io) => {
       }
     });
 
+    socket.on("edit_message", async (data) => {
+      console.log(data, "ifiofhfi");
+      const { message, message_id, conversation_id } = data;
 
-    socket.on("mark_seen",async(data)=>{
+      try {
+        if (message.trim() === "" || Number.isNaN(Number(message_id))) {
+          socket.emit("error", {
+            message: "Invalid Input",
+          });
+          return;
+        }
+
+        const affectedrows = await messageModel.update(
+          {
+            message: message,
+            updatedAt: new Date(),
+          },
+          {
+            where: {
+              id: message_id,
+            },
+          },
+        );
+
+        const updatedMessage = await messageModel.findOne({
+          where: {
+            id: message_id,
+          },
+        });
+
+        io.to(`conversation${conversation_id}`).emit("edited_message", {
+          updatedMessage,
+        });
+
+        if (affectedrows[0] === 0) {
+          socket.emit("error", {
+            message: "Saving failed",
+          });
+        }
+      } catch (err) {
+        console.log(err, "ifjifj");
+
+        socket.emit("error", {
+          message: "Some socket error occured",
+        });
+      }
+    });
+
+    socket.on("delete_message", async (data) => {
+    
+      const messageId = data.deletedMessage.id;
+      const conversationId = data.deletedMessage.conversation_id;
+      
+      try {
+        const affectedrows = await messageModel.update(
+          { isDeleted: true },
+          {
+            where: {
+              id: messageId,
+            },
+          },
+        );
+
+        const deletedMessage = await messageModel.findOne({
+          where : {
+            id : messageId
+          }
+        })
+
+        if (affectedrows[0] == 0) {
+          return res.status(400).json({
+            message: "Some socket error occured",
+            success: false,
+          });
+        }
+
+
+    
+      io.to(`conversation${conversationId}`).emit("deleted_message",{
+        deletedMessage
+      })
+
+
+
+
+      } catch (err) {
+        return res.status(200).json({
+          message: "Some socket error occured",
+          sucess: false,
+        });
+      }
+    });
+
+    socket.on("mark_seen", async (data) => {
       const conversationId = data.conversationId;
 
-      console.log(data,"user has seen the message");
+      console.log(data, "user has seen the message");
 
-
-
-      const Messages = await messageModel.findAll(
-       {
-        where:{
-          conversation_id : conversationId,
-          senderId : {
-            [Op.ne] : userId
+      const Messages = await messageModel.findAll({
+        where: {
+          conversation_id: conversationId,
+          senderId: {
+            [Op.ne]: userId,
           },
-          isSeen : false
-        }
-        }
-      )
+          isSeen: false,
+        },
+      });
 
-
-
-      
-
-
-
-      console.log(Messages,"ihuehe")
-
-      const MarkMessages = await messageModel.update({
-        isSeen : true
-      },
-      {
-        where : {
-          conversation_id : conversationId,
-          senderId : {
-            [Op.ne] : userId
+      const MarkMessages = await messageModel.update(
+        {
+          isSeen: true,
+        },
+        {
+          where: {
+            conversation_id: conversationId,
+            senderId: {
+              [Op.ne]: userId,
+            },
+            isSeen: false,
           },
-          isSeen : false
+        },
+      );
+
+      let markSeenSender = {};
+
+      for (let Message of Messages) {
+        if (!markSeenSender[Message.senderId]) {
+          markSeenSender[Message.senderId] = [];
         }
+
+        markSeenSender[Message.senderId].push(Message.id);
       }
-    
-    )
 
-    let markSeenSender = {};
-
-   for(let Message of Messages){
-    if(!markSeenSender[Message.senderId]){
-      markSeenSender[Message.senderId] = [];
-    }
-
-    markSeenSender[Message.senderId].push(Message.id);
-
-   }
-
-  
-   for(const Sender in markSeenSender){
-
-
-    io.to(String(Sender)).emit("seen_messages",{
-      MessageIds : markSeenSender[Sender]
-    })
-  
-
-   }
-
-
-    })
-
-
-
-
-
-
+      for (const Sender in markSeenSender) {
+        io.to(String(Sender)).emit("seen_messages", {
+          MessageIds: markSeenSender[Sender],
+        });
+      }
+    });
 
     socket.on("disconnect", (reason) => {
       const isUserStillonApp = onlineMembers.get(userId);

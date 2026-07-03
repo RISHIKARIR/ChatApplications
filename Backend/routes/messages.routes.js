@@ -8,7 +8,7 @@ const router = express.Router();
 
 router.get("/:conversationId/messages",verifytoken,showMessages);
 router.post("/:conversationId/message",verifytoken,createMessage);
-
+// router.put("/message/:id",verifytoken,editMessage);
 
 
 
