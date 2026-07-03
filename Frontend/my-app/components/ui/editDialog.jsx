@@ -34,6 +34,9 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
             message_id : editMessage.id,
             conversation_id : editMessage.conversation_id
         })
+
+
+        setOpen(false);
         
 
         }catch(err){
@@ -73,8 +76,7 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
           <DialogClose asChild>
             <Button className="bg-red-500"  type="button">Cancel</Button>
           </DialogClose>
-          <Button className="bg-green-600" 
-        onClick={setOpen}
+          <Button className="bg-green-600"    
           type="submit" onClick={editusermessage}   >Edit Message</Button>
         </DialogFooter>
       </DialogContent>

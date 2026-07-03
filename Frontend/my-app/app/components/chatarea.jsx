@@ -61,6 +61,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     if (!socket) return;
 
     const handleNewMessage = (data) => {
+    
+
       const newMessage = {
         id: data.data.id,
         senderId: data.data.senderId,
@@ -85,6 +87,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
   function handleditedmessage(data){
+
+    
 
     console.log("edited message")
       setShowChats((prev)=>{
@@ -188,6 +192,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       conversation_id: selectedConversation,
       isGroup: conversationUserData.isGroup,
     });
+
+
+     
 
     setMessage("");
   }
