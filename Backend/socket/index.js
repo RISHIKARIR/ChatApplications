@@ -13,6 +13,7 @@ export const initialiseSocket = (io) => {
     socket.join(userId);
     socket.on("join_conversation", async (conversationId) => {
       socket.join(`conversation${conversationId}`);
+      
     });
 
     markPendingMessages(io, userId);
@@ -94,7 +95,7 @@ export const initialiseSocket = (io) => {
         });
 
         io.to(String(userId)).emit("new_message", {
-          data: savedMessage,
+          data: messageWithReceiver,
           response: "Sent from backend",
         });
       } catch (error) {
@@ -130,6 +131,10 @@ export const initialiseSocket = (io) => {
           where: {
             id: message_id,
           },
+            include : {
+            model : createUser,
+            as : "sender"
+          }
         });
 
         io.to(`conversation${conversation_id}`).emit("edited_message", {
@@ -168,6 +173,10 @@ export const initialiseSocket = (io) => {
         const deletedMessage = await messageModel.findOne({
           where : {
             id : messageId
+          },
+          include : {
+            model : createUser,
+            as : "sender"
           }
         })
 
