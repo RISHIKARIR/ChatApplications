@@ -44,13 +44,16 @@ function NewGroupChatModal({
   }, [conversationData]);
 
 
+  console.log(allMembers,'nid9iid')
+  console.log(searchMembers,"search")
+
+
   function AddOrRemoveMembers(Member) {
     setSelectedMembers((prev) => {
       const alreadyExists = prev.some((item) => item.id == Member.id);
       if (alreadyExists) {
         return prev.filter((item) => item.id != Member.id);
       }
-
       return [...prev, Member];
     });
   }

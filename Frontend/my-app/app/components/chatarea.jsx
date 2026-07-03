@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useContext, useRef, use } from "react";
 import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
@@ -26,6 +26,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { EditDialog } from "../../components/ui/editDialog";
+import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -44,7 +45,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const convoData = conversationUserData;
 
-
   const otherUser = convoData?.user_members?.find((value) => {
     return value.id !== user.id;
   });
@@ -61,8 +61,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     if (!socket) return;
 
     const handleNewMessage = (data) => {
-    
-
       const newMessage = {
         id: data.data.id,
         senderId: data.data.senderId,
@@ -85,34 +83,41 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       });
     };
 
+    function handleditedmessage(data) {
+      console.log(data.updatedMessage, "datatatatatata");
 
-  function handleditedmessage(data){
-
-    
-
-    console.log("edited message")
-      setShowChats((prev)=>{
-        
-
+      setShowChats((prev) => {
         return {
           ...prev,
-            data : prev.data.map((item=> item.id === data.message_id ? data : item))
-        }
+          data: prev.data.map((item) =>
+            item.id === data.updatedMessage.id ? data.updatedMessage : item,
+          ),
+        };
+      });
+    }
 
-      })
+    function handleDeletedMessage(data) {
+    console.log(data.deletedMessage.id,"jifh")
+
+      setShowChats((prev) => {
+        return {
+          ...prev,
+          data: prev.data.map((item) =>
+            item.id == data.deletedMessage.id ? data.deletedMessage : item,
+          ),
+        };
+      });
+
+      console.log(showChats,"deletedddddddddd")
 
 
-  }
-
-
-
+    }
 
     socket.on("new_message", handleNewMessage);
 
-    socket.on("edited_message",handleditedmessage);
+    socket.on("edited_message", handleditedmessage);
 
-
-
+    socket.on("deleted_message", handleDeletedMessage);
 
     return () => {
       socket.off("new_message", handleNewMessage);
@@ -126,8 +131,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [message, setMessage] = useState("");
 
   const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [editMessage, setEditmessage] = useState(null);
+  const [deletedMessage, setDeletedMessage] = useState(null);
 
   console.log(showChats, "femifhiufheius");
 
@@ -139,11 +146,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         conversationId: selectedConversation,
       });
 
-      socketRef?.current?.emit("join_conversation",selectedConversation)
+      socketRef?.current?.emit("join_conversation", selectedConversation);
 
-    
-
-    const response = await Apifetch(`user/${selectedConversation}/messages`, {
+      const response = await Apifetch(`user/${selectedConversation}/messages`, {
         method: "GET",
       });
 
@@ -154,14 +159,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
     loadchats();
 
-
-    return  () =>{
-
-      socketRef?.current?.emit("leave_conversation",selectedConversation)
-    
-    }
-
-
+    return () => {
+      socketRef?.current?.emit("leave_conversation", selectedConversation);
+    };
   }, [selectedConversation]);
 
   console.log(showChats, "show chatssss");
@@ -193,9 +193,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       isGroup: conversationUserData.isGroup,
     });
 
-
-     
-
     setMessage("");
   }
 
@@ -223,11 +220,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
   }, [deliveredMessages, seenMessages]);
 
-  async function editUserMessage(item) {
+  function editUserMessage(item) {
     setOpen(true);
     setEditmessage(item);
-    console.log(item, "fknbhfj");
+  }
 
+  function deleteUserMessage(item) {
+    setDeleteOpen(true);
+    setDeletedMessage(item);
   }
 
   return (
@@ -356,7 +356,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                     </DropdownMenuItem>
                                     <DropdownMenuItem
                                       onClick={() => {
-                                        console.log("clicked delete");
+                                        deleteUserMessage(item);
                                       }}
                                       className="text-red-500 focus:bg-red-400 focus:text-white"
                                     >
@@ -415,12 +415,19 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                       </li>
                     );
                   })}
-              
+
                 <EditDialog
                   open={open}
                   setOpen={setOpen}
                   editMessage={editMessage}
                   setEditmessage={setEditmessage}
+                />
+
+                <AlertDialogDestructive
+                  deleteOpen={deleteOpen}
+                  setDeleteOpen={setDeleteOpen}
+                  deletedMessage={deletedMessage}
+                  setDeletedMessage={setDeletedMessage}
                 />
               </ul>
             </div>

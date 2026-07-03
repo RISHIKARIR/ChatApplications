@@ -49,11 +49,10 @@ export function EditDialog({ open, setOpen, editMessage, setEditmessage }) {
 
     }
 
-
+   
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-        
-      <DialogContent  className="sm:max-w-md text-white bg-black">
+      <DialogContent  className="sm:max-w-md bg-[#1f1f1f] text-white border border-white/10">
         <DialogHeader>
           <DialogTitle>Edit message</DialogTitle>
           <DialogDescription>
