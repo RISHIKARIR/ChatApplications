@@ -38,9 +38,11 @@ export const messageModel = seq.define(
         isSeen : {
             type : DataTypes.BOOLEAN,
             defaultValue : false
+        },
+        isDeleted : {
+            type : DataTypes.BOOLEAN,
+            defaultValue : false
         }
-        
-
 
 },
 

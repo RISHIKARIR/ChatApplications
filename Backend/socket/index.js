@@ -126,16 +126,15 @@ export const initialiseSocket = (io) => {
           },
         );
 
-        console.log(affectedrows,"bfufpifiobf");
-        
-
-        io.to(`conversation${conversation_id}`).emit("edited_message", {
-          message : message,
-          message_id : message_id,
-          conversation_id : conversation_id,
+        const updatedMessage = await messageModel.findOne({
+          where: {
+            id: message_id,
+          },
         });
 
-        
+        io.to(`conversation${conversation_id}`).emit("edited_message", {
+          updatedMessage,
+        });
 
         if (affectedrows[0] === 0) {
           socket.emit("error", {
@@ -143,10 +142,55 @@ export const initialiseSocket = (io) => {
           });
         }
       } catch (err) {
-        console.log(err,"ifjifj")
+        console.log(err, "ifjifj");
 
         socket.emit("error", {
           message: "Some socket error occured",
+        });
+      }
+    });
+
+    socket.on("delete_message", async (data) => {
+    
+      const messageId = data.deletedMessage.id;
+      const conversationId = data.deletedMessage.conversation_id;
+      
+      try {
+        const affectedrows = await messageModel.update(
+          { isDeleted: true },
+          {
+            where: {
+              id: messageId,
+            },
+          },
+        );
+
+        const deletedMessage = await messageModel.findOne({
+          where : {
+            id : messageId
+          }
+        })
+
+        if (affectedrows[0] == 0) {
+          return res.status(400).json({
+            message: "Some socket error occured",
+            success: false,
+          });
+        }
+
+
+    
+      io.to(`conversation${conversationId}`).emit("deleted_message",{
+        deletedMessage
+      })
+
+
+
+
+      } catch (err) {
+        return res.status(200).json({
+          message: "Some socket error occured",
+          sucess: false,
         });
       }
     });
