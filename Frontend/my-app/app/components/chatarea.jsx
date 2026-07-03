@@ -72,6 +72,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         createdAt: data.data.createdAt,
         updatedAt: data.data.updatedAt,
         sender: data.data.sender,
+        isDeleted : data.data.isDeleted
       };
       console.log(data, "datatatatatat");
 
@@ -99,16 +100,23 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     function handleDeletedMessage(data) {
     console.log(data.deletedMessage.id,"jifh")
 
+    console.log(data,deletedMessage,"fjibfb")
+
       setShowChats((prev) => {
-        return {
+
+        if(!prev)return;
+
+       return {
           ...prev,
-          data: prev.data.map((item) =>
+          data: prev?.data?.map((item) =>
             item.id == data.deletedMessage.id ? data.deletedMessage : item,
           ),
         };
+
+       
       });
 
-      console.log(showChats,"deletedddddddddd")
+  
 
 
     }
@@ -333,7 +341,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                       >
                         {user.id === item.senderId ? (
                           <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-4 text-white">
+
+                             {item.isDeleted ? "Message Deleted"  :       
+
                             <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
+
+                         
+
                               {item.message}
 
                               <DropdownMenu>
@@ -365,7 +379,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                   </DropdownMenuGroup>
                                 </DropdownMenuContent>
                               </DropdownMenu>
+                              
                             </p>
+
+                            }
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
                               <span>
@@ -395,11 +412,12 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                   {item?.sender?.name}
                                 </p>
                               )}
-
+                               {item.isDeleted ? "Message Deleted"  : 
+                              <>
                               <p className="text-sm font-medium leading-relaxed text-zinc-200">
                                 {item.message}
                               </p>
-
+                              
                               <p className="mt-2 text-left text-[10px] font-semibold text-zinc-600">
                                 {new Date(item.createdAt).toLocaleTimeString(
                                   [],
@@ -409,6 +427,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                   },
                                 )}
                               </p>
+
+                                </>
+                                }
+
+
+
+
                             </div>
                           </div>
                         )}
