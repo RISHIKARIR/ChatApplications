@@ -13,7 +13,6 @@ export const initialiseSocket = (io) => {
     socket.join(userId);
     socket.on("join_conversation", async (conversationId) => {
       socket.join(`conversation${conversationId}`);
-      
     });
 
     markPendingMessages(io, userId);
@@ -131,10 +130,10 @@ export const initialiseSocket = (io) => {
           where: {
             id: message_id,
           },
-            include : {
-            model : createUser,
-            as : "sender"
-          }
+          include: {
+            model: createUser,
+            as: "sender",
+          },
         });
 
         io.to(`conversation${conversation_id}`).emit("edited_message", {
@@ -156,10 +155,9 @@ export const initialiseSocket = (io) => {
     });
 
     socket.on("delete_message", async (data) => {
-    
       const messageId = data.deletedMessage.id;
       const conversationId = data.deletedMessage.conversation_id;
-      
+
       try {
         const affectedrows = await messageModel.update(
           { isDeleted: true },
@@ -171,14 +169,14 @@ export const initialiseSocket = (io) => {
         );
 
         const deletedMessage = await messageModel.findOne({
-          where : {
-            id : messageId
+          where: {
+            id: messageId,
           },
-          include : {
-            model : createUser,
-            as : "sender"
-          }
-        })
+          include: {
+            model: createUser,
+            as: "sender",
+          },
+        });
 
         if (affectedrows[0] == 0) {
           return res.status(400).json({
@@ -187,21 +185,33 @@ export const initialiseSocket = (io) => {
           });
         }
 
-
-    
-      io.to(`conversation${conversationId}`).emit("deleted_message",{
-        deletedMessage
-      })
-
-
-
-
+        io.to(`conversation${conversationId}`).emit("deleted_message", {
+          deletedMessage,
+        });
       } catch (err) {
         return res.status(200).json({
           message: "Some socket error occured",
           sucess: false,
         });
       }
+    });
+
+    socket.on("typing", async (data) => {
+      const conversationId = data.conversationId;
+
+      socket.to(`conversation${conversationId}`).emit("typing", {
+        conversationId,
+        userId,
+      });
+    });
+
+    socket.on("stop_typing", async (data) => {
+      const conversationId = data.conversationId;
+
+      socket.to(`conversation${conversationId}`).emit("stop_typing", {
+        conversationId,
+        userId,
+      });
     });
 
     socket.on("mark_seen", async (data) => {
