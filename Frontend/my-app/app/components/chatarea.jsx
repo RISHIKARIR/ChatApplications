@@ -40,6 +40,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   }, [user]);
 
   const bottomRef = useRef(null);
+  const [typingUser, setTypingUser] = useState(null);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -72,7 +73,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         createdAt: data.data.createdAt,
         updatedAt: data.data.updatedAt,
         sender: data.data.sender,
-        isDeleted : data.data.isDeleted
+        isDeleted: data.data.isDeleted,
       };
       console.log(data, "datatatatatat");
 
@@ -98,27 +99,48 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
 
     function handleDeletedMessage(data) {
-    console.log(data.deletedMessage.id,"jifh")
+      console.log(data.deletedMessage.id, "jifh");
 
-    console.log(data,deletedMessage,"fjibfb")
+      console.log(data, deletedMessage, "fjibfb");
 
       setShowChats((prev) => {
+        if (!prev) return;
 
-        if(!prev)return;
-
-       return {
+        return {
           ...prev,
           data: prev?.data?.map((item) =>
             item.id == data.deletedMessage.id ? data.deletedMessage : item,
           ),
         };
-
-       
       });
+    }
 
-  
+    function handleusertyping(data) {
+      const userId = Number(data.userId);
+      const conversationId = Number(data.conversationId);
+
+      setTypingUser((prev) => {
+        return {
+          userId,
+          conversationId,
+        };
+      });
+    }
+
+    function hanldeStopTyping(data) {
+      const userId = Number(data.userId);
+      const conversationId = Number(data.conversationId);
+
+      setTypingUser((prev) => {
+        if(!prev)return;
 
 
+        if (prev.userId == userId && prev.conversationId == conversationId) {
+          return null;
+        }
+
+        return prev;
+      });
     }
 
     socket.on("new_message", handleNewMessage);
@@ -126,6 +148,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     socket.on("edited_message", handleditedmessage);
 
     socket.on("deleted_message", handleDeletedMessage);
+
+    socket.on("typing", handleusertyping);
+
+    socket.on("stop_typing", hanldeStopTyping);
 
     return () => {
       socket.off("new_message", handleNewMessage);
@@ -143,6 +169,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [editMessage, setEditmessage] = useState(null);
   const [deletedMessage, setDeletedMessage] = useState(null);
+
+  const [isTyping, setIsTyping] = useState(false);
+  const timeOutRef = useRef(null);
 
   console.log(showChats, "femifhiufheius");
 
@@ -238,6 +267,35 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     setDeletedMessage(item);
   }
 
+  function handleTyping(e) {
+    const value = e.target.value;
+
+    setMessage(value);
+
+    if (!socketRef.current) return;
+
+    if (!isTyping) {
+      setIsTyping(true);
+      socketRef.current.emit("typing", {
+        conversationId: selectedConversation,
+      });
+    }
+
+    if (timeOutRef.current) {
+      clearTimeout(timeOutRef.current);
+    }
+
+    timeOutRef.current = setTimeout(() => {
+      socketRef.current.emit("stop_typing", {
+        conversationId: selectedConversation,
+        userId: user.id,
+      });
+      setIsTyping(false);
+    }, 5000);
+  }
+
+  console.log(typingUser, "fiifiofiof");
+
   return (
     <div className="flex h-full bg-[#050505] text-white">
       <div className="flex h-full min-w-0 flex-1 flex-col bg-[#050505]">
@@ -264,7 +322,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
               <p className="mt-1 text-xs text-[#22c55e]">
                 {selectedConversation
-                  ? "typing..."
+                  ? typingUser !== null &&
+                    selectedConversation == typingUser?.conversationId
+                    ? "typing"
+                    : ""
                   : "Please select a conversation"}
               </p>
             </div>
@@ -341,48 +402,43 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                       >
                         {user.id === item.senderId ? (
                           <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-4 text-white">
+                            {item.isDeleted ? (
+                              "Message Deleted"
+                            ) : (
+                              <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
+                                {item.message}
 
-                             {item.isDeleted ? "Message Deleted"  :       
-
-                            <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
-
-                         
-
-                              {item.message}
-
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <EllipsisVertical
-                                    size={15}
-                                    className="opacity-50"
-                                    variant="ghost"
-                                    // size="icon"
-                                  />
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="text-white bg-black">
-                                  <DropdownMenuGroup>
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        editUserMessage(item);
-                                      }}
-                                    >
-                                      <SquarePen /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem
-                                      onClick={() => {
-                                        deleteUserMessage(item);
-                                      }}
-                                      className="text-red-500 focus:bg-red-400 focus:text-white"
-                                    >
-                                      <Trash2 /> Delete
-                                    </DropdownMenuItem>
-                                  </DropdownMenuGroup>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                              
-                            </p>
-
-                            }
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <EllipsisVertical
+                                      size={15}
+                                      className="opacity-50"
+                                      variant="ghost"
+                                      // size="icon"
+                                    />
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent className="text-white bg-black">
+                                    <DropdownMenuGroup>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          editUserMessage(item);
+                                        }}
+                                      >
+                                        <SquarePen /> Edit
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          deleteUserMessage(item);
+                                        }}
+                                        className="text-red-500 focus:bg-red-400 focus:text-white"
+                                      >
+                                        <Trash2 /> Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuGroup>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </p>
+                            )}
 
                             <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
                               <span>
@@ -412,28 +468,24 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                   {item?.sender?.name}
                                 </p>
                               )}
-                               {item.isDeleted ? "Message Deleted"  : 
-                              <>
-                              <p className="text-sm font-medium leading-relaxed text-zinc-200">
-                                {item.message}
-                              </p>
-                              
-                              <p className="mt-2 text-left text-[10px] font-semibold text-zinc-600">
-                                {new Date(item.createdAt).toLocaleTimeString(
-                                  [],
-                                  {
-                                    hour: "2-digit",
-                                    minute: "2-digit",
-                                  },
-                                )}
-                              </p>
+                              {item.isDeleted ? (
+                                "Message Deleted"
+                              ) : (
+                                <>
+                                  <p className="text-sm font-medium leading-relaxed text-zinc-200">
+                                    {item.message}
+                                  </p>
 
+                                  <p className="mt-2 text-left text-[10px] font-semibold text-zinc-600">
+                                    {new Date(
+                                      item.createdAt,
+                                    ).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
                                 </>
-                                }
-
-
-
-
+                              )}
                             </div>
                           </div>
                         )}
@@ -470,9 +522,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
             <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-[#0d0e10] px-4 transition focus-within:border-white/20">
               <input
-                onChange={(e) => {
-                  setMessage(e.target.value);
-                }}
+                onChange={handleTyping}
                 value={message}
                 placeholder="Type your message..."
                 className="h-12 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-700"
