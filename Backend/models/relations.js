@@ -14,11 +14,6 @@ createUser.hasMany(messageModel,{
 
   
 
-// createUser.hasMany(messageModel,{
-//   foreignKey : "receiverId",
-//   as : "receivedMessages"
-// })
-
 
 messageModel.belongsTo(createUser,{
   foreignKey : "senderId",
@@ -26,12 +21,6 @@ messageModel.belongsTo(createUser,{
 })
 
 
-
-// messageModel.belongsTo(createUser,{
-//   foreignKey : "receiverId",
-//   as : "receiver"
-
-// })
 
 
 // for group chats
@@ -62,27 +51,6 @@ groupTable.belongsTo(conversation,{
 })
 
 
-
-
-
-// conversation.hasMany(conversation_members,{
-//   foreignKey : "conversation_id",
-//   as : "members"
-// })
-
-
-
-
-// conversation_members.belongsTo(conversation,{
-//   foreignKey : "conversation_id",
-//   as : "conversations"
-// })
-
-
-
-// createUser.belongsTo(conversation_members){
-//   foreignKey : ""
-// }
 
 
 
