@@ -19,7 +19,9 @@ export function SocketProvider({ children }) {
   console.log(user, "userrrr ayaa to dikha");
 
   const connectSocket = useCallback(() => {
-    console.log(user, "frewew");
+    
+
+     console.log("connectSocket called");
 
     if (!user) return;
 
@@ -36,6 +38,7 @@ export function SocketProvider({ children }) {
 
     socket.on("connect", () => {
       console.log("connection established");
+      console.log("CONNECTED", socket.id);
     });
 
 

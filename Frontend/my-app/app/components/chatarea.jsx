@@ -41,6 +41,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const bottomRef = useRef(null);
   const [typingUser, setTypingUser] = useState(null);
+  const [typingMembers, setTypingMembers] = useState([]);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -54,6 +55,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     id: convoData?.id,
     chatName: !convoData?.isGroup ? otherUser?.name : "Group Chat",
     users: convoData?.user_members,
+    isGroup: convoData?.isGroup,
   };
 
   useEffect(() => {
@@ -116,8 +118,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
 
     function handleusertyping(data) {
+
+      
+
       const userId = Number(data.userId);
+
       const conversationId = Number(data.conversationId);
+
+      const typing = data.typingMembers;
+      
+    
+      
+      setTypingMembers(typing[selectedConversation].filter((Member)=>Number(Member.userId) != user.id).map((item)=>item.name))
 
       setTypingUser((prev) => {
         return {
@@ -130,10 +142,22 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     function hanldeStopTyping(data) {
       const userId = Number(data.userId);
       const conversationId = Number(data.conversationId);
+      const typing = data.typingMembers;
+
+
+      const memberssss = typing[selectedConversation].filter((member=>member.id != userId))
+
+
+      setTypingMembers(
+        typing[selectedConversation]
+          ?.filter((member) => member.userId != user.id)
+          .map((member) => member.name) ?? [],
+      );
+
+      console.log(typingMembers, "fiifiofiof");
 
       setTypingUser((prev) => {
-        if(!prev)return;
-
+        if (!prev) return;
 
         if (prev.userId == userId && prev.conversationId == conversationId) {
           return null;
@@ -155,6 +179,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
     return () => {
       socket.off("new_message", handleNewMessage);
+      socket.off("edited_message", handleditedmessage);
+
+      socket.off("deleted_message", handleDeletedMessage);
+
+      socket.off("typing", handleusertyping);
+
+      socket.off("stop_typing", hanldeStopTyping);
     };
   }, [sendMessage]);
 
@@ -172,8 +203,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
-
-  console.log(showChats, "femifhiufheius");
 
   useEffect(() => {
     async function loadchats() {
@@ -278,6 +307,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       setIsTyping(true);
       socketRef.current.emit("typing", {
         conversationId: selectedConversation,
+        isGroup: conversationData?.isGroup,
+        user: user,
       });
     }
 
@@ -288,13 +319,15 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     timeOutRef.current = setTimeout(() => {
       socketRef.current.emit("stop_typing", {
         conversationId: selectedConversation,
-        userId: user.id,
+        user: user,
+        isGroup: conversationData?.isGroup,
       });
       setIsTyping(false);
-    }, 5000);
+    }, 10000);
   }
 
-  console.log(typingUser, "fiifiofiof");
+
+  console.log(typingUser,"iofofik")
 
   return (
     <div className="flex h-full bg-[#050505] text-white">
@@ -321,12 +354,26 @@ function ChatArea({ selectedConversation, conversationUserData }) {
               </h3>
 
               <p className="mt-1 text-xs text-[#22c55e]">
-                {selectedConversation
-                  ? typingUser !== null &&
-                    selectedConversation == typingUser?.conversationId
-                    ? "typing"
-                    : ""
-                  : "Please select a conversation"}
+               {
+  selectedConversation
+    ? (
+        conversationData?.isGroup
+          ? (
+              typingMembers.length > 1
+                ? `${typingMembers.length} Members are typing`
+                : typingMembers.length === 1
+                  ? `${typingMembers[0]} is typing`
+                  : ""
+            )
+          : (
+              typingUser &&
+              selectedConversation === typingUser.conversationId
+                ? "typing..."
+                : ""
+            )
+      )
+    : "Please select a conversation"
+}
               </p>
             </div>
           </div>
