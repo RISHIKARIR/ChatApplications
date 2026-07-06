@@ -119,6 +119,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
     function handleusertyping(data) {
 
+
+      console.log("chalge ayeeeee")
       
 
       const userId = Number(data.userId);
@@ -126,17 +128,20 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       const conversationId = Number(data.conversationId);
 
       const typing = data.typingMembers;
-      
-    
+
+
+      if(userId != user.id){
+     setTypingUser((prev) => {
+        return {
+         userId :  userId,
+         conversationId :  conversationId,
+        };
+      });
+      }
       
       setTypingMembers(typing[selectedConversation].filter((Member)=>Number(Member.userId) != user.id).map((item)=>item.name))
 
-      setTypingUser((prev) => {
-        return {
-          userId,
-          conversationId,
-        };
-      });
+     
     }
 
     function hanldeStopTyping(data) {
@@ -145,8 +150,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       const typing = data.typingMembers;
 
 
-      const memberssss = typing[selectedConversation].filter((member=>member.id != userId))
-
 
       setTypingMembers(
         typing[selectedConversation]
@@ -154,7 +157,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           .map((member) => member.name) ?? [],
       );
 
-      console.log(typingMembers, "fiifiofiof");
 
       setTypingUser((prev) => {
         if (!prev) return;
