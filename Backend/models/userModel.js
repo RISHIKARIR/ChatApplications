@@ -10,6 +10,13 @@ export const createUser = seq.define("user_table",
          primaryKey : true,
          autoIncrement : true
   },
+
+  Profile_img : {
+    type : DataTypes.STRING,
+    allowNull : true,
+    defaultValue : null
+  },
+
      name : {
         type : DataTypes.STRING,
         allowNull : false,

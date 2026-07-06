@@ -42,6 +42,7 @@ seq.sync({alter : true});
 
 app.use("/user", conversation);
 app.use("/user", messages);
+app.use("/user",user)
 
 app.use("/auth", authRoutes);
 
