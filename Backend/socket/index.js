@@ -88,13 +88,13 @@ export const initialiseSocket = (io) => {
         }
 
         receiverIds.forEach((receiverid) => {
-          io.to(String(receiverid)).emit("new_message", {
+          io.to(Number(receiverid)).emit("new_message", {
             data: messageWithReceiver,
             response: "Sent from backend",
           });
         });
 
-        io.to(String(userId)).emit("new_message", {
+        io.to(Number(userId)).emit("new_message", {
           data: messageWithReceiver,
           response: "Sent from backend",
         });

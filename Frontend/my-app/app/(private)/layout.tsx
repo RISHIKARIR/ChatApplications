@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import  Logout  from "../components/logout"
 import { Authprovider } from "../context/authContext";
 import { SocketProvider } from "../context/socketContext"
+import { SidebarProvider } from "@/components/ui/sidebar";
 
 
 
@@ -41,14 +42,15 @@ export default function RootLayout({
      
 
 
-  
+<SidebarProvider>
  <Authprovider>
   <SocketProvider>
-       <Logout/>  
+        
         {children}
         
      </SocketProvider>
   </Authprovider>
+  </SidebarProvider>
     <Toaster position="top-center"/>
   
 

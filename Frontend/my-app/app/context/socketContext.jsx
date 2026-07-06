@@ -19,8 +19,6 @@ export function SocketProvider({ children }) {
   console.log(user, "userrrr ayaa to dikha");
 
   const connectSocket = useCallback(() => {
-    
-
      console.log("connectSocket called");
 
     if (!user) return;

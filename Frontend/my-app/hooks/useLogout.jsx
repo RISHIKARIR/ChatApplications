@@ -1,26 +1,15 @@
-"use client";
-
 import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import { useContext } from "react";
-import { SocketContext } from "../context/socketContext";
+import { SocketContext } from "../../my-app/app/context/socketContext";
 
-
-
-
-function Logout() {
+function useLogout() {
   const router = useRouter();
-  const { disconnectSocket } = useContext(SocketContext)
+  const { disconnectSocket } = useContext(SocketContext);
 
-
-
-  async function logoutbtn() {
-
+  const logout = async () => {
     disconnectSocket();
-
-
-    
 
     const response = await fetch("http://localhost:5000/auth/logout", {
       method: "POST",
@@ -34,21 +23,9 @@ function Logout() {
       router.push("/login");
       toast.success("Logout successfull");
     }
+  };
 
-  
-
-  }
-
-  return (
-    <div className="absolute right-8 top-8 z-50">
-      <button
-        onClick={logoutbtn}
-      >
-        <span className="h-2 w-2 rounded-full bg-red-400"></span>
-        Logout
-      </button>
-    </div>
-  );
+  return logout;
 }
 
-export default Logout;
+export default useLogout;

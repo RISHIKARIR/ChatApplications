@@ -3,10 +3,18 @@ import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { SocketContext } from "../context/socketContext";
-import { EllipsisVertical } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
-import { SquarePen } from "lucide-react";
+import {
+ EllipsisVertical,
+  Trash2,
+  SquarePen,
+  Phone,
+  Search,
+  Grid2X2,
+  Send,
+  Mic,
+  Paperclip,
+} from "lucide-react";
 
 import {
   DropdownMenu,
@@ -27,6 +35,8 @@ import {
 } from "@/components/ui/dialog";
 import { EditDialog } from "../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
+
+
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -118,30 +128,24 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
 
     function handleusertyping(data) {
-
-
-      console.log("chalge ayeeeee")
-      
-
       const userId = Number(data.userId);
 
       const conversationId = Number(data.conversationId);
 
       const typing = data.typingMembers;
 
-
-      if(userId != user.id){
-     setTypingUser((prev) => {
-        return {
-         userId :  userId,
-         conversationId :  conversationId,
-        };
-      });
+      if (userId != user.id) {
+        setTypingUser({
+          userId,
+          conversationId,
+        });
       }
-      
-      setTypingMembers(typing[selectedConversation].filter((Member)=>Number(Member.userId) != user.id).map((item)=>item.name))
 
-     
+      setTypingMembers(
+        typing[selectedConversation]
+          .filter((Member) => Number(Member.userId) != user.id)
+          .map((item) => item.name),
+      );
     }
 
     function hanldeStopTyping(data) {
@@ -151,14 +155,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
-      setTypingMembers(
-        typing[selectedConversation]
-          ?.filter((member) => member.userId != user.id)
-          .map((member) => member.name) ?? [],
-      );
 
-
-      setTypingUser((prev) => {
+         setTypingUser((prev) => {
         if (!prev) return;
 
         if (prev.userId == userId && prev.conversationId == conversationId) {
@@ -167,7 +165,26 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
         return prev;
       });
+
+
+
+         setTypingMembers(
+        typing[selectedConversation]
+          ?.filter((member) => member.userId != user.id)
+          .map((member) => member.name) ?? [],
+      );
+
+
+
     }
+
+
+
+   
+
+      console.log(typingMembers, "fiifiofiof");
+
+   
 
     socket.on("new_message", handleNewMessage);
 
@@ -328,204 +345,203 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }, 10000);
   }
 
+  console.log(typingUser, "wefweewewew");
 
-  console.log(typingUser,"iofofik")
+return (
+  <div className="flex h-full bg-[#1c231b] text-white">
+    <div className="flex h-full min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_center,#30362f_0%,#242b23_45%,#151c15_100%)]">
+      <div className="flex h-16 items-center justify-between border-b border-black/20 bg-[#182017]/95 px-6">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#d8d0b8] text-sm font-black uppercase text-black ring-1 ring-white/10">
+            {selectedConversation
+              ? conversationData?.chatName?.charAt(0)
+              : "C"}
 
-  return (
-    <div className="flex h-full bg-[#050505] text-white">
-      <div className="flex h-full min-w-0 flex-1 flex-col bg-[#050505]">
-        <div className="flex h-18 items-center justify-between border-b border-white/10 bg-[#050505] px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-[#1b1b1d] text-sm font-black uppercase text-white ring-1 ring-white/10">
+            {selectedConversation && (
+              <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#182017] bg-[#22c55e]"></span>
+            )}
+          </div>
+
+          <div>
+            <h3 className="text-sm font-bold leading-none text-white">
               {selectedConversation
-                ? conversationData?.chatName?.charAt(0)
-                : "C"}
+                ? conversationUserData.isGroup
+                  ? conversationUserData.group_table.Group_name
+                  : `${conversationData?.chatName}`
+                : "No Conversation Selected"}
+            </h3>
 
-              {selectedConversation && (
-                <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full border-2 border-[#050505] bg-[#22c55e]"></span>
-              )}
-            </div>
+            <p className="mt-1 text-[10px] font-medium text-zinc-400">
+              {selectedConversation
+                ? conversationData?.isGroup
+                  ? typingMembers.length > 1
+                    ? `${typingMembers.length} Members are typing`
+                    : typingMembers.length === 1
+                      ? `${typingMembers[0]} is typing`
+                      : ""
+                  : typingUser &&
+                      selectedConversation === typingUser.conversationId
+                    ? "typing..."
+                    : ""
+                : "Please select a conversation"}
+            </p>
+          </div>
+        </div>
 
-            <div>
-              <h3 className="text-sm font-bold text-white">
-                {selectedConversation
-                  ? conversationUserData.isGroup
-                    ? conversationUserData.group_table.Group_name
-                    : `${conversationData?.chatName}`
-                  : "No Conversation Selected"}
-              </h3>
+        {selectedConversation && (
+          <div className="hidden items-center gap-4 sm:flex">
+            <button
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            >
+              <Phone size={17} />
+            </button>
 
-              <p className="mt-1 text-xs text-[#22c55e]">
-               {
-  selectedConversation
-    ? (
-        conversationData?.isGroup
-          ? (
-              typingMembers.length > 1
-                ? `${typingMembers.length} Members are typing`
-                : typingMembers.length === 1
-                  ? `${typingMembers[0]} is typing`
-                  : ""
-            )
-          : (
-              typingUser &&
-              selectedConversation === typingUser.conversationId
-                ? "typing..."
-                : ""
-            )
-      )
-    : "Please select a conversation"
-}
+            <button
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            >
+              <Search size={17} />
+            </button>
+
+            <div className="h-7 w-px bg-white/20" />
+
+            <button
+              type="button"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+            >
+              <Grid2X2 size={17} />
+            </button>
+          </div>
+        )}
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_center,#30362f_0%,#252b23_48%,#151c15_100%)] px-8 py-6">
+        {!selectedConversation && (
+          <div className="flex h-full items-center justify-center">
+            <div className="max-w-sm text-center">
+              <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-[#1d241b] text-3xl shadow-xl shadow-black/40">
+                💬
+              </div>
+
+              <h2 className="mt-5 text-xl font-bold text-white">
+                Select a conversation
+              </h2>
+
+              <p className="mt-2 text-sm leading-6 text-zinc-400">
+                Choose any conversation from the sidebar to view messages
+                here.
               </p>
             </div>
           </div>
+        )}
 
-          {selectedConversation && (
-            <div className="hidden items-center gap-2 sm:flex">
-              <button
-                type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-600 transition hover:bg-white/10 hover:text-white"
-              >
-                ⌕
-              </button>
+        {selectedConversation && (
+          <div>
+            <ul className="space-y-9">
+              {showChats &&
+                showChats?.data?.map((item) => {
+                  return (
+                    <li
+                      ref={bottomRef}
+                      key={item.id}
+                      className={`flex ${
+                        user.id === item.senderId
+                          ? "justify-end"
+                          : "justify-start"
+                      }`}
+                    >
+                      {user.id === item.senderId ? (
+                        <div className="flex max-w-[70%] items-start gap-3">
+                          <div className="order-2 mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black ring-1 ring-white/10">
+                            {user?.name?.charAt(0) || "U"}
+                          </div>
 
-              <button
-                type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-600 transition hover:bg-white/10 hover:text-white"
-              >
-                ⦿
-              </button>
+                          <div className="order-1">
+                            <p className="mb-1 text-right text-[10px] font-bold uppercase text-white/90">
+                              YOU{" "}
+                              <span className="ml-1 text-zinc-400">
+                                {new Date(item.createdAt).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </p>
 
-              <button
-                type="button"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-zinc-600 transition hover:bg-white/10 hover:text-white"
-              >
-                ⋯
-              </button>
-            </div>
-          )}
-        </div>
+                            <div className="rounded-md bg-[#d9ded2] px-4 py-3 text-black shadow-md shadow-black/20">
+                              {item.isDeleted ? (
+                                "Message Deleted"
+                              ) : (
+                                <p className="flex items-center gap-2 text-[12px] font-semibold leading-relaxed text-black">
+                                  {item.message}
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[#050505] px-6 py-6">
-          {!selectedConversation && (
-            <div className="flex h-full items-center justify-center">
-              <div className="max-w-sm text-center">
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-[#101113] text-3xl shadow-xl shadow-black/40">
-                  💬
-                </div>
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <EllipsisVertical
+                                        size={15}
+                                        className="opacity-50"
+                                        variant="ghost"
+                                      />
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className="border border-white/10 bg-[#111111] text-white">
+                                      <DropdownMenuGroup>
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            editUserMessage(item);
+                                          }}
+                                          className="focus:bg-white/10 focus:text-white"
+                                        >
+                                          <SquarePen /> Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem
+                                          onClick={() => {
+                                            deleteUserMessage(item);
+                                          }}
+                                          className="text-red-500 focus:bg-red-500 focus:text-white"
+                                        >
+                                          <Trash2 /> Delete
+                                        </DropdownMenuItem>
+                                      </DropdownMenuGroup>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                </p>
+                              )}
 
-                <h2 className="mt-5 text-xl font-bold text-white">
-                  Select a conversation
-                </h2>
+                              <p className="mt-2 text-right text-[9px] font-semibold text-zinc-600">
+                                <span>
+                                  {item.isSeen
+                                    ? "seen "
+                                    : item.isDelivered
+                                      ? "Delivered "
+                                      : "Sent "}
+                                </span>
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex max-w-[70%] items-start gap-3">
+                          <div className="mt-1 hidden h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black ring-1 ring-white/10 sm:flex">
+                            {conversationData.chatName.charAt(0)}
+                          </div>
 
-                <p className="mt-2 text-sm leading-6 text-zinc-500">
-                  Choose any conversation from the sidebar to view messages
-                  here.
-                </p>
-              </div>
-            </div>
-          )}
-
-          {selectedConversation && (
-            <div>
-              <div className="mb-8 flex items-center gap-4">
-                <div className="h-px flex-1 bg-white/10" />
-                <span className="text-[10px] font-bold uppercase tracking-[0.24em] text-zinc-700">
-                  Today
-                </span>
-                <div className="h-px flex-1 bg-white/10" />
-              </div>
-
-              <ul className="space-y-6">
-                {showChats &&
-                  showChats?.data?.map((item) => {
-                    return (
-                      <li
-                        ref={bottomRef}
-                        key={item.id}
-                        className={`flex ${
-                          user.id === item.senderId
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        {user.id === item.senderId ? (
-                          <div className="max-w-[68%] border-l border-[#22c55e] bg-transparent px-4 py-4 text-white">
-                            {item.isDeleted ? (
-                              "Message Deleted"
-                            ) : (
-                              <p className="text-sm flex  items-center font-medium leading-relaxed text-zinc-100">
-                                {item.message}
-
-                                <DropdownMenu>
-                                  <DropdownMenuTrigger asChild>
-                                    <EllipsisVertical
-                                      size={15}
-                                      className="opacity-50"
-                                      variant="ghost"
-                                      // size="icon"
-                                    />
-                                  </DropdownMenuTrigger>
-                                  <DropdownMenuContent className="text-white bg-black">
-                                    <DropdownMenuGroup>
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          editUserMessage(item);
-                                        }}
-                                      >
-                                        <SquarePen /> Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuItem
-                                        onClick={() => {
-                                          deleteUserMessage(item);
-                                        }}
-                                        className="text-red-500 focus:bg-red-400 focus:text-white"
-                                      >
-                                        <Trash2 /> Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuGroup>
-                                  </DropdownMenuContent>
-                                </DropdownMenu>
+                          <div>
+                            {conversationUserData.isGroup && (
+                              <p className="mb-1 text-[10px] font-bold uppercase text-white">
+                                {item?.sender?.name}
                               </p>
                             )}
 
-                            <p className="mt-2 text-right text-[10px] font-semibold text-zinc-600">
-                              <span>
-                                {item.isSeen
-                                  ? "seen "
-                                  : item.isDelivered
-                                    ? "Delivered "
-                                    : "Sent "}
-                              </span>
-
-                              {new Date(item.createdAt).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="flex max-w-[68%] items-start gap-3">
-                            <div className="mt-1 hidden h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#17191d] text-xs font-bold uppercase text-white ring-1 ring-white/10 sm:flex">
-                              {conversationData.chatName.charAt(0)}
-                            </div>
-
-                            <div className="border-l border-white/20 bg-transparent px-4 py-2 text-white">
-                              {conversationUserData.isGroup && (
-                                <p className="text-xs text-green-500">
-                                  {" "}
-                                  {item?.sender?.name}
-                                </p>
-                              )}
+                            <div className="rounded-md bg-[#e7e5d8] px-4 py-3 text-black shadow-md shadow-black/20">
                               {item.isDeleted ? (
                                 "Message Deleted"
                               ) : (
                                 <>
-                                  <p className="text-sm font-medium leading-relaxed text-zinc-200">
+                                  <p className="text-[12px] font-semibold leading-relaxed text-black">
                                     {item.message}
                                   </p>
 
-                                  <p className="mt-2 text-left text-[10px] font-semibold text-zinc-600">
+                                  <p className="mt-2 text-left text-[9px] font-semibold text-zinc-600">
                                     {new Date(
                                       item.createdAt,
                                     ).toLocaleTimeString([], {
@@ -537,64 +553,73 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                               )}
                             </div>
                           </div>
-                        )}
-                      </li>
-                    );
-                  })}
+                        </div>
+                      )}
+                    </li>
+                  );
+                })}
 
-                <EditDialog
-                  open={open}
-                  setOpen={setOpen}
-                  editMessage={editMessage}
-                  setEditmessage={setEditmessage}
-                />
+              <EditDialog
+                open={open}
+                setOpen={setOpen}
+                editMessage={editMessage}
+                setEditmessage={setEditmessage}
+              />
 
-                <AlertDialogDestructive
-                  deleteOpen={deleteOpen}
-                  setDeleteOpen={setDeleteOpen}
-                  deletedMessage={deletedMessage}
-                  setDeletedMessage={setDeletedMessage}
-                />
-              </ul>
-            </div>
-          )}
-        </div>
+              <AlertDialogDestructive
+                deleteOpen={deleteOpen}
+                setDeleteOpen={setDeleteOpen}
+                deletedMessage={deletedMessage}
+                setDeletedMessage={setDeletedMessage}
+              />
+            </ul>
+          </div>
+        )}
+      </div>
 
-        <div className="border-t border-white/10 bg-[#050505] px-6 py-4">
-          <div className="flex items-center gap-3">
+      <div className="bg-[#151c15] px-6 py-4">
+        <div className="flex items-center gap-3">
+          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
+            {user?.name?.charAt(0) || "U"}
+            <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#151c15] bg-[#22c55e]" />
+          </div>
+
+          <div className="flex min-w-0 flex-1 items-center gap-3 rounded-md bg-[#e7e5d8] px-4 shadow-sm">
             <button
               type="button"
-              className="hidden h-11 w-11 items-center justify-center rounded-xl text-zinc-600 transition hover:bg-white/10 hover:text-white sm:flex"
+              className="flex items-center justify-center text-black/70 transition hover:text-black"
             >
-              ⊕
+              <Paperclip size={17} />
             </button>
 
-            <div className="flex min-w-0 flex-1 items-center rounded-2xl border border-white/10 bg-[#0d0e10] px-4 transition focus-within:border-white/20">
-              <input
-                onChange={handleTyping}
-                value={message}
-                placeholder="Type your message..."
-                className="h-12 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-zinc-700"
-              ></input>
-            </div>
+            <input
+              onChange={handleTyping}
+              value={message}
+              placeholder="Type something here..."
+              className="h-11 flex-1 bg-transparent text-[12px] font-semibold text-black outline-none placeholder:text-zinc-600"
+            ></input>
 
             <button
-              onClick={sendMessage}
               type="button"
-              disabled={message.trim() === ""}
-              className="flex h-11 w-11 items-center justify-center rounded-xl bg-white text-lg font-black text-black shadow-lg shadow-white/10 transition hover:bg-[#22c55e] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+              className="flex items-center justify-center text-black/60 transition hover:text-black"
             >
-              ↑
+              <Mic size={17} />
             </button>
           </div>
 
-          <p className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.24em] text-zinc-800">
-            End-to-end encrypted messages are private
-          </p>
+          <button
+            onClick={sendMessage}
+            type="button"
+            disabled={message.trim() === ""}
+            className="flex h-11 w-11 items-center justify-center rounded-md bg-[#8a947f] text-white shadow-lg shadow-black/20 transition hover:bg-[#a6b19a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <Send size={18} />
+          </button>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
 
 export default ChatArea;
