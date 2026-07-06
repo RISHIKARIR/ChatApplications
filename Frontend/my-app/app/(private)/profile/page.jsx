@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import React from "react";
+import React, { useRef, useState } from "react";
 import {
   ArrowLeft,
   CreditCard,
@@ -11,26 +11,42 @@ import {
   Upload,
   User,
 } from "lucide-react";
+import { Apifetch } from "../../../lib/apifetch";
+import { toast } from "sonner";
 
 function page() {
+  const uploadRef = useRef(null);
+  const [preview, setPreview] = useState(null);
+
+  async function uploadImage(e) {
+    console.log(e.target.files[0], "ofkjorjofj");
+
+    const savefile = e.target.files[0];
+
+    const formdata = new FormData();
+    formdata.append("profile-photo", savefile);
+
+    const previewUrl = URL.createObjectURL(savefile);
+
+    console.log(previewUrl, "previewww");
+    setPreview(previewUrl);
+
+   const response =  await Apifetch("user/profile/save",formdata)
 
 
-  function uploadImage(){
+    if(!response.ok){
+      toast.error("File upload Failed")
+    }
 
-    const file = new FormData();
+
 
 
     
 
-
     console.log("upload image");
-
-
-
   }
-
-
-
+  console.log(file, "ioiofiofhi");
+  console.log(preview, "ojfoifjoifj");
 
   return (
     <div className="min-h-screen bg-[#222126] flex justify-center text-white ">
@@ -63,6 +79,7 @@ function page() {
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500"
                 />
                 <input
+                  type=""
                   placeholder="Search..."
                   className="h-9 w-full rounded-md border border-white/5 bg-[#25222b] pl-9 pr-12 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-[#6d35ff]/60"
                 />
@@ -85,26 +102,38 @@ function page() {
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-[#2b2934]">
                   {/* image space */}
-                  <div className="flex h-full w-full items-center justify-center text-xl font-bold text-zinc-500">
-                    IMG
-                  </div>
+                  <img
+                    src={preview}
+                    alt="lol"
+                    className="flex h-full w-full items-center justify-center text-xl font-bold text-zinc-500"
+                  ></img>
                 </div>
 
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-zinc-200">
-                    Upload a profile picture to personalize your workspace and help
-                    collaborators identify you.
+                    Upload a profile picture to personalize your workspace and
+                    help collaborators identify you.
                   </p>
                   <p className="mt-1 text-xs text-zinc-500">
                     The recommended size is 400x400px and less than 1Mb.
                   </p>
 
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button onClick={uploadImage}
-                     className="flex h-8 items-center gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-zinc-100 transition hover:bg-[#34313d]">
+                    <button
+                      onClick={() => {
+                        uploadRef.current.click();
+                      }}
+                      className="flex h-8 items-center gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-zinc-100 transition hover:bg-[#34313d]"
+                    >
                       <Upload size={13} />
                       Change Profile
                     </button>
+                    <input
+                      type="file"
+                      className="hidden"
+                      ref={uploadRef}
+                      onChange={uploadImage}
+                    ></input>
 
                     <button className="flex h-8 items-center gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-red-400 transition hover:bg-red-500/10">
                       <Trash2 size={13} />
