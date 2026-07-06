@@ -16,14 +16,6 @@ export const initialiseSocket = (io) => {
       socket.join(`conversation${conversationId}`);
     });
 
-
-
-
-
-
-
-
-
     markPendingMessages(io, userId);
 
     if (!onlineMembers.has(userId)) {
@@ -208,20 +200,14 @@ export const initialiseSocket = (io) => {
     socket.on("typing", async (data) => {
       const conversationId = data.conversationId;
       const isGroup = data.isGroup;
-      const userDetails = data.user
+      const userDetails = data.user;
 
       if (isGroup) {
-        
-         
-            if (!typingMembers.has(conversationId)) {
-              typingMembers.set(conversationId, new Map());
-            }
+        if (!typingMembers.has(conversationId)) {
+          typingMembers.set(conversationId, new Map());
+        }
 
-            typingMembers
-              .get(conversationId)
-              .set(userDetails.id, userDetails.name);
-        
-      
+        typingMembers.get(conversationId).set(userDetails.id, userDetails.name);
       }
 
       const payload = {};
@@ -235,8 +221,6 @@ export const initialiseSocket = (io) => {
         }
       }
 
-
-      
       io.to(`conversation${conversationId}`).emit("typing", {
         conversationId,
         userId,
@@ -247,16 +231,7 @@ export const initialiseSocket = (io) => {
 
     socket.on("stop_typing", async (data) => {
       const conversationId = data.conversationId;
-      const userDetails  = data.user
-
-      const room = io.sockets.adapter.rooms.get(`conversation${conversationId}`);
-
-console.log("ROOM:", room);
-console.log("SOCKETS:", [...(room || [])]);
-
-
-
-
+      const userDetails = data.user;
 
       console.log(conversationId, "conversationId");
       console.log(userId, "user id");
@@ -274,7 +249,7 @@ console.log("SOCKETS:", [...(room || [])]);
         }
 
         for (const [innerkey, innerValue] of value) {
-          payload[key].push({ userId: innerkey, name: innerValue }); 
+          payload[key].push({ userId: innerkey, name: innerValue });
         }
       }
 
