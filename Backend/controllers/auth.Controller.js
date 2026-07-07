@@ -16,8 +16,12 @@ export const Authme = async (req, res) => {
         id: User.id,
         name: User.name,
         email: User.email,
+        user_image : User.Profile_img
       },
+
     });
+
+    
   } catch (err) {
     console.log(err, "error to dikha bde bhai");
 
