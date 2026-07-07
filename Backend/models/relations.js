@@ -9,7 +9,9 @@ import { groupTable } from "./conversation.js";
 
 createUser.hasMany(messageModel,{
   foreignKey : "senderId",
-  as : "sendedMessages"
+  as : "sendedMessages",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
   
@@ -17,7 +19,10 @@ createUser.hasMany(messageModel,{
 
 messageModel.belongsTo(createUser,{
   foreignKey : "senderId",
-  as : "sender"
+  as : "sender",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
+
 })
 
 
@@ -29,7 +34,9 @@ createUser.belongsToMany(conversation,{
 foreignKey : "user_id",
 otherKey : "conversation_id",
 through : conversation_members,
-as : "conversations"
+as : "conversations",
+ onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
 
@@ -37,17 +44,23 @@ conversation.belongsToMany(createUser,{
   foreignKey : "conversation_id",
   otherKey : "user_id",
   through : conversation_members,
-  as : "user_members"
+  as : "user_members",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
   
 conversation.hasOne(groupTable,{
   foreignKey : "conversation_id",
-  as : "group_table"
+  as : "group_table",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
 groupTable.belongsTo(conversation,{
   foreignKey : "conversation_id",
-  as : "conversation"
+  as : "conversation",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
 

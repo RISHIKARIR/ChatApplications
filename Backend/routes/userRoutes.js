@@ -1,8 +1,7 @@
 import express from "express";
-import { verifytoken } from "../middlewares/auth.middlewares";
-// import { profile } from "../controllers/userController.js";
-import { ProfileSave } from "../controllers/createConversation.Controller";
-
+import { verifytoken } from "../middlewares/auth.middlewares.js";
+import { ProfileSave } from "../controllers/user.controller.js";
+import { upload } from "../middlewares/multer.js";
 
 
 
@@ -12,7 +11,7 @@ const router = express.Router();
 
 
 
-router.post("/profile/save",verifytoken,ProfileSave)
+router.post("/profile/save",verifytoken,upload.single("image"),ProfileSave)
 
 
 

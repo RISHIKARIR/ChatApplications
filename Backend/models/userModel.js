@@ -37,7 +37,7 @@ export const createUser = seq.define("user_table",
     }
 
     
-,{tableName : "user_table"}
+,{tableName : "user_table",}
 )
 
 

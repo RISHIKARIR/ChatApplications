@@ -39,12 +39,16 @@ export const conversation_members = seq.define("conversation_members_table",{
   },
   conversation_id : {
     type : DataTypes.INTEGER,
-    allowNull : true
+    allowNull : true,
+    onDelete : "CASCADE",
+    onUpdate : "CASCADE"
   },
   joined_at : {
     type : DataTypes.DATE,
     allowNull : false
   }
+
+
 
 }, { tableName : "conversation_members_table"}
 )
@@ -74,11 +78,17 @@ export const groupTable = seq.define("Group_table",{
   },
   conversation_id : {
     type : DataTypes.INTEGER,
-    allowNull : false
+    references : {
+      model : conversation,
+      key : "id"
+    },
+    allowNull : false,
+    onDelete : "CASCADE",
+    onUpdate : "CASCADE"
   }
 
 
-},{tableName : "Group_table"}
+},{tableName : "Group_table",}
 )
 
 export const GroupAdmins = seq.define("Group_admins",{
@@ -90,11 +100,12 @@ export const GroupAdmins = seq.define("Group_admins",{
     },
     Group_id : {
       type : DataTypes.INTEGER,
-      allowNull : false
+      allowNull : false,
     },
     user_id : {
       type : DataTypes.INTEGER,
-      allowNull : false
+      allowNull : false,
+      
     }
 
 
@@ -104,13 +115,17 @@ export const GroupAdmins = seq.define("Group_admins",{
 
 groupTable.hasMany(GroupAdmins,{
   foreignKey : "Group_id",
-  as : "groupadmins"
+  as : "groupadmins",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
 
 GroupAdmins.belongsTo(groupTable,{
   foreignKey : "Group_id",
-  as : "Group"
+  as : "Group",
+   onDelete : "CASCADE",
+    onUpdate : "CASCADE"
 })
 
 
