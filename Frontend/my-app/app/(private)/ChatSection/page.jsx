@@ -9,6 +9,8 @@ const ChatSectionPage = () => {
   const [conversationUserData, setConversationUserData] = useState(null);
 
   return (
+
+    <>
     <div className="h-screen w-full overflow-hidden bg-[#020202] text-white">
       <div className="flex h-full w-full overflow-hidden bg-[#050505]">
         <aside className="h-full w-[380px] min-w-[380px] overflow-hidden border-r border-white/10 bg-[#050505]">
@@ -26,6 +28,7 @@ const ChatSectionPage = () => {
         </main>
       </div>
     </div>
+    </>
   );
 };
 
