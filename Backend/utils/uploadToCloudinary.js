@@ -1,7 +1,7 @@
 import cloudinary from "../config/cloudinary.js";
 import { Readable } from "stream";
 
-export const uploadTocloudinary = (filebuffer, folder) => {
+export const uploadTocloudinary = (filebuffer, folder = "chat-app") => {
   return new Promise((resolve, reject) => {
     const uploadstream = cloudinary.uploader.upload_stream(
       { folder, resource_type: "auto" },
