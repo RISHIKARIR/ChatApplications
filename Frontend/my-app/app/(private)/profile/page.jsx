@@ -18,54 +18,122 @@ import { toast } from "sonner";
 import { useContext } from "react";
 import { userAuthContext } from "../../context/authContext";
 import { profileUser } from "../../config/profile";
+import { Spinner } from "@/components/ui/spinner";
 
 function page() {
+  const { user, loading } = useContext(userAuthContext);
+
+  if (loading) {
+    return (
+      <div className="h-screen w-screen bg-black flex flex-col justify-center items-center ">
+        <Spinner className="size-10 text-white  " />
+        <h1 className="text-white mt-2 ml-3">Loading...</h1>
+      </div>
+    );
+  }
   const uploadRef = useRef(null);
 
-  const { user } = useContext(userAuthContext);
-
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(user?.user_image);
   const [editing, setEditing] = useState(false);
-  const [form, setFormData] = useState({name : "",email : "",image : ""});
+  const [form, setFormData] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    image: "",
+  });
+  const [saveForm, setSaveForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    image: "",
+  });
+  const [notAllowed, setnotAllowed] = useState(true);
 
   const userArray = profileUser(user);
 
   async function setPreviewImage(e) {
-   
+    let savefile = "";
+    let previewUrl = "";
 
-    const savefile = e.target.files[0];
-
- 
-
-    const previewUrl = URL.createObjectURL(savefile);
-
-    console.log(previewUrl, "previewww");
-    setPreview(previewUrl);
-
-  
-
-    if (!response.ok) {
-      toast.error("File upload Failed");
+    if (e.currentTarget.name == "remove") {
+      setPreview(null);
+      savefile = "";
+    } else {
+      savefile = e.target?.files[0];
     }
 
-    console.log("upload image");
+    if (savefile != "") {
+      previewUrl = URL.createObjectURL(savefile);
+    }
+
+    setPreview(previewUrl);
+    setnotAllowed(false);
+
+    setFormData((prev) => {
+      return {
+        ...prev,
+        image: savefile,
+      };
+    });
+
+    setSaveForm((prev) => {
+      return {
+        ...prev,
+        image: savefile,
+      };
+    });
   }
 
-
-
-
-  function uploadImage(){
-
-
-
-
-
+  function handlePrevChanges(e, item) {
+    setFormData((prev) => {
+      return {
+        ...prev,
+        [item.name]: e.target.value,
+      };
+    });
   }
 
+  function saveFieldChanges(item) {
+    setSaveForm((prev) => {
+      return {
+        ...prev,
+        [item.name]: form[item.name],
+      };
+    });
 
-  console.log(form,"formDataaaa");
+    console.log(saveForm, "fuhfuifubu");
+    if (saveForm.name == user.name || saveForm.email == user.email) {
+      setnotAllowed(true);
+    } else {
+      setnotAllowed(false);
+    }
+  }
 
-  
+  console.log(saveForm, "ojfiohi");
+
+  async function saveChanges() {
+    try {
+      const formdata = new FormData();
+      formdata.append("image", saveForm.image);
+      formdata.append("email", saveForm.email);
+      formdata.append("name", saveForm.name);
+
+      const response = await Apifetch("user/profile/save", {
+        method: "POST",
+        body: formdata,
+      });
+
+      if (!response.ok) {
+        console.log("response not ok");
+      }
+    } catch (err) {
+      console.log(err, "error haiiii");
+    }
+  }
+
+  console.log(preview, "fijfifji");
+
+  function uploadImage() {}
+
+  console.log(form, "formDataaaa");
 
   return (
     <div className="min-h-screen bg-[#222126] flex justify-center text-white ">
@@ -154,13 +222,19 @@ function page() {
                       Change Profile
                     </button>
                     <input
+                      name="upload"
                       type="file"
                       className="hidden"
                       ref={uploadRef}
                       onChange={setPreviewImage}
                     ></input>
 
-                    <button className="flex h-8 items-center gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-red-400 transition hover:bg-red-500/10">
+                    <button
+                      disabled={preview == null}
+                      name="remove"
+                      onClick={setPreviewImage}
+                      className="flex h-8 items-center disabled:text-red-400/50  gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-red-400 transition enabled:hover:bg-red-500/10"
+                    >
                       <Trash2 size={13} />
                       Remove Profile
                     </button>
@@ -189,24 +263,21 @@ function page() {
                                 <input
                                   className="h-10 w-full rounded-md border border-white/5 bg-[#24212a] px-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-[#6d35ff]/60"
                                   placeholder="Enter the name"
-                                  defaultValue={item.user}
+                                  // defaultValue={item.user}
                                   name={item.name}
-                                  
-                                  value={form[item.name]}
-                                  onChange={(e)=>{
-                                    setFormData((prev)=>{
-                                      return {
-                                        ...prev,
-                                        [item.name] : e.target.value
-                                      }
-
-                                    })
-
+                                  // value={saveForm[item.name]}
+                                  onChange={(e) => {
+                                    handlePrevChanges(e, item);
                                   }}
                                 ></input>
                                 <div className="flex my-3 gap-3">
-                                  <button className="p-2 bg-[#6d35ff] border rounded-lg"
-                                  onClick={()=>{ setEditing(null)   }}
+                                  <button
+                                    disabled={form[item.name].trim() == ""}
+                                    className="p-2 bg-[#6d35ff] disabled:bg-[#6d35ff]/60   border rounded-lg"
+                                    onClick={() => {
+                                      setEditing(null);
+                                      saveFieldChanges(item);
+                                    }}
                                   >
                                     {" "}
                                     Save{" "}
@@ -224,7 +295,9 @@ function page() {
                             ) : (
                               <div className="flex gap-5 ">
                                 <p className="text-xs font-medium">
-                                 {form[item.name].trim() !== "" ?  form[item.name] :  item.user }
+                                  {saveForm[item.name].trim() !== ""
+                                    ? saveForm[item.name]
+                                    : item.user}
                                 </p>
                                 <button
                                   onClick={() => {
@@ -266,7 +339,8 @@ function page() {
               </div>
 
               <button
-                disabled={true}
+                disabled={notAllowed}
+                onClick={saveChanges}
                 className="mt-5 h-10 rounded-md disabled:bg-[#6d35ff]/60 bg-[#6d35ff] px-4 text-sm font-semibold text-white transition hover:bg-[#7c4dff]"
               >
                 Save Changes

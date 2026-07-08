@@ -6,8 +6,10 @@ export const userAuthContext = createContext();
 
 export function Authprovider({ children }) {
   const [user, setUser] = useState(null);
+  const [loading,setLoading] = useState(true);
 
   async function checkAuth() {
+      try{
     const response = await Apifetch("auth/me", {
       method: "GET",
     });
@@ -20,6 +22,14 @@ export function Authprovider({ children }) {
     }
 
     setUser(data.User);
+}catch(err){
+  console.log(err);
+}finally{
+  setLoading(false);
+}
+
+
+
   }
 
   useEffect(() => {
@@ -29,7 +39,7 @@ export function Authprovider({ children }) {
   }, []);
 
   return (
-    <userAuthContext.Provider value={{ user }}>
+    <userAuthContext.Provider value={{ user,loading }}>
       {children}
     </userAuthContext.Provider>
   );

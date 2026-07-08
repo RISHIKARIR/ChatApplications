@@ -52,8 +52,8 @@ const logout = uselogout();
               size="lg"
               className="bg-black/50"
             >
-              <Avatar className="h-8 w-8 rounded-lg grayscale">
-                <AvatarImage src={""} alt={user?.name} />
+              <Avatar className="h-8 w-8 rounded-lg ">
+                <AvatarImage src={user?.user_image} alt={user?.name} />
                 <AvatarFallback className="rounded-lg">CN</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -74,7 +74,7 @@ const logout = uselogout();
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={""} alt={user?.name} />
+                  <AvatarImage src={user?.user_image} alt={user?.name} />
                   <AvatarFallback className="rounded-lg">CN</AvatarFallback>
                 </Avatar>
                 <div className="grid flex-1 text-left text-white text-sm leading-tight">
