@@ -46,6 +46,7 @@ function page() {
     image: "",
   });
   const [notAllowed, setnotAllowed] = useState(true);
+  const [saveLoading,setSaveLoading] = useState(false);
 
   const userArray = profileUser(user);
 
@@ -98,12 +99,14 @@ function page() {
         [item.name]: form[item.name],
       };
     });
-
+    
     console.log(saveForm, "fuhfuifubu");
-    if (saveForm.name == user.name || saveForm.email == user.email) {
+    if (saveForm.name == user.name && saveForm.email == user.email) {
       setnotAllowed(true);
     } else {
       setnotAllowed(false);
+
+
     }
   }
 
@@ -112,6 +115,7 @@ function page() {
   async function saveChanges() {
     try {
       setnotAllowed(true);
+      setSaveLoading(true);
       const formdata = new FormData();
       formdata.append("image", saveForm.image);
       formdata.append("email", saveForm.email);
@@ -123,16 +127,17 @@ function page() {
       });
 
       if (!response.ok) {
-        console.log("response not ok");
+        toast.error("Profile not updated");
+        return;
       }
 
-      toast.success("Profile uploaded succesfully")
+      toast.success("Profile updated succesfully")
 
     } catch (err) {
       toast.error(err);
       console.log(err, "error haiiii");
-    }finally{
-      setnotAllowed(false)
+    }finally{ 
+      setSaveLoading(false);
     }
   }
 
@@ -270,7 +275,7 @@ function page() {
                                 <input
                                   className="h-10 w-full rounded-md border border-white/5 bg-[#24212a] px-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-[#6d35ff]/60"
                                   placeholder="Enter the name"
-                                  // defaultValue={item.user}
+                                  defaultValue={""}
                                   name={item.name}
                                   // value={saveForm[item.name]}
                                   onChange={(e) => {
@@ -348,9 +353,9 @@ function page() {
               <button
                 disabled={notAllowed}
                 onClick={saveChanges}
-                className="mt-5 h-10 rounded-md disabled:bg-[#6d35ff]/60 bg-[#6d35ff] px-4 text-sm font-semibold text-white transition hover:bg-[#7c4dff]"
+                className="mt-5 h-10 flex rounded-md disabled:bg-[#6d35ff]/60 bg-[#6d35ff] px-4 text-sm font-semibold items-center text-white transition hover:bg-[#7c4dff]"
               >
-                Save Changes
+                Save Changes { saveLoading && <Spinner/>  }
               </button>
 
               {/* Divider */}
