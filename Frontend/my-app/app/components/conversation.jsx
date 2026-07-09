@@ -54,9 +54,6 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     setFilteredData(filtered);
   }
 
-
-
-
   return (
     <>
       {groupModal && (
@@ -70,7 +67,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
       <div className="flex h-full bg-[#1f261d] text-white">
         {/* Mini Icon Rail */}
-        <div className="hidden h-full w-[58px] shrink-0 flex-col items-center bg-[#121811] py-4 lg:flex">
+        <div className="hidden h-full w-14.5 shrink-0 flex-col items-center bg-[#121811] py-4 lg:flex">
           <div className="mb-8 flex h-9 w-9 items-center justify-center rounded-md bg-white text-sm font-black text-black">
             C
           </div>
@@ -105,8 +102,6 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
             <p className="text-[8px] font-bold uppercase text-white">
               Messages
             </p>
-
-         
           </div>
 
           <div className="relative mt-auto h-9 w-9 rounded-full bg-[#d8d0b8] text-black">
@@ -119,9 +114,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
         {/* Conversation List */}
         <div className="flex h-full min-w-0 flex-1 flex-col bg-[#1d241b]">
-          <div className="px-4 pt-4"
-            
-          >
+          <div className="px-4 pt-4">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-end gap-2">
                 <h2 className="text-[15px] font-bold tracking-tight text-white">
@@ -199,6 +192,8 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
                   });
                 }
 
+                console.log(chatName, "miooifnfoi");
+
                 return (
                   <button
                     type="button"
@@ -209,12 +204,18 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
                     }}
                     key={item.id}
                   >
-                    <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-[11px] font-black uppercase text-black">
-                      {chatName?.name?.charAt(0)}
+                    {chatName?.Profile_img ? (
+                       <img
+                      src={chatName?.Profile_img}
+                      className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
+                    ></img>
+                    ) : (
+                      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-[11px] font-black uppercase text-black">
+                        {chatName?.name?.charAt(0)}
 
-                      <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#1d241b] bg-[#22c55e]" />
-                    </div>
-
+                        <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#1d241b] bg-[#22c55e]" />
+                      </div>
+                    )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center justify-between gap-2">
                         <p className="truncate text-[11px] font-bold text-white">
@@ -242,16 +243,10 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
           <div className="border-t border-black/20 bg-[#1b2119] px-3 py-3">
             <div className="flex items-center gap-2">
-           
-
               <div className="min-w-0 flex-1">
-             
-                
                 <div>
-                  <NavUser user={user}/>
-                 
-                  </div>
-              
+                  <NavUser user={user} />
+                </div>
               </div>
 
               <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">

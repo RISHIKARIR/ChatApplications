@@ -111,6 +111,7 @@ function page() {
 
   async function saveChanges() {
     try {
+      setnotAllowed(true);
       const formdata = new FormData();
       formdata.append("image", saveForm.image);
       formdata.append("email", saveForm.email);
@@ -124,8 +125,14 @@ function page() {
       if (!response.ok) {
         console.log("response not ok");
       }
+
+      toast.success("Profile uploaded succesfully")
+
     } catch (err) {
+      toast.error(err);
       console.log(err, "error haiiii");
+    }finally{
+      setnotAllowed(false)
     }
   }
 
