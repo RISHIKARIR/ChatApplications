@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import {
   Camera,
   Plus,
@@ -21,16 +21,15 @@ function NewGroupChatModal({
   user,
   conversationData,
 }) {
-
   const [selectedMembers, setSelectedMembers] = useState([]);
   const [searchMembers, setSearchMembers] = useState([]);
   const [groupDetails, setGroupDetails] = useState({
     title: "",
     description: "",
+    group_image : ""
   });
-
-
-
+  const [preview, setPreview] = useState(null);
+  const uploadRef = useRef(null);
 
   const allMembers = useMemo(() => {
     let onlyMembers = conversationData.filter((Member) => !Member.isGroup);
@@ -39,14 +38,12 @@ function NewGroupChatModal({
         return Number(Member.id) != Number(user.id);
       });
     });
-    setSearchMembers(onlyMembers)
+    setSearchMembers(onlyMembers);
     return onlyMembers;
   }, [conversationData]);
 
-
-  console.log(allMembers,'nid9iid')
-  console.log(searchMembers,"search")
-
+  console.log(allMembers, "nid9iid");
+  console.log(searchMembers, "search");
 
   function AddOrRemoveMembers(Member) {
     setSelectedMembers((prev) => {
@@ -67,14 +64,20 @@ function NewGroupChatModal({
       return;
     }
 
+    const formData = new FormData();
+
     try {
+
+      formData.append("groupImage",groupDetails.group_image);
+      formData.append("groupDescription",groupDetails.description);
+      formData.append("groupName",groupDetails.title);
+      formData.append("Members",JSON.stringify(selectedMembers));
+      
+      
+
       const response = await Apifetch("user/conversations/group", {
         method: "POST",
-        body: JSON.stringify({
-          groupName: groupDetails.title,
-          groupDescription: groupDetails.description,
-          Members : selectedMembers
-        }),
+        body: formData,
       });
 
       const data = await response.json();
@@ -96,21 +99,14 @@ function NewGroupChatModal({
   function SearchUser(e) {
     let value = e.target.value.toLowerCase();
 
-    const filtered = allMembers.filter((Member)=>{
+    const filtered = allMembers.filter((Member) => {
       return Member.name.toLowerCase().includes(value);
-    })
-
-
+    });
 
     setSearchMembers(filtered);
-   
-
   }
 
-
-  console.log(searchMembers,"diidiododnm");
-
-
+  console.log(searchMembers, "diidiododnm");
 
   function handleInput(e) {
     if (e.target.name == "Title") {
@@ -126,13 +122,30 @@ function NewGroupChatModal({
     }
   }
 
-  console.log(allMembers,"allmembers")
+  function uploadImage(e) {
+      console.log(e.target.files[0]);
+      const ImageFile = e.target.files[0];
+
+    const previewImage = URL.createObjectURL(ImageFile);
+
+  setPreview(previewImage);
+
+    setGroupDetails((prev)=>{
+      return {
+        ...prev,
+        group_image : ImageFile
+      }
+    })
+
+
+  }
+
 
 
 
   return (
     <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 px-4"
+      className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 px-4"
       onClick={() => {
         setGroupModal(false);
       }}
@@ -163,22 +176,43 @@ function NewGroupChatModal({
         <div className="min-h-0 flex-1 px-6 py-5">
           {/* Group Info */}
           <div className="flex gap-4">
-            <div className="relative shrink-0">
-              <div className="flex h-[74px] w-[74px] items-center justify-center rounded-3xl bg-blue-500/15 text-blue-400">
-                <Camera size={26} />
+            {preview != null ? (
+              <img  
+               src={preview}
+               onClick={() => {
+                    uploadRef.current.click();
+                  }}
+               className="h-18.5 w-18.5 rounded-3xl">
+              </img>
+            ) : (
+              <div className="relative shrink-0">
+                <div
+                  onClick={() => {
+                    uploadRef.current.click();
+                  }}
+                  className="flex h-18.5 w-18.5 items-center justify-center rounded-3xl bg-blue-500/15 text-blue-400" 
+                >
+                  <Camera size={26} />
+                </div>
+                <input
+                  type="file"
+                  ref={uploadRef}
+                  onChange={uploadImage}
+                  className="hidden"
+                ></input>
+
+                <button
+                  type="button"
+                  className="absolute top-14 -right-1 bottom-5 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white"
+                >
+                  <Plus size={15} />
+                </button>
+
+                <p className="mt-2 text-center text-[11px] text-white/40">
+                  Add photo
+                </p>
               </div>
-
-              <button
-                type="button"
-                className="absolute top-14 -right-1 bottom-5 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 text-white"
-              >
-                <Plus size={15} />
-              </button>
-
-              <p className="mt-2 text-center text-[11px] text-white/40">
-                Add photo
-              </p>
-            </div>
+            )}
 
             <div className="min-w-0 flex-1 space-y-3">
               <div>
@@ -289,7 +323,9 @@ function NewGroupChatModal({
             <input
               type="text"
               placeholder="Search people..."
-              onChange={(e)=>{SearchUser(e)}}
+              onChange={(e) => {
+                SearchUser(e);
+              }}
               className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/35 focus:border-blue-500"
             />
           </div>
@@ -345,7 +381,9 @@ function NewGroupChatModal({
 
           <div className="flex items-center gap-3">
             <button
-            onClick={()=>{setGroupModal(false)}}
+              onClick={() => {
+                setGroupModal(false);
+              }}
               type="button"
               className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
             >
