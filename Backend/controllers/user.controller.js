@@ -2,7 +2,7 @@ import { createUser } from "../models/userModel.js";
 import { uploadTocloudinary } from "../utils/uploadToCloudinary.js";
 
 export const ProfileSave = async (req, res) => {
-  console.log("heloooooooooooooooooo");
+
   try {
     console.log("reqfile", req.body);
 
