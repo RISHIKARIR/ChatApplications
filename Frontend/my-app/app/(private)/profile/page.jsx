@@ -40,11 +40,16 @@ function page() {
     email: user?.email || "",
     image: "",
   });
+
+
   const [saveForm, setSaveForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
     image: "",
   });
+
+
+
   const [notAllowed, setnotAllowed] = useState(true);
 
   const userArray = profileUser(user);
@@ -92,6 +97,7 @@ function page() {
   }
 
   function saveFieldChanges(item) {
+    
     setSaveForm((prev) => {
       return {
         ...prev,
