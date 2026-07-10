@@ -2,7 +2,7 @@ import { createUser } from "../models/userModel.js";
 import { uploadTocloudinary } from "../utils/uploadToCloudinary.js";
 
 export const ProfileSave = async (req, res) => {
-  console.log("heloooooooooooooooooo");
+
   try {
     console.log("reqfile", req.body);
 
@@ -11,7 +11,7 @@ export const ProfileSave = async (req, res) => {
     const updateFields = {};
 
     let Profile_img;
-    if (Object.keys(req.file).length > 0) {
+    if (  req.file && Object.keys(req.file).length > 0) {
       Profile_img = await uploadTocloudinary(req.file.buffer, "profile-image");
     }
 
@@ -19,6 +19,8 @@ export const ProfileSave = async (req, res) => {
 
     if (Profile_img != null || Profile_img != undefined) {
       updateFields.Profile_img = Profile_img.url;
+    }else {
+      updateFields.Profile_img = "";
     }
 
     if (email.trim() != "" && name.trim() != "") {

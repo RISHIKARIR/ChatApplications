@@ -17,7 +17,7 @@ export const showConversations = async (req, res) => {
             {
               model: createUser,
               as: "user_members",
-              attributes: ["id", "name", "email"],
+              attributes: ["id", "name", "email","Profile_img"],
               through: { model: conversation_members, attributes: [] },
             },
             { 

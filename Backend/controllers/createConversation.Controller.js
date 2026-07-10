@@ -2,6 +2,7 @@ import { createUser } from "../models/userModel.js";
 import { conversation, groupTable } from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { Op, Sequelize } from "sequelize";
+import { uploadTocloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createConversation = async (req, res) => {
   const { email } = req.body;
@@ -31,7 +32,7 @@ export const createConversation = async (req, res) => {
         success: false,
       });
     }
-    
+
     const existingconversation = await conversation_members.findAll({
       where: {
         user_id: { [Op.in]: [loggedInUserId, existinguser.id] },
@@ -84,8 +85,8 @@ export const createConversation = async (req, res) => {
       joined_at: new Date(),
     };
 
-    const Converation_members = await conversation_members.bulkCreate(
-      [{
+    const Converation_members = await conversation_members.bulkCreate([
+      {
         user_id: loggedInUserId,
         conversation_id: Conversation.id,
         joined_at: new Date(),
@@ -94,10 +95,8 @@ export const createConversation = async (req, res) => {
         user_id: existinguser.id,
         conversation_id: Conversation.id,
         joined_at: new Date(),
-      }]
-
-    );
-
+      },
+    ]);
 
     return res.status(200).json({
       message: "Conversation created successfully",
@@ -113,74 +112,69 @@ export const createConversation = async (req, res) => {
   }
 };
 
+export const createGroup = async (req, res) => {
+  try {
+    const { groupName, groupDescription, Members } = req.body;
 
-export const createGroup = async(req,res)=>{
-  try{
-  const { groupName,groupDescription,Members } = req.body;
+    const GroupImage = req.file;
 
-  if(!groupName || !groupDescription || Members.length==0){
-    return res.status(401).json({
-      message : "Both fields and Members are required to create a group",
-      success : false
-    })
+    let group_img;
+
+    if (Object.keys(GroupImage).length > 0) {
+      group_img = await uploadTocloudinary(req.file.buffer, "Group-image");
+    }
+
+    if (!groupName || !groupDescription || Members.length == 0) {
+      return res.status(401).json({
+        message: "Both fields and Members are required to create a group",
+        success: false,
+      });
+    }
+
+    const User = req.user;
+
+    Members.push({ id: User.id, name: User.name, email: User.email });
+
+    const Conversation = await conversation.create({
+      isGroup: true,
+    });
+
+    if (!Conversation)
+      return res.status(400).json({
+        message: "Conversation couldn't be created",
+        success: false,
+      });
+
+    const Group = await groupTable.create({
+      Group_name: groupName,
+      Group_image: "",
+      Group_Description: groupDescription,
+      conversation_id: Conversation.id,
+    });
+
+    const mappedMembers = Members.map((Member) => {
+      return {
+        user_id: Member.id,
+        conversation_id: Conversation.id,
+
+        joined_at: new Date(),
+      };
+    });
+
+    const conversationMembers =
+      await conversation_members.bulkCreate(mappedMembers);
+
+    return res.status(200).json({
+      message: "Conversation has been created succesfully",
+      success: true,
+    });
+  } catch (err) {
+    console.log(err, "errorrr");
+
+    return res.status(500).json({
+      message: "Something went wrong",
+      success: false,
+      error: err,
+    });
   }
-
-
-  const User = req.user;
-
-
-  Members.push({id : User.id,name : User.name, email : User.email})
-
-
-
-
-
-  const Conversation = await conversation.create({
-    isGroup : true
-  })
-
-
-  if(!Conversation)return res.status(400).json({
-    message : "Conversation couldn't be created",
-    success : false
-  })
-
-  const Group = await groupTable.create({
-    Group_name : groupName,
-    Group_image : "",
-    Group_Description : groupDescription,
-    conversation_id : Conversation.id
-  })
-
-  const mappedMembers = Members.map((Member=>{ 
-    return {
-    user_id : Member.id,conversation_id : Conversation.id,
-
-    joined_at : new Date()
-  }
-}))
-
-  
-  const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
-
-
-
-  return res.status(200).json({
-    message : "Conversation has been created succesfully",
-    success : true
-  })
-
-}catch(err){
-
-  console.log(err,"errorrr")
-
-  return res.status(500).json({
-
-    message : "Something went wrong",
-    success : false,
-    error : err
-  })
-}
-
-
-}
+};
