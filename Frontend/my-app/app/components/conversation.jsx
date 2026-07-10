@@ -54,6 +54,11 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     setFilteredData(filtered);
   }
 
+
+  console.log(conversationData,'jfojfoi');
+
+
+
   return (
     <>
       {groupModal && (
@@ -179,19 +184,19 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
             <div className="space-y-1">
               {filteredData?.map((item) => {
-                const otherUser =
-                  user?.id === item.userOneId ? item.userTwo : item.userOne;
+                const otherUser = user?.id === item.userOneId ? item.userTwo : item.userOne;
 
-                let chatName = { name: "" };
+                let chatName = {};
 
                 if (item.isGroup) {
                   chatName.name = item?.group_table?.Group_name;
+                  chatName.Profile_img = item?.group_table?.Group_image
                 } else {
                   chatName = item?.user_members?.find((value) => {
                     return value?.id != user.id;
                   });
                 }
-
+                console.log(item,"itemmmmmmmm")
                 console.log(chatName, "miooifnfoi");
 
                 return (
