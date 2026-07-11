@@ -114,7 +114,9 @@ export const createConversation = async (req, res) => {
 
 export const createGroup = async (req, res) => {
   try {
-    const { groupName, groupDescription, Members } = req.body;
+    const { groupName, groupDescription } = req.body;
+    let Members = JSON.parse(req.body.Members);
+ 
 
     const GroupImage = req.file;
 
@@ -133,7 +135,19 @@ export const createGroup = async (req, res) => {
 
     const User = req.user;
 
-    Members.push({ id: User.id, name: User.name, email: User.email });
+    console.log(Members, "ofnifc");
+
+
+    console.log(group_img,"profileeeee");
+
+
+
+    Members.push({
+      id: User.id,
+      name: User.name,
+      email: User.email,
+      Profile_img: User.Profile_img,
+    });
 
     const Conversation = await conversation.create({
       isGroup: true,
@@ -147,7 +161,7 @@ export const createGroup = async (req, res) => {
 
     const Group = await groupTable.create({
       Group_name: groupName,
-      Group_image: "",
+      Group_image: group_img.url,
       Group_Description: groupDescription,
       conversation_id: Conversation.id,
     });
