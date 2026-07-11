@@ -15,6 +15,7 @@ import {
   Mic,
   Paperclip,
 } from "lucide-react";
+import { uploadConfig } from "../config/uploadconfig";
 
 import {
   DropdownMenu,
@@ -24,7 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu-sidebar";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { EditDialog } from "../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
+import Dropdown from "../../components/dropdown";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -59,13 +61,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     return value.id !== user.id;
   });
 
+
+
+
   const conversationData = {
     id: convoData?.id,
-    chatName: !convoData?.isGroup ? otherUser?.name : "Group Chat",
+    chatName: !convoData?.isGroup ? otherUser?.name : convoData?.group_table?.Group_name,
     users: convoData?.user_members,
     isGroup: convoData?.isGroup,
-    Profile_img: otherUser?.Profile_img,
+    Profile_img: convoData?.isGroup ? convoData.group_table.Group_image : otherUser?.Profile_img
   };
+
+  //
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -340,7 +347,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           <div className="flex items-center gap-3">
             <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#d8d0b8] text-sm font-black uppercase text-black ring-1 ring-white/10">
               {selectedConversation ? (
-                conversationData?.Profile_img ? (
+                conversationData?.Profile_img ?
+                (
                   <img
                     src={conversationData?.Profile_img}
                     className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
@@ -594,7 +602,17 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 type="button"
                 className="flex items-center justify-center text-black/70 transition hover:text-black"
               >
-                <Paperclip size={17} />
+                
+            
+              
+              <Dropdown
+              open={<Paperclip size={17} />}
+              config={uploadConfig}
+              />
+            
+               
+
+
               </button>
 
               <input
@@ -628,3 +646,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 }
 
 export default ChatArea;
+
+
+
