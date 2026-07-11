@@ -52,6 +52,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const bottomRef = useRef(null);
   const [typingUser, setTypingUser] = useState(null);
   const [typingMembers, setTypingMembers] = useState([]);
+  const [files,setFiles] = useState([]);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -61,15 +62,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     return value.id !== user.id;
   });
 
-
-
-
   const conversationData = {
     id: convoData?.id,
-    chatName: !convoData?.isGroup ? otherUser?.name : convoData?.group_table?.Group_name,
+    chatName: !convoData?.isGroup
+      ? otherUser?.name
+      : convoData?.group_table?.Group_name,
     users: convoData?.user_members,
     isGroup: convoData?.isGroup,
-    Profile_img: convoData?.isGroup ? convoData.group_table.Group_image : otherUser?.Profile_img
+    Profile_img: convoData?.isGroup
+      ? convoData.group_table.Group_image
+      : otherUser?.Profile_img,
   };
 
   //
@@ -211,6 +213,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [editMessage, setEditmessage] = useState(null);
   const [deletedMessage, setDeletedMessage] = useState(null);
+  const [uploading,setUploading] = useState(false);
+
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
@@ -249,8 +253,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
   }, [selectedConversation, showChats?.data?.length]);
 
-  function sendMessage() {
-    if (message.trim() === "") return;
+  async function sendMessage() {
+
+
+    if (message.trim() === ""  && files.length == 0)return;
+
+    const uploadedfiles =  await uploadFiles();
+
+    console.log(uploadedfiles,"ofoffjfojfo")
+    return;
+
 
     if (!selectedConversation) {
       toast.error("Please select a conversation");
@@ -337,6 +349,54 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }, 10000);
   }
 
+
+  async function uploadFiles(){
+    if(files.length == 0)return [];
+    try{
+    setUploading(true);
+
+
+    const formdata = new FormData();
+
+    files.forEach((file)=>{
+      formdata.append("files",file);
+    }) 
+
+
+
+const response = await Apifetch("user/media/uploadMedia",{
+  method : "POST",
+  body : formdata
+});
+
+if(!response.ok){
+console.log(err,"errorrr")
+return;
+}
+
+
+return response;
+
+
+
+}catch(err){
+  console.log(err)
+
+}finally {
+setUploading(false);
+}
+
+
+  }
+
+
+
+
+
+
+  console.log(files.length,"fnrjnfeijrnbi")
+
+
   console.log(typingUser, "wefweewewew");
   console.log(conversationData, "fmpofm");
 
@@ -347,8 +407,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           <div className="flex items-center gap-3">
             <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#d8d0b8] text-sm font-black uppercase text-black ring-1 ring-white/10">
               {selectedConversation ? (
-                conversationData?.Profile_img ?
-                (
+                conversationData?.Profile_img ? (
                   <img
                     src={conversationData?.Profile_img}
                     className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
@@ -602,17 +661,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 type="button"
                 className="flex items-center justify-center text-black/70 transition hover:text-black"
               >
-                
-            
-              
-              <Dropdown
-              open={<Paperclip size={17} />}
-              config={uploadConfig}
-              />
-            
-               
-
-
+                <Dropdown
+                  open={<Paperclip size={17} />}
+                  config={uploadConfig}
+                  selectedConversation={selectedConversation}
+                  setFiles={setFiles}
+                  uploading={uploading}
+                />
               </button>
 
               <input
@@ -633,7 +688,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
             <button
               onClick={sendMessage}
               type="button"
-              disabled={message.trim() === ""}
+              disabled={message.trim() === "" && files.length == 0}
               className="flex h-11 w-11 items-center justify-center rounded-md bg-[#8a947f] text-white shadow-lg shadow-black/20 transition hover:bg-[#a6b19a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Send size={18} />
@@ -646,6 +701,3 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 }
 
 export default ChatArea;
-
-
-
