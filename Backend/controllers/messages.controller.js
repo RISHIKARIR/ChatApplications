@@ -115,16 +115,18 @@ const createMessage = async (req, res) => {
 };
 
 
-
-
-// const editMessage = async (req,res)=>{
+const uploadFilesThroughMessages = async (req,res)=>{
 
   
 
 
-    
 
-// }
+
+
+
+
+}
+
 
 
 

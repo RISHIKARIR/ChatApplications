@@ -15,6 +15,7 @@ import {
   Mic,
   Paperclip,
 } from "lucide-react";
+import { uploadConfig } from "../config/uploadconfig";
 
 import {
   DropdownMenu,
@@ -24,7 +25,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+} from "@/components/ui/dropdown-menu-sidebar";
 import {
   Dialog,
   DialogContent,
@@ -35,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { EditDialog } from "../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
+import Dropdown from "../../components/dropdown";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -50,6 +52,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const bottomRef = useRef(null);
   const [typingUser, setTypingUser] = useState(null);
   const [typingMembers, setTypingMembers] = useState([]);
+  const [files,setFiles] = useState([]);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -61,11 +64,17 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const conversationData = {
     id: convoData?.id,
-    chatName: !convoData?.isGroup ? otherUser?.name : "Group Chat",
+    chatName: !convoData?.isGroup
+      ? otherUser?.name
+      : convoData?.group_table?.Group_name,
     users: convoData?.user_members,
     isGroup: convoData?.isGroup,
-    Profile_img: otherUser?.Profile_img,
+    Profile_img: convoData?.isGroup
+      ? convoData.group_table.Group_image
+      : otherUser?.Profile_img,
   };
+
+  //
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -204,6 +213,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [editMessage, setEditmessage] = useState(null);
   const [deletedMessage, setDeletedMessage] = useState(null);
+  const [uploading,setUploading] = useState(false);
+
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
@@ -242,8 +253,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
   }, [selectedConversation, showChats?.data?.length]);
 
-  function sendMessage() {
-    if (message.trim() === "") return;
+  async function sendMessage() {
+
+
+    if (message.trim() === ""  && files.length == 0)return;
+
+    const uploadedfiles =  await uploadFiles();
+
+    console.log(uploadedfiles,"ofoffjfojfo")
+    return;
+
 
     if (!selectedConversation) {
       toast.error("Please select a conversation");
@@ -329,6 +348,51 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       setIsTyping(false);
     }, 10000);
   }
+
+
+  async function uploadFiles(){
+    if(files.length == 0)return [];
+    try{
+    setUploading(true);
+
+
+    const formdata = new FormData();
+
+    files.forEach((file)=>{
+      formdata.append("files",file);
+    }) 
+
+
+
+const response = await Apifetch("user/media/uploadMedia",{
+  method : "POST",
+  body : formdata
+});
+
+if(!response.ok){
+console.log(err,"errorrr")
+return;
+}
+
+
+return response;
+
+
+
+}catch(err){
+  console.log(err)
+
+}finally {
+setUploading(false);
+}
+
+
+  }
+
+
+
+  console.log(files.length,"fnrjnfeijrnbi")
+
 
   console.log(typingUser, "wefweewewew");
   console.log(conversationData, "fmpofm");
@@ -594,7 +658,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 type="button"
                 className="flex items-center justify-center text-black/70 transition hover:text-black"
               >
-                <Paperclip size={17} />
+                <Dropdown
+                  open={<Paperclip size={17} />}
+                  config={uploadConfig}
+                  selectedConversation={selectedConversation}
+                  setFiles={setFiles}
+                  uploading={uploading}
+                />
               </button>
 
               <input
@@ -615,7 +685,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
             <button
               onClick={sendMessage}
               type="button"
-              disabled={message.trim() === ""}
+              disabled={message.trim() === "" && files.length == 0}
               className="flex h-11 w-11 items-center justify-center rounded-md bg-[#8a947f] text-white shadow-lg shadow-black/20 transition hover:bg-[#a6b19a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <Send size={18} />

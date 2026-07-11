@@ -21,7 +21,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu-sidebar"
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -66,7 +66,7 @@ const logout = uselogout();
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-(--radix-dropdown-menu-trigger-width) bg-black/50 min-w-56 rounded-lg"
+            className="w-(--radix-dropdown-menu-trigger-width) bg-[#1f1f1f] min-w-56 rounded-lg"
             // side={isMobile ? "bottom" : "right"}
             align="end"
             sideOffset={4}
@@ -93,14 +93,6 @@ const logout = uselogout();
                 Account
                 </Link>
               </DropdownMenuItem>
-              {/* <DropdownMenuItem>
-                <IconCreditCard />
-                Billing
-              </DropdownMenuItem> */}
-              {/* <DropdownMenuItem>
-                <IconNotification />
-                Notifications
-              </DropdownMenuItem> */}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={logout} className="text-white">
