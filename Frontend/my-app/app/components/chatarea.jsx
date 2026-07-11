@@ -391,9 +391,6 @@ setUploading(false);
 
 
 
-
-
-
   console.log(files.length,"fnrjnfeijrnbi")
 
 
