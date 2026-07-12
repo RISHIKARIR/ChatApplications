@@ -17,17 +17,23 @@ export default function Dropdown({
   config,
   selectedConversation,
   setFiles,
-  uploading
+  uploading,
+  openfile
 }) {
   const uploadref = useRef(null);
   const [preview, setPreview] = useState([]);
-  const conversationRef = useRef(selectedConversation);
+  
 
   useEffect(() => {
-    if (conversationRef.current != selectedConversation) {
+    if(openfile == false){
+
       setPreview([]);
     }
-  }, [selectedConversation]);
+    
+  }, [selectedConversation,openfile]);
+
+
+  console.log(openfile,"opennnnn")
   console.log(selectedConversation, "selecteddd");
 
   const previewFile = (e) => {
@@ -67,7 +73,7 @@ export default function Dropdown({
       />
 
       {preview?.length > 0 && (
-        <div className="absolute bottom-20 left-100 z-[999] w-fit rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
+        <div className="absolute bottom-20 left-100 z-999 w-fit rounded-xl border border-gray-200 bg-white p-3 shadow-xl">
           <div className="mb-2 flex items-center justify-between">
             <p className="text-xs font-medium text-gray-700">
               {preview.length} file{preview.length > 1 ? "s" : ""} selected   { uploading && <Spinner/> }

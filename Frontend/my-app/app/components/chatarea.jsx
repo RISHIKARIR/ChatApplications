@@ -52,7 +52,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const bottomRef = useRef(null);
   const [typingUser, setTypingUser] = useState(null);
   const [typingMembers, setTypingMembers] = useState([]);
-  const [files,setFiles] = useState([]);
+  const [files, setFiles] = useState([]);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -94,6 +94,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         updatedAt: data.data.updatedAt,
         sender: data.data.sender,
         isDeleted: data.data.isDeleted,
+        media: data.data.media,
       };
       console.log(data, "datatatatatat");
 
@@ -213,8 +214,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [editMessage, setEditmessage] = useState(null);
   const [deletedMessage, setDeletedMessage] = useState(null);
-  const [uploading,setUploading] = useState(false);
-
+  const [uploading, setUploading] = useState(false);
+  const [openfile, setOpenFile] = useState(true);
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
@@ -254,20 +255,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   }, [selectedConversation, showChats?.data?.length]);
 
   async function sendMessage() {
+    if (message.trim() === "" && files.length == 0) return;
 
-
-    if (message.trim() === ""  && files.length == 0)return;
-
-    const uploadedfiles =  await uploadFiles();
-
-    console.log(uploadedfiles,"ofoffjfojfo")
-    return;
-
+    const response = await uploadFiles();
 
     if (!selectedConversation) {
       toast.error("Please select a conversation");
       return;
     }
+
+    console.log(response, "responseeee");
+
+    setOpenFile(false);
 
     const socket = socketRef.current;
 
@@ -276,10 +275,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       return;
     }
 
-    socket.emit("send_message", {
+    setFiles([]);
+
+    socket.emit("send_message" , {
       message: message.trim(),
       conversation_id: selectedConversation,
       isGroup: conversationUserData.isGroup,
+      media: files.length > 0 ? response.urls : [],
     });
 
     setMessage("");
@@ -349,50 +351,42 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }, 10000);
   }
 
+  async function uploadFiles() {
+    setOpenFile(true);
 
-  async function uploadFiles(){
-    if(files.length == 0)return [];
-    try{
-    setUploading(true);
+    if (files.length == 0) return [];
+    try {
+      setUploading(true);
 
+      const formdata = new FormData();
 
-    const formdata = new FormData();
+      files.forEach((file) => {
+        formdata.append("files", file);
+      });
 
-    files.forEach((file)=>{
-      formdata.append("files",file);
-    }) 
+      const response = await Apifetch("user/media/uploadMedia", {
+        method: "POST",
+        body: formdata,
+      });
 
+      if (!response.ok) {
+        console.log(err, "errorrr");
+        return;
+      }
 
+      const data = await response.json();
 
-const response = await Apifetch("user/media/uploadMedia",{
-  method : "POST",
-  body : formdata
-});
-
-if(!response.ok){
-console.log(err,"errorrr")
-return;
-}
-
-
-return response;
-
-
-
-}catch(err){
-  console.log(err)
-
-}finally {
-setUploading(false);
-}
-
-
+      return data;
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setUploading(false);
+    }
   }
 
-
-
-  console.log(files.length,"fnrjnfeijrnbi")
-
+  console.log(showChats, "showwwwwwww");
+  console.log(files.length, "fnrjnfeijrnbi");
+  console.log(files, "foieffofoi");
 
   console.log(typingUser, "wefweewewew");
   console.log(conversationData, "fmpofm");
@@ -534,7 +528,44 @@ setUploading(false);
                                 {item.isDeleted ? (
                                   "Message Deleted"
                                 ) : (
-                                  <p className="flex items-center gap-2 text-[12px] font-semibold leading-relaxed text-black">
+                                  <p className="flex items-center overflow-hidden gap-2 text-[12px] font-semibold leading-relaxed text-black">
+                                    {item.message.trim() == "" &&
+                                    item.media.length > 0 ? (
+                                      <>
+                                        {item.message.trim() === "" &&
+                                          item.media.length >= 2 && (
+                                            <>
+                                              {item.media
+                                                .slice(0, 1)
+                                                .map((image) => (
+                                                  <img
+                                                    key={image.id}
+                                                    src={image.url}
+                                                    className="h-20 w-20"
+                                                    alt=""
+                                                  />
+                                                ))}
+
+                                              <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
+                                                +{item.media.length - 1} photos
+                                              </div>
+                                            </>
+                                          )}
+
+                                        {/* {item.media.map((val) => {
+                                          return (
+                                            <img
+                                              src={val.url}
+                                              className="h-30 w-40"
+                                            ></img>
+                                          );
+                                        })} */}
+                                      </>
+                                    ) : (
+                                      // <></>
+                                      ""
+                                    )}
+
                                     {item.message}
 
                                     <DropdownMenu>
@@ -606,7 +637,29 @@ setUploading(false);
                                   "Message Deleted"
                                 ) : (
                                   <>
-                                    <p className="text-[12px] font-semibold leading-relaxed text-black">
+                                    <p className="text-[12px] flex gap-2 font-semibold leading-relaxed text-black">
+
+                                    {item.message.trim() === "" &&
+                                          item.media.length >= 2 && (
+                                            <>
+                                              {item.media
+                                                .slice(0, 1)
+                                                .map((image) => (
+                                                  <img
+                                                    key={image.id}
+                                                    src={image.url}
+                                                    className="h-20 w-20"
+                                                    alt=""
+                                                  />
+                                                ))}
+
+                                              <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
+                                                +{item.media.length - 1} photos
+                                              </div>
+                                            </>
+                                          )}
+
+
                                       {item.message}
                                     </p>
 
@@ -664,6 +717,7 @@ setUploading(false);
                   selectedConversation={selectedConversation}
                   setFiles={setFiles}
                   uploading={uploading}
+                  openfile={openfile}
                 />
               </button>
 
