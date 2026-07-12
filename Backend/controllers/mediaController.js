@@ -10,7 +10,14 @@ export const uploadMedia = async (req, res) => {
       files.map((item) => uploadTocloudinary(item.buffer, "Message media")),
     );
 
-    const allUploadedUrls = uploadedFiles.map((file)=>file.url)
+    const allUploadedUrls = uploadedFiles.map((file)=>{
+        return {
+            url : file.url,
+            resource_type : file.resource_type,
+        }
+
+
+    })
 
 
     return res.status(200).json({

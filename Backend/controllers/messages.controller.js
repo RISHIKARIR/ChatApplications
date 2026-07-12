@@ -1,4 +1,4 @@
-import { messageModel } from "../models/message.js";
+import { mediaModel, messageModel } from "../models/message.js";
 import { conversation } from "../models/conversation.js";
 import { Op } from "sequelize";
 import { createUser } from "../models/userModel.js";
@@ -41,6 +41,12 @@ const showMessages = async (req, res) => {
           as: "sender",
           attributes: ["email", "name", "id"],
         },
+
+        {
+          model : mediaModel,
+          as : "media"
+                    
+        }
       ],
 
       order: [["createdAt", "ASC"]],
