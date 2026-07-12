@@ -1,6 +1,6 @@
 import { Op, where } from "sequelize";
 import { conversation, conversation_members } from "../models/conversation.js";
-import { messageModel } from "../models/message.js";
+import { mediaModel, messageModel } from "../models/message.js";
 import { markPendingMessages } from "./markPendingMessages.js";
 import { createUser } from "../models/userModel.js";
 
@@ -31,6 +31,7 @@ export const initialiseSocket = (io) => {
       const message = data.message;
       const isGroup = data.isGroup;
       const senderId = userId;
+      const media = data.media
 
       try {
         const savedMessage = await messageModel.create({
@@ -38,15 +39,43 @@ export const initialiseSocket = (io) => {
           conversation_id: conversationId,
           message: message,
         });
+        
+
+        
+        if(media.length > 0){
+
+          const mediaitems = media.map((item)=>{
+            return {
+              resource_type : item.resource_type,
+              url : item.url,
+              messageId : savedMessage.id
+            }
+          })
+
+          await mediaModel.bulkCreate(mediaitems);
+
+           
+        }
+
 
         const messageWithReceiver = await messageModel.findOne({
           where: {
             id: savedMessage.id,
           },
-          include: {
+          include: 
+          [
+          {
             model: createUser,
-            as: "sender",
-          },
+            as: "sender"
+
+
+          },{
+            model : mediaModel,
+            as : "media"
+          }
+
+          ]
+          
         });
 
         const members = await conversation_members.findAll({
@@ -175,7 +204,7 @@ export const initialiseSocket = (io) => {
           },
           include: {
             model: createUser,
-            as: "sender",
+            as: "sender"
           },
         });
 
