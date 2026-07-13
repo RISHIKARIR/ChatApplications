@@ -42,6 +42,9 @@ function page() {
   });
 
 
+
+
+  
   const [saveForm, setSaveForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
@@ -332,28 +335,10 @@ function page() {
                     );
                   })}
 
-                  {/* <div className="flex font-medium gap-1 text-xs flex-col">
-                    
-                    
-                    
-                     Name   
-                  <p className="text-xs font-medium"> {user?.name} </p>
-                  </div> */}
-                  {/* <input
-                    placeholder="First name"
-                    className="h-10 w-full rounded-md border border-white/5 bg-[#24212a] px-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-[#6d35ff]/60"
-                  /> */}
+      
                 </div>
 
-                {/* <div>
-                  <label className="mb-2 block text-xs font-medium text-zinc-500">
-                    Last Name
-                  </label>
-                  <input
-                    placeholder="Last name"
-                    className="h-10 w-full rounded-md border border-white/5 bg-[#24212a] px-3 text-sm text-white outline-none placeholder:text-zinc-500 focus:border-[#6d35ff]/60"
-                  />
-                </div> */}
+   
               </div>
 
               <button

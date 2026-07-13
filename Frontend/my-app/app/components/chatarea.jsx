@@ -37,10 +37,11 @@ import {
 import { EditDialog } from "../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
 import Dropdown from "../../components/dropdown";
+import ImageShowModal from "./modals/ImageShowModal";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket, socketRef, deliveredMessages, seenMessages } =
+  const { connectSocket, socketRef, deliveredMessages, seenMessages,onlineUsers } =
     useContext(SocketContext);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [typingUser, setTypingUser] = useState(null);
   const [typingMembers, setTypingMembers] = useState([]);
   const [files, setFiles] = useState([]);
+  const [imageDetails, setImageDetails] = useState(null);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -216,6 +218,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [deletedMessage, setDeletedMessage] = useState(null);
   const [uploading, setUploading] = useState(false);
   const [openfile, setOpenFile] = useState(true);
+  const [openImage, setOpenImage] = useState(false);
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
@@ -277,7 +280,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
     setFiles([]);
 
-    socket.emit("send_message" , {
+    socket.emit("send_message", {
       message: message.trim(),
       conversation_id: selectedConversation,
       isGroup: conversationUserData.isGroup,
@@ -391,6 +394,15 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   console.log(typingUser, "wefweewewew");
   console.log(conversationData, "fmpofm");
 
+  function handleImageModal(item) {
+    setOpenImage(true);
+    setImageDetails(item);
+  }
+
+console.log(onlineUsers,"jfjfinfuifnbui")
+
+
+
   return (
     <div className="flex h-full bg-[#1c231b] text-white">
       <div className="flex h-full min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_center,#30362f_0%,#242b23_45%,#151c15_100%)]">
@@ -435,7 +447,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                     : typingUser &&
                         selectedConversation === typingUser.conversationId
                       ? "typing..."
-                      : ""
+                      : onlineUsers?.currentOnlineMembers?.includes(otherUser.id) ? "Active" : ""
                   : "Please select a conversation"}
               </p>
             </div>
@@ -535,19 +547,27 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                         {item.message.trim() === "" &&
                                           item.media.length >= 2 && (
                                             <>
-                                              {item.media
-                                                .slice(0, 1)
-                                                .map((image) => (
-                                                  <img
-                                                    key={image.id}
-                                                    src={image.url}
-                                                    className="h-20 w-20"
-                                                    alt=""
-                                                  />
-                                                ))}
+                                              <div
+                                                onClick={() => {
+                                                  handleImageModal(item.media);
+                                                }}
+                                                className="flex gap-2"
+                                              >
+                                                {item.media
+                                                  .slice(0, 1)
+                                                  .map((image) => (
+                                                    <img
+                                                      key={image.id}
+                                                      src={image.url}
+                                                      className="h-20 w-20"
+                                                      alt=""
+                                                    />
+                                                  ))}
 
-                                              <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
-                                                +{item.media.length - 1} photos
+                                                <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
+                                                  +{item.media.length - 1}{" "}
+                                                  photos
+                                                </div>
                                               </div>
                                             </>
                                           )}
@@ -638,27 +658,25 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                                 ) : (
                                   <>
                                     <p className="text-[12px] flex gap-2 font-semibold leading-relaxed text-black">
+                                      {item.message.trim() === "" &&
+                                        item.media.length >= 2 && (
+                                          <>
+                                            {item.media
+                                              .slice(0, 1)
+                                              .map((image) => (
+                                                <img
+                                                  key={image.id}
+                                                  src={image.url}
+                                                  className="h-20 w-20"
+                                                  alt=""
+                                                />
+                                              ))}
 
-                                    {item.message.trim() === "" &&
-                                          item.media.length >= 2 && (
-                                            <>
-                                              {item.media
-                                                .slice(0, 1)
-                                                .map((image) => (
-                                                  <img
-                                                    key={image.id}
-                                                    src={image.url}
-                                                    className="h-20 w-20"
-                                                    alt=""
-                                                  />
-                                                ))}
-
-                                              <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
-                                                +{item.media.length - 1} photos
-                                              </div>
-                                            </>
-                                          )}
-
+                                            <div className="h-20 w-20 rounded-md bg-blue-200 flex items-center justify-center">
+                                              +{item.media.length - 1} photos
+                                            </div>
+                                          </>
+                                        )}
 
                                       {item.message}
                                     </p>
@@ -747,6 +765,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           </div>
         </div>
       </div>
+
+      <ImageShowModal
+        setOpenImage={setOpenImage}
+        openImage={openImage}
+        imageDetails={imageDetails}
+        setImageDetails={setImageDetails}
+      />
     </div>
   );
 }

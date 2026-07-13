@@ -11,6 +11,7 @@ export function SocketProvider({ children }) {
   const socketRef = useRef();
   const [deliveredMessages,setDeliveredMessages] = useState(null);
   const [seenMessages,setSeenMessages] = useState(null);
+  const [onlineUsers,setOnlineUsers] = useState(null);
 
 
 
@@ -34,11 +35,7 @@ export function SocketProvider({ children }) {
 
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      console.log("connection established");
-      console.log("CONNECTED", socket.id);
-    });
-
+    
 
                                 
     socketRef?.current?.on("delivered_messages",(data)=>{
@@ -46,11 +43,39 @@ export function SocketProvider({ children }) {
     })
 
 
+    socketRef?.current?.on("onlineUsers",(data)=>{
+      setOnlineUsers(data);
+    })
+
+
+    socketRef?.current?.on("user-online",(data)=>{
+      setOnlineUsers((prev)=>{
+        return prev.includes(data.UserId) ? prev : [...prev,data.UserId]
+      })
+    })
+
+
+    socketRef?.current?.on("user-offline",(data)=>{
+      setOnlineUsers((prev)=>{
+        return prev.filter((item)=> item!=data.userId)
+      })
+    })
+
+
     socketRef.current.on("seen_messages",(data)=>{
       setSeenMessages(data)
     })
 
+
+
+
+
+
   }, [user]);
+
+
+
+  console.log(onlineUsers,"onlineeeeeeeee")
 
 
 
@@ -93,7 +118,7 @@ export function SocketProvider({ children }) {
 
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages,seenMessages}}
+      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages,seenMessages,onlineUsers}}
     >
       {children}
     </SocketContext.Provider>
