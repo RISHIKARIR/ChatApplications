@@ -8,6 +8,10 @@ const onlineMembers = new Map();
 let typingMembers = new Map();
 
 export const initialiseSocket = (io) => {
+
+
+
+
   io.on("connection", (socket) => {
     console.log("user is connected", socket.id, socket.handshake.query.UserId);
     const userId = Number(socket.handshake.query.UserId);
@@ -15,6 +19,9 @@ export const initialiseSocket = (io) => {
     socket.on("join_conversation", async (conversationId) => {
       socket.join(`conversation${conversationId}`);
     });
+
+
+  
 
     markPendingMessages(io, userId);
 
@@ -30,7 +37,7 @@ export const initialiseSocket = (io) => {
      const currentOnlineMembers =  [...onlineMembers.keys()];
 
 
-
+   
      socket.emit("onlineUsers",{
       currentOnlineMembers,
       response : "All online Members"
@@ -46,8 +53,6 @@ export const initialiseSocket = (io) => {
 
 
      console.log(currentOnlineMembers,"Currrrrrr")
-
-
 
 
     socket.on("send_message", async (data) => {
@@ -367,7 +372,7 @@ export const initialiseSocket = (io) => {
     socket.on("disconnect", (reason) => {
 
 
-      socket.emit.broadcast("user-offline",{
+      socket.broadcast.emit("user-offline",{
         userId
       })
 
