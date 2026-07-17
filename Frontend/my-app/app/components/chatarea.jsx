@@ -44,6 +44,9 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const { connectSocket, socketRef, deliveredMessages, seenMessages,onlineUsers } =
     useContext(SocketContext);
 
+
+
+
   useEffect(() => {
     if (user) {
       connectSocket();
@@ -447,7 +450,7 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                     : typingUser &&
                         selectedConversation === typingUser.conversationId
                       ? "typing..."
-                      : onlineUsers?.currentOnlineMembers?.includes(otherUser.id) ? "Active" : ""
+                      : onlineUsers?.includes(otherUser.id) ? "Active" : ""
                   : "Please select a conversation"}
               </p>
             </div>

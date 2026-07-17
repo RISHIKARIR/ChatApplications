@@ -12,6 +12,7 @@ export function SocketProvider({ children }) {
   const [deliveredMessages,setDeliveredMessages] = useState(null);
   const [seenMessages,setSeenMessages] = useState(null);
   const [onlineUsers,setOnlineUsers] = useState(null);
+  const [newConversation,setNewConversation] = useState(null);
 
 
 
@@ -44,13 +45,18 @@ export function SocketProvider({ children }) {
 
 
     socketRef?.current?.on("onlineUsers",(data)=>{
-      setOnlineUsers(data);
+      console.log(data,"onlineeeeeeeeeeeee")
+      setOnlineUsers(data.currentOnlineMembers);
     })
 
 
     socketRef?.current?.on("user-online",(data)=>{
+      console.log(data,"ye online aya");
+
+
+
       setOnlineUsers((prev)=>{
-        return prev.includes(data.UserId) ? prev : [...prev,data.UserId]
+        return prev.includes(data.userId) ? prev : [...prev,data.userId]
       })
     })
 
@@ -61,12 +67,16 @@ export function SocketProvider({ children }) {
       })
     })
 
-
+    
     socketRef.current.on("seen_messages",(data)=>{
       setSeenMessages(data)
     })
 
 
+    socketRef.current.on("new_conversation",(data)=>{
+      console.log(data,"nfnfifnfi")
+      setNewConversation(data.newConversation)
+    })
 
 
 
@@ -74,6 +84,9 @@ export function SocketProvider({ children }) {
   }, [user]);
 
 
+
+
+  console.log(onlineUsers,"jijoif ")
 
   console.log(onlineUsers,"onlineeeeeeeee")
 
@@ -92,33 +105,9 @@ export function SocketProvider({ children }) {
 
 
 
-
-
-
-
-  // useEffect(()=>{
-
-  //   console.log("socket reff se pehle")
-
-  //   if(!socketRef.current)return;
-
-  //   console.log(socketRef.current,"socket reffff");
-
-
-
-  //     console.log("effect chlaaaaa")
-    
-
-
-  // },[deliveredMessages,socketRef.current])
-
-
-  console.log(deliveredMessages,"delivered")
-
-
   return (
     <SocketContext.Provider
-      value={{ connectSocket, socketRef ,disconnectSocket,deliveredMessages,seenMessages,onlineUsers}}
+      value={{ connectSocket,socketRef,newConversation,disconnectSocket,deliveredMessages,seenMessages,onlineUsers}}
     >
       {children}
     </SocketContext.Provider>
