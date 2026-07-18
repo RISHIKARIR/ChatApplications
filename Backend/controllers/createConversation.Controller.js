@@ -1,8 +1,11 @@
 import { createUser } from "../models/userModel.js";
-import { conversation, groupTable } from "../models/conversation.js";
+import { conversation, GroupAdmins, groupTable } from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { Op, Sequelize } from "sequelize";
 import { uploadTocloudinary } from "../utils/uploadToCloudinary.js";
+import { io } from "../index.js";
+
+
 
 export const createConversation = async (req, res) => {
   const { email } = req.body;
@@ -79,11 +82,26 @@ export const createConversation = async (req, res) => {
 
     const Conversation = await conversation.create({});
 
-    const Bothids = {
-      user_id: loggedInUserId,
-      conversation_id: Conversation.id,
-      joined_at: new Date(),
-    };
+
+
+    // return res.status(200).json({
+    //   data : Conversation,
+    //   success : true,
+    //   message : 'yayayayya'
+    // })
+
+
+
+
+    console.log(Conversation,"pmfonroifo");
+    console.log(loggedInUserId,"loggedddd");
+    console.log(existinguser.id,"iddddd")
+
+    const BothUserIds = [
+      loggedInUserId,
+      existinguser.id
+    ];
+
 
     const Converation_members = await conversation_members.bulkCreate([
       {
@@ -98,6 +116,30 @@ export const createConversation = async (req, res) => {
       },
     ]);
 
+    const sendConversation = await conversation.findOne({
+      where : {
+        id : Conversation.id
+      },
+        include : [
+          {
+            model : createUser,
+            as : "user_members",
+            through : {conversation_members, attributes : []}
+          },
+          {
+            model : groupTable,
+            as : "group_table"
+          }
+        ]
+    })
+    
+    BothUserIds.forEach((UserId)=>{
+      io.to(UserId).emit("new_conversation",{
+        newConversation : sendConversation
+      })
+    })
+
+
     return res.status(200).json({
       message: "Conversation created successfully",
       success: true,
@@ -111,6 +153,9 @@ export const createConversation = async (req, res) => {
     });
   }
 };
+
+
+
 
 export const createGroup = async (req, res) => {
   try {
@@ -135,10 +180,6 @@ export const createGroup = async (req, res) => {
 
     const User = req.user;
 
-    console.log(Members, "ofnifc");
-
-
-    console.log(group_img,"profileeeee");
 
 
 
@@ -175,8 +216,44 @@ export const createGroup = async (req, res) => {
       };
     });
 
-    const conversationMembers =
-      await conversation_members.bulkCreate(mappedMembers);
+    const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
+
+    await GroupAdmins.create({
+      Group_id : Group.id,
+      user_id : User.id
+    })
+
+    const groupInfo = await conversation.findOne({
+      where : {
+        id : Conversation.id
+      },
+      include : [
+        {
+          model : groupTable,
+          as : "group_table",
+            through : {conversation_members, attributes : []}
+        },{
+          model : createUser,
+          as : "user_members"
+        }
+      ]
+
+    })
+
+
+
+
+
+
+    mappedMembers.forEach((Member)=>{
+      io.to(Member.id).emit('new_group',{
+        groupInfo
+      })
+    })
+    
+
+
+
 
     return res.status(200).json({
       message: "Conversation has been created succesfully",

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState, useContext } from "react";
-import NewConvoModal from "./newConvoModal";
 import { ModalContext } from "../context/modalContext";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
@@ -9,6 +8,7 @@ import { Users } from "lucide-react";
 import AddGroupModal from "./AddGroupModal";
 import CustomModal from "../../components/ui/modal";
 import { NavUser } from "../../components/ui/navbar";
+import { SocketContext } from "../context/socketContext";
 
 function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [conversationData, setConversationData] = useState(null);
@@ -18,6 +18,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
   const { OpenModal } = useContext(ModalContext);
   const { user } = useContext(userAuthContext);
+  const { newConversation } = useContext(SocketContext);
 
   useEffect(() => {
     async function fetchdata() {
@@ -33,7 +34,23 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     fetchdata();
   }, []);
 
-  console.log(conversationData, "iheiubfefmlk");
+
+
+  useEffect(()=>{
+    if(!newConversation)return;
+    setConversationData((prev)=>{
+      return [...prev,newConversation]
+    })
+    setFilteredData((prev)=>{
+      return [...prev,newConversation]
+    })
+
+
+
+  },[newConversation])
+
+
+ 
 
   function SearchConversations(event) {
     console.log(event.target.value, "eventtt");
@@ -207,8 +224,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
                       setSelectedConversation(item.id);
                       setConversationUserData(item);
                     }}
-                    key={item.id}
-                  >
+                    key={item.id}>
                     {chatName?.Profile_img ? (
                        <img
                       src={chatName?.Profile_img}

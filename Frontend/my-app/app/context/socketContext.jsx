@@ -16,9 +16,14 @@ export const SocketContext = createContext();
 export function SocketProvider({ children }) {
   const { user } = useContext(userAuthContext);
   const socketRef = useRef();
-  const [deliveredMessages, setDeliveredMessages] = useState(null);
-  const [seenMessages, setSeenMessages] = useState(null);
-  const [onlineUsers, setOnlineUsers] = useState(null);
+  const [deliveredMessages,setDeliveredMessages] = useState(null);
+  const [seenMessages,setSeenMessages] = useState(null);
+  const [onlineUsers,setOnlineUsers] = useState(null);
+  const [newConversation,setNewConversation] = useState(null);
+
+
+
+
 
   console.log(user, "userrrr ayaa to dikha");
 
@@ -42,9 +47,41 @@ export function SocketProvider({ children }) {
       setDeliveredMessages(data.messageIds);
     });
 
-    socketRef?.current?.on("onlineUsers", (data) => {
-      setOnlineUsers(data);
-    });
+
+    socketRef?.current?.on("onlineUsers",(data)=>{
+      console.log(data,"onlineeeeeeeeeeeee")
+      setOnlineUsers(data.currentOnlineMembers);
+    })
+
+
+    socketRef?.current?.on("user-online",(data)=>{
+      console.log(data,"ye online aya");
+
+
+
+      setOnlineUsers((prev)=>{
+        return prev.includes(data.userId) ? prev : [...prev,data.userId]
+      })
+    })
+
+
+    socketRef?.current?.on("user-offline",(data)=>{
+      setOnlineUsers((prev)=>{
+        return prev.filter((item)=> item!=data.userId)
+      })
+    })
+
+    
+    socketRef.current.on("seen_messages",(data)=>{
+      setSeenMessages(data)
+    })
+
+
+    socketRef.current.on("new_conversation",(data)=>{
+      console.log(data,"nfnfifnfi")
+      setNewConversation(data.newConversation)
+    })
+
 
     socketRef?.current?.on("user-online", (data) => {
       setOnlineUsers((prev) => {
@@ -65,6 +102,13 @@ export function SocketProvider({ children }) {
 
 
 
+
+  console.log(onlineUsers,"jijoif ")
+
+  console.log(onlineUsers,"onlineeeeeeeee")
+
+
+
   
   console.log(onlineUsers, "onlineeeeeeeee");
 
@@ -73,33 +117,15 @@ export function SocketProvider({ children }) {
       socketRef.current.disconnect();
       socketRef.current = null;
       console.log("socket disconnected");
-    }
-  }, []);
+      }
 
-  // useEffect(()=>{
+  },[])
 
-  //   console.log("socket reff se pehle")
 
-  //   if(!socketRef.current)return;
-
-  //   console.log(socketRef.current,"socket reffff");
-
-  //     console.log("effect chlaaaaa")
-
-  // },[deliveredMessages,socketRef.current])
-
-  console.log(deliveredMessages, "delivered");
 
   return (
     <SocketContext.Provider
-      value={{
-        connectSocket,
-        socketRef,
-        disconnectSocket,
-        deliveredMessages,
-        seenMessages,
-        onlineUsers,
-      }}
+      value={{ connectSocket,socketRef,newConversation,disconnectSocket,deliveredMessages,seenMessages,onlineUsers}}
     >
       {children}
     </SocketContext.Provider>
