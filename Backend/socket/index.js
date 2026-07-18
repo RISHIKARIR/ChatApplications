@@ -367,10 +367,11 @@ export const initialiseSocket = (io) => {
     socket.on("disconnect", (reason) => {
 
 
-      socket.emit.broadcast("user-offline",{
+      socket.broadcast.emit("user-offline",{
         userId
       })
 
+      
       const isUserStillonApp = onlineMembers.get(userId);
 
       if (isUserStillonApp) {
@@ -381,7 +382,6 @@ export const initialiseSocket = (io) => {
         onlineMembers.delete(userId);
       }
 
-      //   console.log("Disconnected:", reason
     });
   });
 };
