@@ -8,6 +8,10 @@ const onlineMembers = new Map();
 let typingMembers = new Map();
 
 export const initialiseSocket = (io) => {
+
+
+
+
   io.on("connection", (socket) => {
     console.log("user is connected", socket.id, socket.handshake.query.UserId);
     const userId = Number(socket.handshake.query.UserId);
@@ -16,6 +20,9 @@ export const initialiseSocket = (io) => {
       socket.join(`conversation${conversationId}`);
     });
 
+
+  
+
     markPendingMessages(io, userId);
 
     if (!onlineMembers.has(userId)) {
@@ -23,6 +30,30 @@ export const initialiseSocket = (io) => {
     }
 
     onlineMembers.get(userId).add(socket.id);
+
+    console.log(onlineMembers,"onlineeee");
+
+
+     const currentOnlineMembers =  [...onlineMembers.keys()];
+
+
+   
+     socket.emit("onlineUsers",{
+      currentOnlineMembers,
+      response : "All online Members"
+     })
+
+
+
+    socket.broadcast.emit("user-online",{
+      userId,
+      response : "Online User"
+    })
+
+
+
+     console.log(currentOnlineMembers,"Currrrrrr")
+
 
     socket.on("send_message", async (data) => {
       console.log(data, "ye data ayaaaaa");
@@ -339,6 +370,12 @@ export const initialiseSocket = (io) => {
     });
 
     socket.on("disconnect", (reason) => {
+
+
+      socket.broadcast.emit("user-offline",{
+        userId
+      })
+
       const isUserStillonApp = onlineMembers.get(userId);
 
       if (isUserStillonApp) {
