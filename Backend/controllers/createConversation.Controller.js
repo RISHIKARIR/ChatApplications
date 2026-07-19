@@ -167,7 +167,7 @@ export const createGroup = async (req, res) => {
 
     let group_img;
 
-    if (Object.keys(GroupImage).length > 0) {
+    if (GroupImage && Object.keys(GroupImage).length > 0) {
       group_img = await uploadTocloudinary(req.file.buffer, "Group-image");
     }
 
@@ -181,14 +181,14 @@ export const createGroup = async (req, res) => {
     const User = req.user;
 
 
-
-
     Members.push({
       id: User.id,
       name: User.name,
       email: User.email,
       Profile_img: User.Profile_img,
+      role : "ADMIN"
     });
+
 
     const Conversation = await conversation.create({
       isGroup: true,
@@ -200,19 +200,22 @@ export const createGroup = async (req, res) => {
         success: false,
       });
 
+
+      console.log(group_img,"jji9fh8rh98fh89rh")
+
     const Group = await groupTable.create({
       Group_name: groupName,
-      Group_image: group_img.url,
+      Group_image: group_img?.url ?? null,
       Group_Description: groupDescription,
-      conversation_id: Conversation.id,
+      conversation_id: Conversation.id
     });
 
     const mappedMembers = Members.map((Member) => {
       return {
         user_id: Member.id,
         conversation_id: Conversation.id,
-
         joined_at: new Date(),
+        role : Member?.role ?? "MEMBER"
       };
     });
 
@@ -231,27 +234,21 @@ export const createGroup = async (req, res) => {
         {
           model : groupTable,
           as : "group_table",
-            through : {conversation_members, attributes : []}
         },{
           model : createUser,
-          as : "user_members"
+          as : "user_members",
+          through : { conversation_members, attributes : [] }
         }
       ]
 
     })
-
-
-
-
-
+  
 
     mappedMembers.forEach((Member)=>{
-      io.to(Member.id).emit('new_group',{
-        groupInfo
+      io.to(Member.user_id).emit('new_conversation',{
+       newConversation :  groupInfo
       })
     })
-    
-
 
 
 
@@ -269,3 +266,31 @@ export const createGroup = async (req, res) => {
     });
   }
 };
+
+
+
+export const updateGroup = async (req,res)=>{
+
+  try{
+                              
+
+
+  }catch(err){
+    console.log(err,"errorrrrr")
+    return res.status(500).json({
+      message : "Something went wrong",
+      success : false,
+      error : err
+    })
+  }
+
+
+
+
+
+
+
+}
+
+
+

@@ -46,6 +46,11 @@ export const conversation_members = seq.define("conversation_members_table",{
   joined_at : {
     type : DataTypes.DATE,
     allowNull : false
+  },
+  role : {
+    type : DataTypes.STRING,
+    allowNull : false,
+    defaultValue : "MEMBER"
   }
 
 

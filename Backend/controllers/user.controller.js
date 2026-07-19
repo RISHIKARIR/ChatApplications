@@ -11,11 +11,11 @@ export const ProfileSave = async (req, res) => {
     const updateFields = {};
 
     let Profile_img;
-    if (  req.file && Object.keys(req.file).length > 0) {
+    if ( req.file && Object.keys(req.file).length > 0) {
       Profile_img = await uploadTocloudinary(req.file.buffer, "profile-image");
     }
 
-  
+
 
     if (Profile_img != null || Profile_img != undefined) {
       updateFields.Profile_img = Profile_img.url;
