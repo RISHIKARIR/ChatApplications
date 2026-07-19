@@ -20,6 +20,7 @@ export function SocketProvider({ children }) {
   const [seenMessages,setSeenMessages] = useState(null);
   const [onlineUsers,setOnlineUsers] = useState(null);
   const [newConversation,setNewConversation] = useState(null);
+  const [newGroup,setNewGroup] = useState(null);
 
 
 
@@ -78,10 +79,10 @@ export function SocketProvider({ children }) {
 
 
     socketRef.current.on("new_conversation",(data)=>{
-      console.log(data,"nfnfifnfi")
       setNewConversation(data.newConversation)
     })
 
+ 
 
     socketRef?.current?.on("user-online", (data) => {
       setOnlineUsers((prev) => {
@@ -98,6 +99,7 @@ export function SocketProvider({ children }) {
     socketRef.current.on("seen_messages", (data) => {
       setSeenMessages(data);
     });
+    
   }, [user]);
 
 

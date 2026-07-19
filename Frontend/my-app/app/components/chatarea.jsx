@@ -4,6 +4,7 @@ import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
 import { SocketContext } from "../context/socketContext";
 import { Button } from "@/components/ui/button";
+import GroupDrawer from "./GroupDrawer";
 import {
   EllipsisVertical,
   Trash2,
@@ -14,6 +15,7 @@ import {
   Send,
   Mic,
   Paperclip,
+  Menu,
 } from "lucide-react";
 import { uploadConfig } from "../config/uploadconfig";
 
@@ -58,6 +60,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [typingMembers, setTypingMembers] = useState([]);
   const [files, setFiles] = useState([]);
   const [imageDetails, setImageDetails] = useState(null);
+  const [openDrawer,setOpenDrawer] = useState(false);
 
   console.log(conversationUserData, "convooooooo");
 
@@ -430,6 +433,9 @@ console.log(onlineUsers,"jfjfinfuifnbui")
               )}
             </div>
 
+
+
+
             <div>
               <h3 className="text-sm font-bold leading-none text-white">
                 {selectedConversation
@@ -447,10 +453,10 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                       : typingMembers.length === 1
                         ? `${typingMembers[0]} is typing`
                         : ""
-                    : typingUser &&
+                        : typingUser &&
                         selectedConversation === typingUser.conversationId
-                      ? "typing..."
-                      : onlineUsers?.includes(otherUser.id) ? "Active" : ""
+                        ? "typing..."
+                        : onlineUsers?.includes(otherUser.id) ? "Active" : ""
                   : "Please select a conversation"}
               </p>
             </div>
@@ -476,10 +482,16 @@ console.log(onlineUsers,"jfjfinfuifnbui")
 
               <button
                 type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
-              >
-                <Grid2X2 size={17} />
+                onClick={()=>{setOpenDrawer(true)}}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white">
+                <EllipsisVertical size={17} />
+         
               </button>
+              <GroupDrawer
+              open={openDrawer}
+              setOpen={setOpenDrawer}
+              data={convoData}
+              />
             </div>
           )}
         </div>
