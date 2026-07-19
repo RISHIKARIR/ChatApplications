@@ -19,8 +19,10 @@ import { useContext } from "react";
 import { userAuthContext } from "../../context/authContext";
 import { profileUser } from "../../config/profile";
 import { Spinner } from "@/components/ui/spinner";
+import { useImageUpload } from "../../../hooks/usePreviewImage";
 
 function page() {
+  
   const { user, loading } = useContext(userAuthContext);
 
   if (loading) {
@@ -31,9 +33,19 @@ function page() {
       </div>
     );
   }
-  const uploadRef = useRef(null);
 
-  const [preview, setPreview] = useState(user?.user_image);
+
+
+
+
+  const {preview, uploadRef, previewImage, removeImage } =
+    useImageUpload(user?.user_image);
+
+
+
+
+
+  
   const [editing, setEditing] = useState(false);
   const [form, setFormData] = useState({
     name: user?.name || "",
@@ -41,52 +53,34 @@ function page() {
     image: "",
   });
 
-
-
-
-  
   const [saveForm, setSaveForm] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    image: "",
+    image: user?.user_image || "",
   });
 
-
-
   const [notAllowed, setnotAllowed] = useState(true);
-  const [saveLoading,setSaveLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
 
   const userArray = profileUser(user);
 
-  async function setPreviewImage(e) {
-    let savefile = "";
-    let previewUrl = "";
 
-    if (e.currentTarget.name == "remove") {
-      setPreview(null);
-      savefile = "";
-    } else {
-      savefile = e.target?.files[0];
-    }
 
-    if (savefile != "") {
-      previewUrl = URL.createObjectURL(savefile);
-    }
 
-    setPreview(previewUrl);
+
+  function setPreviewImage(file){
     setnotAllowed(false);
-
     setFormData((prev) => {
       return {
         ...prev,
-        image: savefile,
+        image: file,
       };
     });
 
     setSaveForm((prev) => {
       return {
         ...prev,
-        image: savefile,
+        image: file,
       };
     });
   }
@@ -101,25 +95,25 @@ function page() {
   }
 
   function saveFieldChanges(item) {
-    
     setSaveForm((prev) => {
       return {
         ...prev,
         [item.name]: form[item.name],
       };
     });
-    
+
     console.log(saveForm, "fuhfuifubu");
     if (saveForm.name == user.name && saveForm.email == user.email) {
       setnotAllowed(true);
     } else {
       setnotAllowed(false);
-
-
     }
   }
 
   console.log(saveForm, "ojfiohi");
+
+
+
 
   async function saveChanges() {
     try {
@@ -140,28 +134,18 @@ function page() {
         return;
       }
 
-      toast.success("Profile updated succesfully")
-
+      toast.success("Profile updated succesfully");
     } catch (err) {
       toast.error(err);
       console.log(err, "error haiiii");
-    }finally{ 
+    } finally {
       setSaveLoading(false);
     }
   }
 
-  console.log(preview, "fijfifji");
-
-  function uploadImage() {}
-
-  console.log(form, "formDataaaa");
-
   return (
     <div className="min-h-screen bg-[#222126] flex justify-center text-white ">
       <div className="mx-auto flex items-center justify-center w-full  rounded-2xl border border-white/5 bg-[#0d0b10] shadow-2xl shadow-black/30">
-        {/* Left Sidebar */}
-
-        {/* Main Content */}
         <main className="min-w-0  justify-center bg-[#0d0b10]">
           {/* Top Bar */}
           <div className="flex flex-col items-center gap-4 border-b border-white/5 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between">
@@ -169,7 +153,6 @@ function page() {
               <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#282633] text-zinc-300">
                 <User size={22} />
               </div>
-
               <div>
                 <h1 className="text-lg font-semibold text-white">
                   Account Settings
@@ -211,9 +194,11 @@ function page() {
                 <div className="h-16 w-16 shrink-0 overflow-hidden rounded-full bg-[#2b2934]">
                   {/* image space */}
 
-                  {preview ? (
+                {console.log(preview,"fofifoifjofijfoijfoi")}
+
+                  {(preview || user?.user_image) ? (
                     <img
-                      src={preview || user?.name.charAt(0)}
+                      src={preview || user?.user_image}
                       className="flex h-full w-full items-center justify-center text-xl font-bold text-zinc-500"
                     ></img>
                   ) : (
@@ -247,13 +232,19 @@ function page() {
                       type="file"
                       className="hidden"
                       ref={uploadRef}
-                      onChange={setPreviewImage}
+                      onChange={(e) => {
+                        previewImage(e);
+                        setPreviewImage(e.target.files[0]);
+                      }}
                     ></input>
 
                     <button
                       disabled={preview == null}
                       name="remove"
-                      onClick={setPreviewImage}
+                      onClick={() => {
+                        removeImage();
+                        setPreviewImage(e.target.files[0]);
+                      }}
                       className="flex h-8 items-center disabled:text-red-400/50  gap-2 rounded-md bg-[#2a2731] px-3 text-xs font-semibold text-red-400 transition enabled:hover:bg-red-500/10"
                     >
                       <Trash2 size={13} />
@@ -334,11 +325,7 @@ function page() {
                       </div>
                     );
                   })}
-
-      
                 </div>
-
-   
               </div>
 
               <button
@@ -346,7 +333,7 @@ function page() {
                 onClick={saveChanges}
                 className="mt-5 h-10 flex rounded-md disabled:bg-[#6d35ff]/60 bg-[#6d35ff] px-4 text-sm font-semibold items-center text-white transition hover:bg-[#7c4dff]"
               >
-                Save Changes { saveLoading && <Spinner/>  }
+                Save Changes {saveLoading && <Spinner />}
               </button>
 
               {/* Divider */}

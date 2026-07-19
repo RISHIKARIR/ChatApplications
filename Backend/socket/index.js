@@ -376,6 +376,7 @@ export const initialiseSocket = (io) => {
         userId
       })
 
+      
       const isUserStillonApp = onlineMembers.get(userId);
 
       if (isUserStillonApp) {
@@ -386,7 +387,6 @@ export const initialiseSocket = (io) => {
         onlineMembers.delete(userId);
       }
 
-      //   console.log("Disconnected:", reason
     });
   });
 };

@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useRef, useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useRef,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { userAuthContext } from "./authContext";
 import { io } from "socket.io-client";
 
@@ -13,6 +20,7 @@ export function SocketProvider({ children }) {
   const [seenMessages,setSeenMessages] = useState(null);
   const [onlineUsers,setOnlineUsers] = useState(null);
   const [newConversation,setNewConversation] = useState(null);
+  const [newGroup,setNewGroup] = useState(null);
 
 
 
@@ -21,7 +29,7 @@ export function SocketProvider({ children }) {
   console.log(user, "userrrr ayaa to dikha");
 
   const connectSocket = useCallback(() => {
-     console.log("connectSocket called");
+    console.log("connectSocket called");
 
     if (!user) return;
 
@@ -36,12 +44,9 @@ export function SocketProvider({ children }) {
 
     socketRef.current = socket;
 
-    
-
-                                
-    socketRef?.current?.on("delivered_messages",(data)=>{
+    socketRef?.current?.on("delivered_messages", (data) => {
       setDeliveredMessages(data.messageIds);
-    })
+    });
 
 
     socketRef?.current?.on("onlineUsers",(data)=>{
@@ -74,13 +79,27 @@ export function SocketProvider({ children }) {
 
 
     socketRef.current.on("new_conversation",(data)=>{
-      console.log(data,"nfnfifnfi")
       setNewConversation(data.newConversation)
     })
 
+ 
 
+    socketRef?.current?.on("user-online", (data) => {
+      setOnlineUsers((prev) => {
+        return prev?.includes(data.UserId) ? prev : [...prev, data.UserId];
+      });
+    });
 
+    socketRef?.current?.on("user-offline", (data) => {
+      setOnlineUsers((prev) => {
+        return prev?.filter((item) => item != data.userId);
+      });
+    });
 
+    socketRef.current.on("seen_messages", (data) => {
+      setSeenMessages(data);
+    });
+    
   }, [user]);
 
 
@@ -93,9 +112,10 @@ export function SocketProvider({ children }) {
 
 
   
-  const disconnectSocket = useCallback(()=>{
+  console.log(onlineUsers, "onlineeeeeeeee");
 
-    if(socketRef.current){
+  const disconnectSocket = useCallback(() => {
+    if (socketRef.current) {
       socketRef.current.disconnect();
       socketRef.current = null;
       console.log("socket disconnected");

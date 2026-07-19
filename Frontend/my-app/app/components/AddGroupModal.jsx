@@ -26,7 +26,7 @@ function NewGroupChatModal({
   const [groupDetails, setGroupDetails] = useState({
     title: "",
     description: "",
-    group_image : ""
+    group_image: "",
   });
   const [preview, setPreview] = useState(null);
   const uploadRef = useRef(null);
@@ -42,7 +42,7 @@ function NewGroupChatModal({
     return onlyMembers;
   }, [conversationData]);
 
-  console.log(allMembers, "nid9iid");
+  console.log(allMembers, "nid9joidjdoiiid");
   console.log(searchMembers, "search");
 
   function AddOrRemoveMembers(Member) {
@@ -67,13 +67,10 @@ function NewGroupChatModal({
     const formData = new FormData();
 
     try {
-
-      formData.append("groupImage",groupDetails.group_image);
-      formData.append("groupDescription",groupDetails.description);
-      formData.append("groupName",groupDetails.title);
-      formData.append("Members",JSON.stringify(selectedMembers));
-      
-      
+      formData.append("groupImage", groupDetails.group_image);
+      formData.append("groupDescription", groupDetails.description);
+      formData.append("groupName", groupDetails.title);
+      formData.append("Members", JSON.stringify(selectedMembers));
 
       const response = await Apifetch("user/conversations/group", {
         method: "POST",
@@ -106,8 +103,6 @@ function NewGroupChatModal({
     setSearchMembers(filtered);
   }
 
-  console.log(searchMembers, "diidiododnm");
-
   function handleInput(e) {
     if (e.target.name == "Title") {
       setGroupDetails((prev) => {
@@ -123,25 +118,20 @@ function NewGroupChatModal({
   }
 
   function uploadImage(e) {
-      console.log(e.target.files[0]);
-      const ImageFile = e.target.files[0];
+    console.log(e.target.files[0]);
+    const ImageFile = e.target.files[0];
 
     const previewImage = URL.createObjectURL(ImageFile);
 
-  setPreview(previewImage);
+    setPreview(previewImage);
 
-    setGroupDetails((prev)=>{
+    setGroupDetails((prev) => {
       return {
         ...prev,
-        group_image : ImageFile
-      }
-    })
-
-
+        group_image: ImageFile,
+      };
+    });
   }
-
-
-
 
   return (
     <div
@@ -177,20 +167,20 @@ function NewGroupChatModal({
           {/* Group Info */}
           <div className="flex gap-4">
             {preview != null ? (
-              <img  
-               src={preview}
-               onClick={() => {
-                    uploadRef.current.click();
-                  }}
-               className="h-18.5 w-18.5 rounded-3xl">
-              </img>
+              <img
+                src={preview}
+                onClick={() => {
+                  uploadRef.current.click();
+                }}
+                className="h-18.5 w-18.5 rounded-3xl"
+              ></img>
             ) : (
               <div className="relative shrink-0">
                 <div
                   onClick={() => {
                     uploadRef.current.click();
                   }}
-                  className="flex h-18.5 w-18.5 items-center justify-center rounded-3xl bg-blue-500/15 text-blue-400" 
+                  className="flex h-18.5 w-18.5 items-center justify-center rounded-3xl bg-blue-500/15 text-blue-400"
                 >
                   <Camera size={26} />
                 </div>
@@ -285,13 +275,19 @@ function NewGroupChatModal({
                         }
                       >
                         <div className="flex items-center gap-3">
-                          <Image
-                            src={Member.image || "/default-user.png"}
-                            alt=""
-                            width={32}
-                            height={32}
-                            className="h-8 w-8 rounded-full object-cover"
-                          />
+                          {Member.Profile_img ? (
+                            <Image
+                              src={Member.Profile_img}
+                              alt=""
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded-full text-black flex justify-center items-center bg-white font-semibold">
+                              {Member.name.charAt(0)}
+                            </div>
+                          )}
 
                           <p className="text-sm font-medium text-white">
                             {Member.name}
@@ -348,13 +344,19 @@ function NewGroupChatModal({
                     className={`flex items-center justify-between border-b border-white/10 px-4 py-3 last:border-b-0`}
                   >
                     <div className="flex items-center gap-3">
-                      <Image
-                        src={Member.image || "/default-user.png"}
-                        alt=""
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 rounded-full object-cover"
-                      />
+                      {Member.Profile_img ? (
+                        <Image
+                          src={Member.Profile_img}
+                          alt=""
+                          width={32}
+                          height={32}
+                          className="h-8 w-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-8 w-8 bg-white font-semibold text-black items-center flex justify-center rounded-full">
+                          {Member.name.charAt(0)}
+                        </div>
+                      )}
 
                       <p className="text-sm font-medium text-white">
                         {Member.name}
