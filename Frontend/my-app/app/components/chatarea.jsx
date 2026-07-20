@@ -403,6 +403,28 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   }
 
 
+    async function deleteMessage(){
+        const socket = socketRef.current;
+        
+        
+        if(!socket)return;
+
+        socket.emit("delete_message",{
+            deletedMessage
+        })
+
+
+
+
+
+
+    }
+
+
+
+
+
+  console.log(convoData,"kofojfofjifjif")
 
 
   return (
@@ -483,12 +505,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 <EllipsisVertical size={17} />
          
               </button>
-          
+            {/* {openDrawer &&  */}
               <GroupDrawer
               open={openDrawer}
               setOpen={setOpenDrawer}
               data={convoData}
               />
+              {/* } */}
               
             </div>
           )}
@@ -720,10 +743,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 />
 
                 <AlertDialogDestructive
-                  deleteOpen={deleteOpen}
-                  setDeleteOpen={setDeleteOpen}
+                  open={deleteOpen}
+                  setOpen={setDeleteOpen}
                   deletedMessage={deletedMessage}
-                  setDeletedMessage={setDeletedMessage}
+                  onconfirm={deleteMessage}
                 />
               </ul>
             </div>

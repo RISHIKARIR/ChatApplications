@@ -3,18 +3,29 @@ import { X, Pencil, Camera, Trash2, Check } from "lucide-react";
 import { useImageUpload } from "../../hooks/usePreviewImage";
 import { Apifetch } from "../../lib/apifetch";
 import { userAuthContext } from "../context/authContext";
+import { SquareArrowRightExit } from 'lucide-react';
+
+
 
 function GroupDrawer({ open, setOpen, data }) {
   const { preview, file, uploadRef, previewImage, removeImage } =
-    useImageUpload(data.group_table?.Group_image);
+    useImageUpload();
   const { user } = useContext(userAuthContext);
 
-  const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(data.group_table.Group_name || "");
-  const [description, setDescription] = useState(
-    data.group_table.Group_Description || "",
-  );
+  console.log(data, "kjffpojfpojpfo");
 
+  // const otherUser = useMemo(()=>{
+  //   const other = data.user_members((member)=>member.id != user.id)
+  //   return other;
+  // },[data])
+
+  // console.log(otherUser,"jiofjiorn")
+
+  const [editing, setEditing] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+
+  console.log(name, "jfoihfihfihfif");
   console.log(data, "inrfirkfrom");
 
   const [saving, setSaving] = useState(false);
@@ -26,8 +37,6 @@ function GroupDrawer({ open, setOpen, data }) {
 
     return currentUser.conversation_members_table.role;
   }, [data]);
-
-  console.log(role, "lfhuygfhf");
 
   function enterEdit() {
     setEditing(true);
@@ -55,7 +64,8 @@ function GroupDrawer({ open, setOpen, data }) {
     }
   }
 
-  console.log(data, "iofjoifjioj");
+  console.log(data.group_table?.Group_image, "iofjoifjioj");
+  console.log(preview, "iofjoifjioj");
   return (
     <div
       onClick={() => setOpen(false)}
@@ -74,6 +84,10 @@ function GroupDrawer({ open, setOpen, data }) {
           <span className="text-[13px] font-medium uppercase tracking-wide text-white/40">
             Group info
           </span>
+
+  
+
+
 
           {role == "ADMIN" ? (
             <div className="flex items-center gap-3">
@@ -103,27 +117,33 @@ function GroupDrawer({ open, setOpen, data }) {
           ) : (
             ""
           )}
+
+          
         </div>
 
         {/* scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-6">
+          
+          
+                <span onClick={()=>{}}><SquareArrowRightExit size={20}/></span>
           {/* avatar */}
           <div className="flex flex-col items-center">
+            
             <div className="relative">
               <div
                 className={`h-20 w-20 shrink-0 overflow-hidden rounded-full ring-1 ${
                   editing ? "ring-white/20" : "ring-white/[0.06]"
                 }`}
               >
-                {preview ? (
+                {(preview || data.group_table?.Group_image )? (
                   <img
-                    src={preview}
+                    src={preview ? preview : data.group_table?.Group_image}
                     alt="group"
                     className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-[#2b2934] text-2xl font-semibold text-white/70">
-                    {name?.charAt(0)?.toUpperCase()}
+                    {data.group_table.Group_name?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
               </div>
@@ -173,7 +193,9 @@ function GroupDrawer({ open, setOpen, data }) {
                 autoFocus
               />
             ) : (
-              <p className="text-[15px] text-white">{name || "—"}</p>
+              <p className="text-[15px] text-white">
+                {name || data.group_table.Group_name}
+              </p>
             )}
           </div>
 
@@ -192,7 +214,7 @@ function GroupDrawer({ open, setOpen, data }) {
               />
             ) : (
               <p className="text-[14px] leading-relaxed text-white/60">
-                {description || "No description yet."}
+                {description || data.group_table.Group_Description}
               </p>
             )}
           </div>
@@ -218,15 +240,11 @@ function GroupDrawer({ open, setOpen, data }) {
                       {member.name?.charAt(0)?.toUpperCase()}
                     </div>
                   )}
-                  <span>
-                    {member.name}
-                  </span>
+                  <span>{member.name}</span>
 
                   <span className="text-gray-500 text-xs">
-                  {member.conversation_members_table.role}
+                    {member.conversation_members_table.role}
                   </span>
-
-
                 </div>
               ))}
             </div>
