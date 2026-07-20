@@ -1,27 +1,42 @@
-import React, { useState } from "react";
+import React, { useContext, useMemo, useState } from "react";
 import { X, Pencil, Camera, Trash2, Check } from "lucide-react";
 import { useImageUpload } from "../../hooks/usePreviewImage";
 import { Apifetch } from "../../lib/apifetch";
+import { userAuthContext } from "../context/authContext";
 
 function GroupDrawer({ open, setOpen, data }) {
   const { preview, file, uploadRef, previewImage, removeImage } =
-    useImageUpload(data.group_table.Group_image);
+    useImageUpload(data.group_table?.Group_image);
+  const { user } = useContext(userAuthContext);
 
   const [editing, setEditing] = useState(false);
   const [name, setName] = useState(data.group_table.Group_name || "");
   const [description, setDescription] = useState(
-    data.group_table.Group_Description || ""
+    data.group_table.Group_Description || "",
   );
+
+  console.log(data, "inrfirkfrom");
+
   const [saving, setSaving] = useState(false);
+
+  const role = useMemo(() => {
+    const currentUser = data.user_members.find(
+      (Member) => Member.id == user.id,
+    );
+
+    return currentUser.conversation_members_table.role;
+  }, [data]);
+
+  console.log(role, "lfhuygfhf");
 
   function enterEdit() {
     setEditing(true);
   }
 
   function cancelEdit() {
-    setName(data.group_table.Group_name || "");
-    setDescription(data.group_table.Group_Description || "");
-    removeImage(); // resets to whatever removeImage treats as base — see note below
+    setName(data?.group_table?.Group_name || "");
+    setDescription(data.group_table?.Group_Description || "");
+    removeImage();
     setEditing(false);
   }
 
@@ -29,10 +44,8 @@ function GroupDrawer({ open, setOpen, data }) {
     if (saving) return;
     try {
       setSaving(true);
-      
-      const res = await Apifetch('')
 
-
+      const res = await Apifetch("");
 
       setEditing(false);
     } catch (err) {
@@ -42,6 +55,7 @@ function GroupDrawer({ open, setOpen, data }) {
     }
   }
 
+  console.log(data, "iofjoifjioj");
   return (
     <div
       onClick={() => setOpen(false)}
@@ -60,30 +74,35 @@ function GroupDrawer({ open, setOpen, data }) {
           <span className="text-[13px] font-medium uppercase tracking-wide text-white/40">
             Group info
           </span>
-          <div className="flex items-center gap-3">
-            {!editing ? (
-              <button
-                onClick={enterEdit}
-                className="flex items-center gap-1.5 text-[13px] text-white/50 hover:text-white transition-colors"
+
+          {role == "ADMIN" ? (
+            <div className="flex items-center gap-3">
+              {!editing ? (
+                <button
+                  onClick={enterEdit}
+                  className="flex items-center gap-1.5 text-[13px] text-white/50 hover:text-white transition-colors"
+                >
+                  <Pencil size={13} />
+                  Edit
+                </button>
+              ) : (
+                <button
+                  onClick={cancelEdit}
+                  className="text-[13px] text-white/40 hover:text-white/70 transition-colors"
+                >
+                  Cancel
+                </button>
+              )}
+              <span
+                onClick={() => setOpen(false)}
+                className="cursor-pointer text-white/40 hover:text-white transition-colors"
               >
-                <Pencil size={13} />
-                Edit
-              </button>
-            ) : (
-              <button
-                onClick={cancelEdit}
-                className="text-[13px] text-white/40 hover:text-white/70 transition-colors"
-              >
-                Cancel
-              </button>
-            )}
-            <span
-              onClick={() => setOpen(false)}
-              className="cursor-pointer text-white/40 hover:text-white transition-colors"
-            >
-              <X size={18} />
-            </span>
-          </div>
+                <X size={18} />
+              </span>
+            </div>
+          ) : (
+            ""
+          )}
         </div>
 
         {/* scrollable content */}
@@ -111,7 +130,9 @@ function GroupDrawer({ open, setOpen, data }) {
 
               {editing && (
                 <button
-                  onClick={()=>{uploadRef.current.click()}}
+                  onClick={() => {
+                    uploadRef.current.click();
+                  }}
                   className="absolute -bottom-1 -right-1 flex h-7 w-7 items-center justify-center rounded-full bg-white text-black shadow-md hover:bg-white/90"
                 >
                   <Camera size={13} />
@@ -185,12 +206,27 @@ function GroupDrawer({ open, setOpen, data }) {
               {data.user_members.map((member, index) => (
                 <div
                   key={member.id ?? index}
-                  className="flex items-center gap-3 rounded-lg px-2 py-2 hover:bg-white/[0.04] transition-colors"
+                  className="flex items-center text-white/85 gap-3 rounded-lg px-2 py-2 hover:bg-white/4 transition-colors"
                 >
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-[13px] font-medium text-white/70">
-                    {member.name?.charAt(0)?.toUpperCase()}
-                  </div>
-                  <span className="text-[14px] text-white/85">{member.name}</span>
+                  {member.Profile_img ? (
+                    <img
+                      src={member.Profile_img}
+                      className="h-8 w-8 rounded-2xl"
+                    ></img>
+                  ) : (
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white/[0.08] text-[13px] font-medium text-white/70">
+                      {member.name?.charAt(0)?.toUpperCase()}
+                    </div>
+                  )}
+                  <span>
+                    {member.name}
+                  </span>
+
+                  <span className="text-gray-500 text-xs">
+                  {member.conversation_members_table.role}
+                  </span>
+
+
                 </div>
               ))}
             </div>

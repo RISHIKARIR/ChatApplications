@@ -64,6 +64,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   console.log(conversationUserData, "convooooooo");
 
+
+
   const convoData = conversationUserData;
 
   const otherUser = convoData?.user_members?.find((value) => {
@@ -393,19 +395,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
   }
 
-  console.log(showChats, "showwwwwwww");
-  console.log(files.length, "fnrjnfeijrnbi");
-  console.log(files, "foieffofoi");
 
-  console.log(typingUser, "wefweewewew");
-  console.log(conversationData, "fmpofm");
 
   function handleImageModal(item) {
     setOpenImage(true);
     setImageDetails(item);
   }
 
-console.log(onlineUsers,"jfjfinfuifnbui")
 
 
 
@@ -487,11 +483,13 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                 <EllipsisVertical size={17} />
          
               </button>
+          
               <GroupDrawer
               open={openDrawer}
               setOpen={setOpenDrawer}
               data={convoData}
               />
+              
             </div>
           )}
         </div>
@@ -732,6 +730,7 @@ console.log(onlineUsers,"jfjfinfuifnbui")
           )}
         </div>
 
+          {selectedConversation && 
         <div className="bg-[#151c15] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
@@ -779,6 +778,7 @@ console.log(onlineUsers,"jfjfinfuifnbui")
             </button>
           </div>
         </div>
+        }
       </div>
 
       <ImageShowModal
