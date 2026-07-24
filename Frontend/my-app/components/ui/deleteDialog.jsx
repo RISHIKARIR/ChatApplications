@@ -1,4 +1,4 @@
-import { Trash2Icon } from "lucide-react";
+
 
 import {
   AlertDialog,
@@ -19,8 +19,11 @@ import { useContext } from "react";
 export function AlertDialogDestructive({
   open,
   setOpen,
-  deletedMessage,
   onconfirm,
+  title,
+  message,
+  icon,
+  confirmMessage
 }) {
   const handlesubmit = async () => {
     try {
@@ -45,18 +48,17 @@ export function AlertDialogDestructive({
       >
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/20 text-destructive">
-            <Trash2Icon />
+            {icon}
           </AlertDialogMedia>
-          <AlertDialogTitle>Delete Message?</AlertDialogTitle>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription className="text-white/50">
-            This will permanently delete this Message from this conversation for
-            Everyone.
+            {message}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel className="bg-white/5">Cancel</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={handlesubmit}>
-            Delete
+            {confirmMessage}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>

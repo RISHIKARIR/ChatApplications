@@ -16,6 +16,7 @@ import {
   Mic,
   Paperclip,
   Menu,
+  Trash2Icon,
 } from "lucide-react";
 import { uploadConfig } from "../config/uploadconfig";
 
@@ -477,8 +478,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                         : onlineUsers?.includes(otherUser.id) ? "Active" : ""
                   : "Please select a conversation"}
               </p>
-            </div>
-          </div>
+                </div>
+              </div>
 
           {selectedConversation && (
             <div className="hidden items-center gap-4 sm:flex">
@@ -747,6 +748,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                   setOpen={setDeleteOpen}
                   deletedMessage={deletedMessage}
                   onconfirm={deleteMessage}
+                  title={"Delete Message?"}
+                  message={"This will permanently delete this Message from this conversation for Everyone."}
+                  icon={<Trash2Icon/>}
+                  confirmMessage={"Delete"}
                 />
               </ul>
             </div>

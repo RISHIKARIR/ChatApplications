@@ -4,6 +4,8 @@ import { useImageUpload } from "../../hooks/usePreviewImage";
 import { Apifetch } from "../../lib/apifetch";
 import { userAuthContext } from "../context/authContext";
 import { SquareArrowRightExit } from 'lucide-react';
+import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
+import { DoorOpen } from 'lucide-react';
 
 
 
@@ -21,7 +23,12 @@ function GroupDrawer({ open, setOpen, data }) {
 
   // console.log(otherUser,"jiofjiorn")
 
+
+
   const [editing, setEditing] = useState(false);
+  const [openLeave,setOpenLeave] = useState(false) 
+
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
@@ -49,23 +56,29 @@ function GroupDrawer({ open, setOpen, data }) {
     setEditing(false);
   }
 
-  async function handleSave() {
-    if (saving) return;
-    try {
-      setSaving(true);
 
-      const res = await Apifetch("");
+  
 
-      setEditing(false);
-    } catch (err) {
-      console.error("Failed to save group:", err);
-    } finally {
-      setSaving(false);
+  async function leaveGroup(){
+    try{
+      const response = Apifetch(`user/${data.id}/leave`,{
+        method : "PUT"
+      })
+
+      n
+
+    }catch(err){
+      console.log(err,"error haiiii");
     }
+
+
+
+
+
   }
 
-  console.log(data.group_table?.Group_image, "iofjoifjioj");
-  console.log(preview, "iofjoifjioj");
+
+
   return (
     <div
       onClick={() => setOpen(false)}
@@ -84,8 +97,6 @@ function GroupDrawer({ open, setOpen, data }) {
           <span className="text-[13px] font-medium uppercase tracking-wide text-white/40">
             Group info
           </span>
-
-  
 
 
 
@@ -125,8 +136,20 @@ function GroupDrawer({ open, setOpen, data }) {
         <div className="flex-1 overflow-y-auto px-5 py-6">
           
           
-                <span onClick={()=>{}}><SquareArrowRightExit size={20}/></span>
+          <span onClick={()=>{setOpenLeave(true)}}>
+            <SquareArrowRightExit size={20}/>
+                
+                </span>
           {/* avatar */}
+            <AlertDialogDestructive
+            open={openLeave}
+            setOpen={setOpenLeave}
+            onconfirm={leaveGroup}
+            title={"Leave Group?"}
+            message={"Are you sure that you want to leave this Group.This action cannot be undone"}
+            icon={<DoorOpen/>}
+            confirmMessage={"Leave"}
+            />    
           <div className="flex flex-col items-center">
             
             <div className="relative">
