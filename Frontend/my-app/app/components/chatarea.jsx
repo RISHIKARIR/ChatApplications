@@ -16,6 +16,7 @@ import {
   Mic,
   Paperclip,
   Menu,
+  Trash2Icon,
 } from "lucide-react";
 import { uploadConfig } from "../config/uploadconfig";
 
@@ -63,6 +64,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [openDrawer,setOpenDrawer] = useState(false);
 
   console.log(conversationUserData, "convooooooo");
+
+
 
   const convoData = conversationUserData;
 
@@ -393,20 +396,36 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
   }
 
-  console.log(showChats, "showwwwwwww");
-  console.log(files.length, "fnrjnfeijrnbi");
-  console.log(files, "foieffofoi");
 
-  console.log(typingUser, "wefweewewew");
-  console.log(conversationData, "fmpofm");
 
   function handleImageModal(item) {
     setOpenImage(true);
     setImageDetails(item);
   }
 
-console.log(onlineUsers,"jfjfinfuifnbui")
 
+    async function deleteMessage(){
+        const socket = socketRef.current;
+        
+        
+        if(!socket)return;
+
+        socket.emit("delete_message",{
+            deletedMessage
+        })
+
+
+
+
+
+
+    }
+
+
+
+
+
+  console.log(convoData,"kofojfofjifjif")
 
 
   return (
@@ -459,8 +478,8 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                         : onlineUsers?.includes(otherUser.id) ? "Active" : ""
                   : "Please select a conversation"}
               </p>
-            </div>
-          </div>
+                </div>
+              </div>
 
           {selectedConversation && (
             <div className="hidden items-center gap-4 sm:flex">
@@ -487,11 +506,14 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                 <EllipsisVertical size={17} />
          
               </button>
+            {/* {openDrawer &&  */}
               <GroupDrawer
               open={openDrawer}
               setOpen={setOpenDrawer}
               data={convoData}
               />
+              {/* } */}
+              
             </div>
           )}
         </div>
@@ -722,16 +744,21 @@ console.log(onlineUsers,"jfjfinfuifnbui")
                 />
 
                 <AlertDialogDestructive
-                  deleteOpen={deleteOpen}
-                  setDeleteOpen={setDeleteOpen}
+                  open={deleteOpen}
+                  setOpen={setDeleteOpen}
                   deletedMessage={deletedMessage}
-                  setDeletedMessage={setDeletedMessage}
+                  onconfirm={deleteMessage}
+                  title={"Delete Message?"}
+                  message={"This will permanently delete this Message from this conversation for Everyone."}
+                  icon={<Trash2Icon/>}
+                  confirmMessage={"Delete"}
                 />
               </ul>
             </div>
           )}
         </div>
 
+          {selectedConversation && 
         <div className="bg-[#151c15] px-6 py-4">
           <div className="flex items-center gap-3">
             <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
@@ -779,6 +806,7 @@ console.log(onlineUsers,"jfjfinfuifnbui")
             </button>
           </div>
         </div>
+        }
       </div>
 
       <ImageShowModal

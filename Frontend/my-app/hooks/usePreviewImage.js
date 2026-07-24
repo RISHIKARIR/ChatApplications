@@ -1,11 +1,8 @@
-    import { useRef, useState } from "react";
+    import { useEffect, useRef, useState } from "react";
 
     export function useImageUpload(initialImage = null){
-
-
-    
-        
         const [preview,setPreview] = useState(initialImage);
+
         const uploadRef = useRef(null);
         
         function previewImage(e){

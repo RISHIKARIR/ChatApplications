@@ -4,6 +4,9 @@ export const isGroupAdmin = async (req, res, next) => {
   const User = req.user;
   const { conversationId } = req.body;
 
+
+  try{
+
   const isAdmin = await conversation_members.findOne({
     where: {
       conversationId: conversationId,
@@ -19,4 +22,15 @@ export const isGroupAdmin = async (req, res, next) => {
   }
 
   next();
+  }catch(err){
+    return res.status(500).json({
+      message : "Request doesn't processed",
+      sucess : false
+    })
+
+
+  }
+
+
+
 };

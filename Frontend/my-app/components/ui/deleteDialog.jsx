@@ -1,4 +1,4 @@
-import { Trash2Icon } from "lucide-react"
+
 
 import {
   AlertDialog,
@@ -11,57 +11,57 @@ import {
   AlertDialogMedia,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Button } from "@/components/ui/button"
-import { SocketContext } from "../../app/context/socketContext"
-import { useContext } from "react"
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { SocketContext } from "../../app/context/socketContext";
+import { useContext } from "react";
 
-
-
-export function AlertDialogDestructive({ deleteOpen,setDeleteOpen,deletedMessage,setDeletedMessage }) {
-
-    const { socketRef  } = useContext(SocketContext);
-
-
-
-    async function deleteMessage(){
-        const socket = socketRef.current;
-        
-        
-        if(!socket)return;
-
-        socket.emit("delete_message",{
-            deletedMessage
-        })
-
-
-
-
-
-
+export function AlertDialogDestructive({
+  open,
+  setOpen,
+  onconfirm,
+  title,
+  message,
+  icon,
+  confirmMessage
+}) {
+  const handlesubmit = async () => {
+    try {
+      await onconfirm();
+    } catch (err) {
+      console.log(err);
+    }finally{
+      setOpen(false)
     }
+  };
+
+
 
 
 
 
   return (
-    <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}  className="bg-black">
- 
-      <AlertDialogContent size="sm"  className="bg-[#1f1f1f] text-white border border-white/10">
+    <AlertDialog open={open} onOpenChange={setOpen} className="bg-black">
+      <AlertDialogContent
+        size="sm"
+        className="bg-[#1f1f1f] text-white border border-white/10"
+      >
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/20 text-destructive">
-            <Trash2Icon />
+            {icon}
           </AlertDialogMedia>
-          <AlertDialogTitle>Delete Message?</AlertDialogTitle>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription className="text-white/50">
-            This will permanently delete this Message from this conversation for Everyone.
+            {message}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel  className="bg-white/5">Cancel</AlertDialogCancel>
-          <AlertDialogAction variant="destructive" onClick={deleteMessage} >Delete</AlertDialogAction>
+          <AlertDialogCancel className="bg-white/5">Cancel</AlertDialogCancel>
+          <AlertDialogAction variant="destructive" onClick={handlesubmit}>
+            {confirmMessage}
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  )
+  );
 }
