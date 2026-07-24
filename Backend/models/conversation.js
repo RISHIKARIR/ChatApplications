@@ -51,9 +51,11 @@ export const conversation_members = seq.define("conversation_members_table",{
     type : DataTypes.STRING,
     allowNull : false,
     defaultValue : "MEMBER"
+  },
+  is_left : {
+    type : DataTypes.BOOLEAN,
+    defaultValue : false 
   }
-
-
 
 }, { tableName : "conversation_members_table"}
 )
