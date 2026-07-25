@@ -272,7 +272,78 @@ export const createGroup = async (req, res) => {
 export const updateGroup = async (req,res)=>{
 
   try{
-                              
+    const { conversationId } = req.params;
+    const { name, description } = req.body;
+
+    if(!conversationId){
+      return res.status(400).json({
+        message : "Conversation Id is required",
+        success : false
+      })
+    }
+
+    if((name == undefined || name.trim() == "") && (description == undefined || description.trim() == "" ) && (req.file == undefined)){
+      return res.status(400).json({
+        message : "Every Field cannot be empty",
+        success : false
+      })
+    }
+
+
+    console.log(req.file,"mfofofmnopm");
+
+    const updateFields = {};
+
+  if(name != undefined && name.trim() != ""){
+    updateFields.name = name;
+  }
+
+
+  if(description != undefined || description.trim() != "" ){
+    updateFields.description = description
+  }
+
+
+
+
+  if(req.file != undefined){
+
+    await uploadTocloudinary(req.file.buffer,"")
+
+
+    updateFields.Group_Image = 
+  }
+
+
+
+
+
+
+    console.log(group_image,"nifniofoir");
+    console.log(description,"mogmogjo");
+    console.log(name,"fjijfiofj");
+    console.log(conversationId,"fiojfiufh");
+
+      return;
+
+
+    const conversation = await groupTable.update(
+    {
+      
+
+    },    
+      {
+      where : {
+        conversation_id : conversationId
+      }
+    }
+  
+  
+  )
+
+
+
+
 
 
   }catch(err){
