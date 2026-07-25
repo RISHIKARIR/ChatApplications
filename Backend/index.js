@@ -9,6 +9,7 @@ import { verifytoken } from "./middlewares/auth.middlewares.js";
 import messages from "./routes/messages.routes.js";
 import cors from "cors";
 import mediaRoute from "./routes/media.route.js"
+import groupRoute from "./routes/groupRoute.js"
 
 
 import http, { createServer } from "http";
@@ -43,6 +44,7 @@ seq.sync({alter : true});
 app.use("/user", conversation);
 app.use("/user", messages);
 app.use("/user",user)
+app.use('/user',groupRoute)
 
 app.use("/user/media",mediaRoute);
 
