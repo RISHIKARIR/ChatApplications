@@ -59,7 +59,7 @@ export function AlertDialogDestructive({
           <AlertDialogCancel className="bg-white/5">Cancel</AlertDialogCancel>
           <AlertDialogAction variant="destructive" onClick={handlesubmit}>
             {confirmMessage}
-          </AlertDialogAction>
+            </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
