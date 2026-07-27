@@ -9,9 +9,6 @@ let typingMembers = new Map();
 
 export const initialiseSocket = (io) => {
 
-
-
-
   io.on("connection", (socket) => {
     console.log("user is connected", socket.id, socket.handshake.query.UserId);
     const userId = Number(socket.handshake.query.UserId);

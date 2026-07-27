@@ -1,5 +1,9 @@
 import { createUser } from "../models/userModel.js";
-import { conversation, GroupAdmins, groupTable } from "../models/conversation.js";
+import {
+  conversation,
+  GroupAdmins,
+  groupTable,
+} from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { Op, Sequelize } from "sequelize";
 import { uploadTocloudinary } from "../utils/uploadToCloudinary.js";
@@ -82,26 +86,17 @@ export const createConversation = async (req, res) => {
 
     const Conversation = await conversation.create({});
 
-
-
     // return res.status(200).json({
     //   data : Conversation,
     //   success : true,
     //   message : 'yayayayya'
     // })
 
+    console.log(Conversation, "pmfonroifo");
+    console.log(loggedInUserId, "loggedddd");
+    console.log(existinguser.id, "iddddd");
 
-
-
-    console.log(Conversation,"pmfonroifo");
-    console.log(loggedInUserId,"loggedddd");
-    console.log(existinguser.id,"iddddd")
-
-    const BothUserIds = [
-      loggedInUserId,
-      existinguser.id
-    ];
-
+    const BothUserIds = [loggedInUserId, existinguser.id];
 
     const Converation_members = await conversation_members.bulkCreate([
       {
@@ -117,28 +112,27 @@ export const createConversation = async (req, res) => {
     ]);
 
     const sendConversation = await conversation.findOne({
-      where : {
-        id : Conversation.id
+      where: {
+        id: Conversation.id,
       },
-        include : [
-          {
-            model : createUser,
-            as : "user_members",
-            through : {conversation_members, attributes : []}
-          },
-          {
-            model : groupTable,
-            as : "group_table"
-          }
-        ]
-    })
-    
-    BothUserIds.forEach((UserId)=>{
-      io.to(UserId).emit("new_conversation",{
-        newConversation : sendConversation
-      })
-    })
+      include: [
+        {
+          model: createUser,
+          as: "user_members",
+          through: { conversation_members, attributes: [] },
+        },
+        {
+          model: groupTable,
+          as: "group_table",
+        },
+      ],
+    });
 
+    BothUserIds.forEach((UserId) => {
+      io.to(UserId).emit("new_conversation", {
+        newConversation: sendConversation,
+      });
+    });
 
     return res.status(200).json({
       message: "Conversation created successfully",
@@ -154,14 +148,10 @@ export const createConversation = async (req, res) => {
   }
 };
 
-
-
-
 export const createGroup = async (req, res) => {
   try {
     const { groupName, groupDescription } = req.body;
     let Members = JSON.parse(req.body.Members);
- 
 
     const GroupImage = req.file;
 
@@ -180,15 +170,13 @@ export const createGroup = async (req, res) => {
 
     const User = req.user;
 
-
     Members.push({
       id: User.id,
       name: User.name,
       email: User.email,
       Profile_img: User.Profile_img,
-      role : "ADMIN"
+      role: "ADMIN",
     });
-
 
     const Conversation = await conversation.create({
       isGroup: true,
@@ -200,14 +188,13 @@ export const createGroup = async (req, res) => {
         success: false,
       });
 
-
-      console.log(group_img,"jji9fh8rh98fh89rh")
+    console.log(group_img, "jji9fh8rh98fh89rh");
 
     const Group = await groupTable.create({
       Group_name: groupName,
       Group_image: group_img?.url ?? null,
       Group_Description: groupDescription,
-      conversation_id: Conversation.id
+      conversation_id: Conversation.id,
     });
 
     const mappedMembers = Members.map((Member) => {
@@ -215,42 +202,40 @@ export const createGroup = async (req, res) => {
         user_id: Member.id,
         conversation_id: Conversation.id,
         joined_at: new Date(),
-        role : Member?.role ?? "MEMBER"
+        role: Member?.role ?? "MEMBER",
       };
     });
 
-    const conversationMembers = await conversation_members.bulkCreate(mappedMembers);
+    const conversationMembers =
+      await conversation_members.bulkCreate(mappedMembers);
 
     await GroupAdmins.create({
-      Group_id : Group.id,
-      user_id : User.id
-    })
+      Group_id: Group.id,
+      user_id: User.id,
+    });
 
     const groupInfo = await conversation.findOne({
-      where : {
-        id : Conversation.id
+      where: {
+        id: Conversation.id,
       },
-      include : [
+      include: [
         {
-          model : groupTable,
-          as : "group_table",
-        },{
-          model : createUser,
-          as : "user_members",
-          through : { conversation_members, attributes : [] }
-        }
-      ]
+          model: groupTable,
+          as: "group_table",
+        },
+        {
+          model: createUser,
+          as: "user_members",
+          through: { conversation_members, attributes: [] },
+        },
+      ],
+    });
 
-    })
-  
-
-    mappedMembers.forEach((Member)=>{
-      io.to(Member.user_id).emit('new_conversation',{
-       newConversation :  groupInfo
-      })
-    })
-
-
+    mappedMembers.forEach((Member) => {
+      io.to(Member.user_id).emit("new_conversation", {
+        newConversation: groupInfo,
+      });
+    });
 
     return res.status(200).json({
       message: "Conversation has been created succesfully",
@@ -267,101 +252,115 @@ export const createGroup = async (req, res) => {
   }
 };
 
-
-
-export const updateGroup = async (req,res)=>{
-
-  try{
+export const updateGroup = async (req, res) => {
+  try {
     const { conversationId } = req.params;
     const { name, description } = req.body;
 
-    if(!conversationId){
+    if (!conversationId) {
       return res.status(400).json({
-        message : "Conversation Id is required",
-        success : false
-      })
+        message: "Conversation Id is required",
+        success: false,
+      });
     }
 
-    if((name == undefined || name.trim() == "") && (description == undefined || description.trim() == "" ) && (req.file == undefined)){
+    if (
+      (name == undefined || name.trim() == "") &&
+      (description == undefined || description.trim() == "") &&
+      req.file == undefined
+    ) {
       return res.status(400).json({
-        message : "Every Field cannot be empty",
-        success : false
-      })
+        message: "Every Field cannot be empty",
+        success: false,
+      });
     }
 
-
-    console.log(req.file,"mfofofmnopm");
+    console.log(req.file, "mfofofmnopm");
 
     const updateFields = {};
 
-  if(name != undefined && name.trim() != ""){
-    updateFields.name = name;
-  }
-
-
-  if(description != undefined || description.trim() != "" ){
-    updateFields.description = description
-  }
-
-
-
-
-  if(req.file != undefined){
-
-    await uploadTocloudinary(req.file.buffer,"")
-
-
-    updateFields.Group_Image = 
-  }
-
-
-
-
-
-
-    console.log(group_image,"nifniofoir");
-    console.log(description,"mogmogjo");
-    console.log(name,"fjijfiofj");
-    console.log(conversationId,"fiojfiufh");
-
-      return;
-
-
-    const conversation = await groupTable.update(
-    {
-      
-
-    },    
-      {
-      where : {
-        conversation_id : conversationId
-      }
+    if (name != undefined && name.trim() != "") {
+      updateFields.Group_name = name;
     }
-  
-  
-  )
 
+    if (description != undefined && description.trim() != "") {
+      updateFields.Group_Description = description;
+    }
 
+    if (req.file != undefined) {
+      const imageUrl = await uploadTocloudinary(req.file.buffer, "Group-image");
 
+      updateFields.Group_image = imageUrl.url;
+    }
 
+    
+    console.log(updateFields, "iffififijf");
 
+    let updatedConversation;
 
-  }catch(err){
-    console.log(err,"errorrrrr")
-    return res.status(500).json({
-      message : "Something went wrong",
-      success : false,
-      error : err
+    if (Object.keys(updateFields).length > 0) {
+      [updatedConversation] = await groupTable.update(
+        {
+          ...updateFields,
+        },
+        {
+          where: {
+            conversation_id: conversationId,
+          },
+        },
+      );
+    }
+
+    if (updatedConversation == 0) {
+      return res.status(400).json({
+        message: "Conversation not found or Updated",
+        success: false,
+      });
+    }
+
+    let updatedGroup;
+    if (updatedConversation == 1) {
+      updatedGroup = await conversation.findOne({
+        where : {
+          id : conversationId
+        },
+        include: [
+            {
+              model: createUser,
+              as: "user_members",
+              attributes: ["id", "name", "email","Profile_img"],
+              through: { model: conversation_members, attributes: ["role"],
+               },
+            },
+            { 
+              model : groupTable,
+              as : "group_table",
+            }
+          ]
+
+      })
+    }
+
+    io.to(`conversation${conversationId}`).emit("group_updated",{
+      message : "Updated conversation",
+      data : updatedGroup
     })
+
+
+
+    return res.status(200).json({
+      message: "Group Conversation has been updated succesfully",
+      success: true,
+      data: updatedGroup,
+    });
+
+
+  } catch (err) {
+    console.log(err, "errorrrrr");
+    return res.status(500).json({
+      message: "Something went wrong",
+      success: false,
+      error: err,
+    });
   }
-
-
-
-
-
-
-
-}
-
-
-
+};

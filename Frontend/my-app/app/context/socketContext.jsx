@@ -20,7 +20,7 @@ export function SocketProvider({ children }) {
   const [seenMessages,setSeenMessages] = useState(null);
   const [onlineUsers,setOnlineUsers] = useState(null);
   const [newConversation,setNewConversation] = useState(null);
-  const [newGroup,setNewGroup] = useState(null);
+  const [updatedGroup,setUpdatedGroup] = useState(null);
 
 
 
@@ -99,6 +99,14 @@ export function SocketProvider({ children }) {
     socketRef.current.on("seen_messages", (data) => {
       setSeenMessages(data);
     });
+
+    socketRef.current.on("group_updated",(data)=>{
+      setUpdatedGroup(data.data);
+    })
+
+
+
+
     
   }, [user]);
 
@@ -124,10 +132,13 @@ export function SocketProvider({ children }) {
   },[])
 
 
+  console.log(updatedGroup,"fmofmfokmkmmfmfom")
+
+
 
   return (
     <SocketContext.Provider
-      value={{ connectSocket,socketRef,newConversation,disconnectSocket,deliveredMessages,seenMessages,onlineUsers}}
+      value={{ connectSocket,socketRef,newConversation,disconnectSocket,deliveredMessages,seenMessages,onlineUsers,updatedGroup}}
     >
       {children}
     </SocketContext.Provider>
