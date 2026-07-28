@@ -3,6 +3,7 @@ import { conversation, conversation_members } from "../models/conversation.js";
 import { mediaModel, messageModel } from "../models/message.js";
 import { markPendingMessages } from "./markPendingMessages.js";
 import { createUser } from "../models/userModel.js";
+import { WithinConversation } from "../controllers/helpers/withinConversation.helper.js";
 
 const onlineMembers = new Map();
 let typingMembers = new Map();
@@ -52,13 +53,9 @@ export const initialiseSocket = (io) => {
      console.log(currentOnlineMembers,"Currrrrrr")
 
 
-    socket.on("send_message", async (data,callback) => {
+    socket.on("send_message", WithinConversation(socket,async (data,callback) => {
+    
       console.log(data, "ye data ayaaaaa");
-
-
-
-
-
       const conversationId = data.conversation_id;
       const message = data.message;
       const isGroup = data.isGroup;
@@ -133,9 +130,12 @@ export const initialiseSocket = (io) => {
             user_id: {
               [Op.ne]: userId,
             },
+            is_left : false
           },
         });
 
+
+         
         const receiverIds = members.map((item) => {
           return item.user_id;
         });
@@ -179,9 +179,11 @@ export const initialiseSocket = (io) => {
       } catch (error) {
         console.log(error, "error hai");
       }
-    });
+    })
+  
+  );
 
-    socket.on("edit_message", async (data) => {
+    socket.on("edit_message", WithinConversation(async (data,callback) => {
       console.log(data, "ifiofhfi");
       const { message, message_id, conversation_id } = data;
 
@@ -231,9 +233,9 @@ export const initialiseSocket = (io) => {
           message: "Some socket error occured",
         });
       }
-    });
+    }));
 
-    socket.on("delete_message", async (data) => {
+    socket.on("delete_message",WithinConversation(async (data,callback) => {
       const messageId = data.deletedMessage.id;
       const conversationId = data.deletedMessage.conversation_id;
 
@@ -273,7 +275,9 @@ export const initialiseSocket = (io) => {
           sucess: false,
         });
       }
-    });
+    })
+  
+  );
 
     socket.on("typing", async (data) => {
       const conversationId = data.conversationId;
