@@ -2,6 +2,7 @@
 
     export function useImageUpload(initialImage = null){
         const [preview,setPreview] = useState(initialImage);
+        const [File,setFile] = useState("");
 
         const uploadRef = useRef(null);
         
@@ -12,7 +13,8 @@
 
         const previewUrl = URL.createObjectURL(file);
         setPreview(previewUrl);
-        }
+        setFile(file);
+    }
 
 
         function removeImage(){
@@ -20,6 +22,6 @@
         }
 
     
-        return {preview,uploadRef,previewImage,removeImage}
+        return {preview,File,uploadRef,previewImage,removeImage}
 
     }

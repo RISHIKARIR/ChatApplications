@@ -1,8 +1,8 @@
-import { conversation_members } from "../models/conversation";
+import { conversation_members } from "../models/conversation.js";
 
 
 
-const isActiveMember = async (req,res,next)=>{
+export const isActiveMember = async (req,res,next)=>{
     try{
         const user = req.user;
         const { conversationId } = req.params;
@@ -33,14 +33,12 @@ const isActiveMember = async (req,res,next)=>{
             next();
         }
 
-
-
-
-
     }catch(err){
+        console.log(err,"nbfubfuibfui")
         return res.status(500).json({
             message : "Active Member error occured",
-            success : false
+            success : false,
+            error : err
         })
     } 
 

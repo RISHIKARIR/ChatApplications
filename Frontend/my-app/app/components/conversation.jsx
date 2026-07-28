@@ -18,14 +18,13 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
   const { OpenModal } = useContext(ModalContext);
   const { user } = useContext(userAuthContext);
-  const { newConversation } = useContext(SocketContext);
+  const { newConversation,updatedGroup } = useContext(SocketContext);
 
   useEffect(() => {
     async function fetchdata() {
       const response = await Apifetch("user/conversations", {});
       const data = await response.json();
 
-      console.log(data, "data ");
 
       setConversationData(data.data.conversations);
       setFilteredData(data.data.conversations);
@@ -37,17 +36,52 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
 
   useEffect(()=>{
-    if(!newConversation)return;
+    if(!newConversation && !updatedGroup)return;
+
+    if(newConversation){
     setConversationData((prev)=>{
       return [...prev,newConversation]
     })
     setFilteredData((prev)=>{
       return [...prev,newConversation]
     })
+    }
+
+
+    console.log(updatedGroup.id,"jnfkjfjkfnfjknfj");
+
+
+    if(updatedGroup){
+
+
+      setConversationData((prev)=>{
+       return prev.map((item)=>{
+        if(item.id == updatedGroup.id){
+          return updatedGroup
+        }
+
+        return item;
+
+       })     
+    })
+    setFilteredData((prev)=>{
+      return prev.map((item)=>{
+        if(item.id == updatedGroup.id){
+          return updatedGroup
+        }
+        return item;
+       })     
+    })
+
+    }
 
 
 
-  },[newConversation])
+  },[newConversation,updatedGroup])
+
+
+  console.log(updatedGroup,"fninfiufiuf")
+  console.log(filteredData,'ihgufriuhfriurfhiuhui')
 
 
  
@@ -74,7 +108,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
   
 
-
+console.log(filteredData,"jflffffffjddijfijlif")
 
 
   return (

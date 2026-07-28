@@ -1,4 +1,11 @@
-import React, { useEffect, useState, useContext, useRef, use } from "react";
+import React, {
+  useEffect,
+  useState,
+  useContext,
+  useRef,
+  use,
+  useMemo,
+} from "react";
 import { toast } from "sonner";
 import { userAuthContext } from "../context/authContext";
 import { Apifetch } from "../../lib/apifetch";
@@ -44,11 +51,14 @@ import ImageShowModal from "./modals/ImageShowModal";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
-  const { connectSocket, socketRef, deliveredMessages, seenMessages,onlineUsers } =
-    useContext(SocketContext);
-
-
-
+  const {
+    connectSocket,
+    socketRef,
+    deliveredMessages,
+    seenMessages,
+    onlineUsers,
+    updatedGroup,
+  } = useContext(SocketContext);
 
   useEffect(() => {
     if (user) {
@@ -61,31 +71,44 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [typingMembers, setTypingMembers] = useState([]);
   const [files, setFiles] = useState([]);
   const [imageDetails, setImageDetails] = useState(null);
-  const [openDrawer,setOpenDrawer] = useState(false);
+  const [openDrawer, setOpenDrawer] = useState(false);
 
   console.log(conversationUserData, "convooooooo");
 
+  let convoData = conversationUserData;
 
+  console.log(updatedGroup, "ifjoirjiorjf");
+  console.log(convoData, "oifhoifhiofh");
 
-  const convoData = conversationUserData;
+  const [conversationData, setConversationData] = useState(null);
 
-  const otherUser = convoData?.user_members?.find((value) => {
-    return value.id !== user.id;
-  });
+  const receiverUser = useMemo(() => {
+    return conversationData?.users?.find((u) => u.id !== user.id);
+  }, [conversationData, user?.id]);
 
-  const conversationData = {
-    id: convoData?.id,
-    chatName: !convoData?.isGroup
-      ? otherUser?.name
-      : convoData?.group_table?.Group_name,
-    users: convoData?.user_members,
-    isGroup: convoData?.isGroup,
-    Profile_img: convoData?.isGroup
-      ? convoData.group_table.Group_image
-      : otherUser?.Profile_img,
-  };
+  useEffect(() => {
+    if (!conversationUserData) return;
+
+    const otherUser = conversationUserData.user_members.find(
+      (u) => u.id !== user.id,
+    );
+
+    setConversationData({
+      id: conversationUserData.id,
+      chatName: conversationUserData.isGroup
+        ? conversationUserData.group_table.Group_name
+        : otherUser?.name,
+      users: conversationUserData.user_members,
+      isGroup: conversationUserData.isGroup,
+      Profile_img: conversationUserData.isGroup
+        ? conversationUserData.group_table.Group_image
+        : otherUser?.Profile_img,
+    });
+  }, [conversationUserData]);
 
   //
+  console.log(conversationUserData, "oniongoijn");
+  console.log(conversationData, "nfifiohfiufh");
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -396,37 +419,44 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
   }
 
-
-
   function handleImageModal(item) {
     setOpenImage(true);
     setImageDetails(item);
   }
 
+  async function deleteMessage() {
+    const socket = socketRef.current;
 
-    async function deleteMessage(){
-        const socket = socketRef.current;
-        
-        
-        if(!socket)return;
+    if (!socket) return;
 
-        socket.emit("delete_message",{
-            deletedMessage
-        })
+    socket.emit("delete_message", {
+      deletedMessage,
+    });
+  }
 
+  useEffect(() => {
+    if (!updatedGroup || !conversationData) return;
 
+    if (updatedGroup.id !== conversationData.id) return;
 
+    console.log(updatedGroup);
 
+    setConversationData({
+      id: conversationData.id,
+      chatName: conversationData.isGroup
+        ? updatedGroup.group_table.Group_name
+        : receiverUser?.name,
+      users: updatedGroup.user_members,
+      isGroup: updatedGroup.isGroup,
+      Profile_img: updatedGroup.isGroup
+        ? updatedGroup.group_table.Group_image
+        : receiverUser?.Profile_img,
+    });
+  }, [updatedGroup, conversationData?.id]);
 
+  console.log(updatedGroup, "iofjifojfio");
 
-    }
-
-
-
-
-
-  console.log(convoData,"kofojfofjifjif")
-
+  console.log(conversationData, "mnfifiorriojroi");
 
   return (
     <div className="flex h-full bg-[#1c231b] text-white">
@@ -452,15 +482,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
               )}
             </div>
 
-
-
-
             <div>
               <h3 className="text-sm font-bold leading-none text-white">
                 {selectedConversation
-                  ? conversationUserData.isGroup
-                    ? conversationUserData.group_table.Group_name
-                    : `${conversationData?.chatName}`
+                  ? conversationData?.chatName
                   : "No Conversation Selected"}
               </h3>
 
@@ -472,14 +497,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                       : typingMembers.length === 1
                         ? `${typingMembers[0]} is typing`
                         : ""
-                        : typingUser &&
+                    : typingUser &&
                         selectedConversation === typingUser.conversationId
-                        ? "typing..."
-                        : onlineUsers?.includes(otherUser.id) ? "Active" : ""
+                      ? "typing..."
+                      : onlineUsers?.includes(receiverUser?.id)
+                        ? "Active"
+                        : ""
                   : "Please select a conversation"}
               </p>
-                </div>
-              </div>
+            </div>
+          </div>
 
           {selectedConversation && (
             <div className="hidden items-center gap-4 sm:flex">
@@ -501,19 +528,19 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
               <button
                 type="button"
-                onClick={()=>{setOpenDrawer(true)}}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white">
+                onClick={() => {
+                  setOpenDrawer(true);
+                }}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
+              >
                 <EllipsisVertical size={17} />
-         
               </button>
-            {/* {openDrawer &&  */}
+              {/* {openDrawer &&  */}
               <GroupDrawer
-              open={openDrawer}
-              setOpen={setOpenDrawer}
-              data={convoData}
+                open={openDrawer}
+                setOpen={setOpenDrawer}
+                data={conversationUserData}
               />
-              {/* } */}
-              
             </div>
           )}
         </div>
@@ -683,7 +710,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                             )}
 
                             <div>
-                              {conversationUserData.isGroup && (
+                              {conversationData?.isGroup && (
                                 <p className="mb-1 text-[10px] font-bold uppercase text-white">
                                   {item?.sender?.name}
                                 </p>
@@ -749,8 +776,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                   deletedMessage={deletedMessage}
                   onconfirm={deleteMessage}
                   title={"Delete Message?"}
-                  message={"This will permanently delete this Message from this conversation for Everyone."}
-                  icon={<Trash2Icon/>}
+                  message={
+                    "This will permanently delete this Message from this conversation for Everyone."
+                  }
+                  icon={<Trash2Icon />}
                   confirmMessage={"Delete"}
                 />
               </ul>
@@ -758,55 +787,55 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           )}
         </div>
 
-          {selectedConversation && 
-        <div className="bg-[#151c15] px-6 py-4">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
-              {user?.name?.charAt(0) || "U"}
-              <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#151c15] bg-[#22c55e]" />
-            </div>
+        {selectedConversation && (
+          <div className="bg-[#151c15] px-6 py-4">
+            <div className="flex items-center gap-3">
+              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
+                {user?.name?.charAt(0) || "U"}
+                <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#151c15] bg-[#22c55e]" />
+              </div>
 
-            <div className="flex min-w-0 flex-1 items-center gap-3 rounded-md bg-[#e7e5d8] px-4 shadow-sm">
+              <div className="flex min-w-0 flex-1 items-center gap-3 rounded-md bg-[#e7e5d8] px-4 shadow-sm">
+                <button
+                  type="button"
+                  className="flex items-center justify-center text-black/70 transition hover:text-black"
+                >
+                  <Dropdown
+                    open={<Paperclip size={17} />}
+                    config={uploadConfig}
+                    selectedConversation={selectedConversation}
+                    setFiles={setFiles}
+                    uploading={uploading}
+                    openfile={openfile}
+                  />
+                </button>
+
+                <input
+                  onChange={handleTyping}
+                  value={message}
+                  placeholder="Type something here..."
+                  className="h-11 flex-1 bg-transparent text-[12px] font-semibold text-black outline-none placeholder:text-zinc-600"
+                ></input>
+
+                <button
+                  type="button"
+                  className="flex items-center justify-center text-black/60 transition hover:text-black"
+                >
+                  <Mic size={17} />
+                </button>
+              </div>
+
               <button
+                onClick={sendMessage}
                 type="button"
-                className="flex items-center justify-center text-black/70 transition hover:text-black"
+                disabled={message.trim() === "" && files.length == 0}
+                className="flex h-11 w-11 items-center justify-center rounded-md bg-[#8a947f] text-white shadow-lg shadow-black/20 transition hover:bg-[#a6b19a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                <Dropdown
-                  open={<Paperclip size={17} />}
-                  config={uploadConfig}
-                  selectedConversation={selectedConversation}
-                  setFiles={setFiles}
-                  uploading={uploading}
-                  openfile={openfile}
-                />
-              </button>
-
-              <input
-                onChange={handleTyping}
-                value={message}
-                placeholder="Type something here..."
-                className="h-11 flex-1 bg-transparent text-[12px] font-semibold text-black outline-none placeholder:text-zinc-600"
-              ></input>
-
-              <button
-                type="button"
-                className="flex items-center justify-center text-black/60 transition hover:text-black"
-              >
-                <Mic size={17} />
+                <Send size={18} />
               </button>
             </div>
-
-            <button
-              onClick={sendMessage}
-              type="button"
-              disabled={message.trim() === "" && files.length == 0}
-              className="flex h-11 w-11 items-center justify-center rounded-md bg-[#8a947f] text-white shadow-lg shadow-black/20 transition hover:bg-[#a6b19a] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
-            >
-              <Send size={18} />
-            </button>
           </div>
-        </div>
-        }
+        )}
       </div>
 
       <ImageShowModal

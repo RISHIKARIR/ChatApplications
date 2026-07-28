@@ -6,49 +6,64 @@ import { userAuthContext } from "../context/authContext";
 import { SquareArrowRightExit } from 'lucide-react';
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
 import { DoorOpen } from 'lucide-react';
+import { Spinner } from "../../components/ui/spinner";
 
 
 
 function GroupDrawer({ open, setOpen, data }) {
-  const { preview, file, uploadRef, previewImage, removeImage } =
-    useImageUpload();
+  const { preview, File, uploadRef, previewImage, removeImage } =
+  useImageUpload();
   const { user } = useContext(userAuthContext);
-
+  
   console.log(data, "kjffpojfpojpfo");
-
+  
   // const otherUser = useMemo(()=>{
-  //   const other = data.user_members((member)=>member.id != user.id)
-  //   return other;
-  // },[data])
+    //   const other = data.user_members((member)=>member.id != user.id)
+    //   return other;
+    // },[data])
+    
+    // console.log(otherUser,"jiofjiorn")
+    
+    
+    
+    
 
-  // console.log(otherUser,"jiofjiorn")
+    
 
+    const [editing, setEditing] = useState(false);
+  const [openLeave,setOpenLeave] = useState(false);
+  
 
-
-  const [editing, setEditing] = useState(false);
-  const [openLeave,setOpenLeave] = useState(false) 
-
-
+  
+  
+  
+  
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-
+  
   console.log(name, "jfoihfihfihfif");
   console.log(data, "inrfirkfrom");
-
+  
   const [saving, setSaving] = useState(false);
-
+  
   const role = useMemo(() => {
-    const currentUser = data.user_members.find(
+    const currentUser = data?.user_members?.find(
       (Member) => Member.id == user.id,
     );
-
-    return currentUser.conversation_members_table.role;
+    
+    return currentUser?.conversation_members_table?.role;
   }, [data]);
-
+  
+  if(data == null){
+    return 
+    <div className="h-screen w-screen bg-black flex flex-col justify-center items-center ">
+      <Spinner/>
+       </div>
+  }
   function enterEdit() {
     setEditing(true);
   }
-
+  
   function cancelEdit() {
     setName(data?.group_table?.Group_name || "");
     setDescription(data.group_table?.Group_Description || "");
@@ -65,7 +80,7 @@ function GroupDrawer({ open, setOpen, data }) {
         method : "PUT"
       })
 
-      n
+      
 
     }catch(err){
       console.log(err,"error haiiii");
@@ -93,6 +108,36 @@ function GroupDrawer({ open, setOpen, data }) {
       setSaving(false);
     }
   }
+
+
+
+    async function handleSave() {
+    if (saving) return;
+    try {
+      setSaving(true);
+
+      const formData = new FormData();
+
+
+      formData.append("name",name);
+      formData.append("description",description);
+      formData.append("group_image",File);
+
+      const res = await Apifetch(`user/${data.id}/update`,{
+        method : "PUT",
+        body : formData
+        }
+        
+      );
+
+      setEditing(false);
+    } catch (err) {
+      console.error("Failed to save group:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
 
 
 
@@ -175,15 +220,15 @@ function GroupDrawer({ open, setOpen, data }) {
                   editing ? "ring-white/20" : "ring-white/[0.06]"
                 }`}
               >
-                {(preview || data.group_table?.Group_image )? (
+                {(preview || data?.group_table?.Group_image )? (
                   <img
-                    src={preview ? preview : data.group_table?.Group_image}
+                    src={preview ? preview : data?.group_table?.Group_image}
                     alt="group"
                     className="h-full w-full object-cover"
                   />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center bg-[#2b2934] text-2xl font-semibold text-white/70">
-                    {data.group_table.Group_name?.charAt(0)?.toUpperCase()}
+                    {data?.group_table?.Group_name?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
               </div>
@@ -234,7 +279,7 @@ function GroupDrawer({ open, setOpen, data }) {
               />
             ) : (
               <p className="text-[15px] text-white">
-                {name || data.group_table.Group_name}
+                {name || data?.group_table?.Group_name}
               </p>
             )}
           </div>
@@ -254,7 +299,7 @@ function GroupDrawer({ open, setOpen, data }) {
               />
             ) : (
               <p className="text-[14px] leading-relaxed text-white/60">
-                {description || data.group_table.Group_Description}
+                {description || data?.group_table?.Group_Description}
               </p>
             )}
           </div>
@@ -262,10 +307,10 @@ function GroupDrawer({ open, setOpen, data }) {
           {/* members */}
           <div className="mt-7">
             <p className="mb-2.5 text-[11px] font-medium uppercase tracking-wide text-white/30">
-              Members · {data.user_members.length}
+              Members · {data?.user_members?.length}
             </p>
             <div className="flex flex-col gap-0.5">
-              {data.user_members.map((member, index) => (
+              {data?.user_members?.map((member, index) => (
                 <div
                   key={member.id ?? index}
                   className="flex items-center text-white/85 gap-3 rounded-lg px-2 py-2 hover:bg-white/4 transition-colors"
