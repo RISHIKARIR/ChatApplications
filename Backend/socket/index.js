@@ -135,7 +135,8 @@ export const initialiseSocket = (io) => {
         });
 
 
-         
+
+        
         const receiverIds = members.map((item) => {
           return item.user_id;
         });
