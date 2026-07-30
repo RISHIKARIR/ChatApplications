@@ -1,4 +1,5 @@
 import { conversation_members } from "../models/conversation.js";
+import { io } from "../index.js";
 
 export const leaveGroup = async (req, res) => {
 
@@ -49,3 +50,81 @@ export const leaveGroup = async (req, res) => {
     });
   }
 };
+
+
+
+export const removeMember = async (req,res)=>{
+  try{
+    const { conversationId } = req.params;
+    const { memberId  } = req.params;
+    const user = req.user;
+
+    const isUserBelongs = await conversation_members.findOne({
+      where : {
+        user_id : memberId,
+        conversation_id : conversationId
+      }
+    })
+
+
+
+    if(!isUserBelongs){
+      return res.status(400).json({
+        message : "User doesn't belong to the required conversation",
+        success : false
+      })
+    }
+
+
+    const [affectedRows] = await conversation_members.update(
+        {is_left : true},
+        {
+        where : {
+          user_id : memberId,
+          conversation_id : conversationId
+        }
+        }
+
+    )
+
+    if(affectedRows == 0){
+      return res.status(200).json({
+        message : "User not removed from conversation",
+        success : false
+      })
+    }
+    
+
+    
+
+    if(affectedRows == 1){
+      io.to(conversationId).emit("user_removed",{
+        userRemoved : isUserBelongs
+      })
+
+      return res.status(200).json({
+        message : "User has been removed from the conversation",
+        success : true
+      })
+
+
+    }
+
+
+
+  }catch(err){
+    return res.status(500).json({
+      message : "Something went wrong",
+      success : false
+    })
+  }
+
+
+
+
+
+
+}
+
+
+

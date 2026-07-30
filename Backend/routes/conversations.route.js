@@ -4,7 +4,7 @@ import { verifytoken } from "../middlewares/auth.middlewares.js";
 import { createConversation,createGroup } from "../controllers/createConversation.Controller.js";
 import { leaveGroup } from "../controllers/group.controller.js";
 import { upload } from "../middlewares/multer.js";
-import { isActiveMember } from "../middlewares/isActiveGroupMember.js";
+// import { isActiveMember } from "../middlewares/isGroupAdmin.js";
 
 
 const router = express.Router();
@@ -13,7 +13,7 @@ const router = express.Router();
 router.get("/conversations",verifytoken,showConversations)
 router.post("/conversations",verifytoken,createConversation)
 router.post("/conversations/group",upload.single("groupImage"),verifytoken,createGroup)
-router.put("/:conversationId/leave",isActiveMember,verifytoken,leaveGroup); 
+router.put("/:conversationId/leave",verifytoken,leaveGroup); 
 
 
 
