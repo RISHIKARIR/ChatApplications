@@ -3,6 +3,7 @@ import { conversation, conversation_members } from "../models/conversation.js";
 import { mediaModel, messageModel } from "../models/message.js";
 import { markPendingMessages } from "./markPendingMessages.js";
 import { createUser } from "../models/userModel.js";
+import inConversation from "../helper/isInConversation.socket.js";
 
 const onlineMembers = new Map();
 let typingMembers = new Map();
@@ -52,8 +53,9 @@ export const initialiseSocket = (io) => {
      console.log(currentOnlineMembers,"Currrrrrr")
 
 
-    socket.on("send_message", async (data) => {
+    socket.on("send_message",inConversation( socket,async (data) => {
       console.log(data, "ye data ayaaaaa");
+
 
       const conversationId = data.conversation_id;
       const message = data.message;
@@ -62,6 +64,23 @@ export const initialiseSocket = (io) => {
       const media = data.media
 
       try {
+
+        const conversation = await conversation_members.findOne({
+          where : {
+            conversation_id : conversationId,
+            user_id : senderId
+          }
+        })
+
+
+        if(conversation.is_left){
+         return callback({
+            success : false,
+            message : "You cannot send message to this conversation as you are no longer a part of it"
+          })
+        }
+
+
         const savedMessage = await messageModel.create({
           senderId: userId,
           conversation_id: conversationId,
@@ -158,7 +177,11 @@ export const initialiseSocket = (io) => {
       } catch (error) {
         console.log(error, "error hai");
       }
-    });
+    },callback));
+
+
+
+
 
     socket.on("edit_message", async (data) => {
       console.log(data, "ifiofhfi");
