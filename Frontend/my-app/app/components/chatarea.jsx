@@ -317,7 +317,19 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       conversation_id: selectedConversation,
       isGroup: conversationUserData.isGroup,
       media: files.length > 0 ? response.urls : [],
-    });
+    }
+  ,(response)=>{
+    if(!response.success){
+      toast.error(response.message);
+      return;
+    }
+
+
+  }
+  
+  
+  
+  );
 
     setMessage("");
   }
