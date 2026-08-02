@@ -2,10 +2,7 @@ import { conversation_members } from "../models/conversation.js";
 import { io } from "../index.js";
 
 export const leaveGroup = async (req, res) => {
-
-
   try {
-
     const { conversationId } = req.params;
     const userId = req.user.id;
 
@@ -37,10 +34,8 @@ export const leaveGroup = async (req, res) => {
     return res.status(200).json({
       message: "Group left successfully",
       success: true,
-      data : member
+      data: member,
     });
-
-
   } catch (err) {
     console.log(err, "fnnfoifnio");
 
@@ -51,80 +46,119 @@ export const leaveGroup = async (req, res) => {
   }
 };
 
-
-
-export const removeMember = async (req,res)=>{
-  try{
+export const removeMember = async (req, res) => {
+  try {
     const { conversationId } = req.params;
-    const { memberId  } = req.params;
+    const { memberId } = req.params;
     const user = req.user;
 
     const isUserBelongs = await conversation_members.findOne({
-      where : {
-        user_id : memberId,
-        conversation_id : conversationId
-      }
-    })
+      where: {
+        user_id: memberId,
+        conversation_id: conversationId,
+      },
+    });
 
-
-
-    if(!isUserBelongs){
+    if (!isUserBelongs) {
       return res.status(400).json({
-        message : "User doesn't belong to the required conversation",
-        success : false
-      })
+        message: "User doesn't belong to the required conversation",
+        success: false,
+      });
     }
-
 
     const [affectedRows] = await conversation_members.update(
-        {is_left : true},
-        {
-        where : {
-          user_id : memberId,
-          conversation_id : conversationId
-        }
-        }
+      { is_left: true },
+      {
+        where: {
+          user_id: memberId,
+          conversation_id: conversationId,
+        },
+      },
+    );
 
-    )
-
-    if(affectedRows == 0){
+    if (affectedRows == 0) {
       return res.status(200).json({
-        message : "User not removed from conversation",
-        success : false
-      })
-    }
-    
-
-    
-
-    if(affectedRows == 1){
-      io.to(conversationId).emit("user_removed",{
-        userRemoved : isUserBelongs
-      })
-
-      return res.status(200).json({
-        message : "User has been removed from the conversation",
-        success : true
-      })
-
-
+        message: "User not removed from conversation",
+        success: false,
+      });
     }
 
+    if (affectedRows == 1) {
+      io.to(conversationId).emit("user_removed", {
+        userRemoved: isUserBelongs,
+      });
 
-
-  }catch(err){
+      return res.status(200).json({
+        message: "User has been removed from the conversation",
+        success: true,
+      });
+    }
+  } catch (err) {
     return res.status(500).json({
-      message : "Something went wrong",
-      success : false
-    })
+      message: "Something went wrong",
+      success: false,
+    });
   }
+};
+
+export const makeAdmin = async (req, res) => {
+  try {
+    const { conversationId } = req.params;
+    const { memberId } = req.params;
+
+    if (!conversationId || !memberId) {
+      return res.status(400).json({
+        message: "Both conversation Id and Member Id is required",
+        success: false,
+      });
+    }
+
+    const conversation = await conversation_members.findOne({
+        where: {
+          conversation_id: conversationId,
+          user_id: memberId,
+          is_left: false,
+        },
+    })
 
 
 
+    console.log(conversation,"fniuffuihfui")
+
+    const [affectedRows] = await conversation_members.update(
+      { role: "ADMIN" },
+      {
+        where: {
+          conversation_id: conversationId,
+          user_id: memberId,
+          is_left: false,
+        },
+      },
+    );
+
+    console.log(conversationId,"conversationId");
+    console.log(memberId,"fjifjfiojfio");
+    console.log(affectedRows,"nfinfiufnfiu");
 
 
+    if (affectedRows === 0) {
+      return res.status(400).json({
+        message: "Promotion of user role is failed",
+        success: false,
+      });
+    }
 
-}
-
-
-
+    if (affectedRows > 0) {
+      return res.status(200).json({
+        message: "User has been promoted",
+        success: true,
+      });
+    }
+  } catch (err) {
+    return res.status(500).json({
+      message: "Something went wrong",
+      success: false,
+      error: err,
+    });
+  }
+};
