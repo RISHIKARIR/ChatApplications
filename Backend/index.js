@@ -24,7 +24,6 @@ export const io = new Server(server,{
     cors : {
         origin : process.env.CLIENT_URL,
         credentials : true,
-        // methods : ["GET","POST"]
     }
 })
 
@@ -34,12 +33,12 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors({ origin: ["http://localhost:3000" ], credentials: true ,methods: ["GET", "POST","PUT","DELETE"],}));
+app.use(cors({ origin: [process.env.CLIENT_URL], credentials: true ,methods: ["GET", "POST","PUT","DELETE"],}));
 
 connectDb();
 const path = process.env.PORT || 5000;
 
-seq.sync({alter : true});
+// seq.sync({alter : true});
 
 app.use("/user", conversation);
 app.use("/user", messages);
