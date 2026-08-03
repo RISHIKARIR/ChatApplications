@@ -1,4 +1,4 @@
-let BaseUrl = "http://localhost:5000";
+let BaseUrl = process.env.NEXT_PUBLIC_API_URL;
 
 export async function Apifetch(url, options) {
 
