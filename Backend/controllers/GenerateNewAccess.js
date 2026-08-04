@@ -64,6 +64,7 @@ export const GenerateNewAccess = async (req,res)=>{
     res.cookie("accesstoken",newaccesstoken,{
         httpOnly : true,
         secure : true,
+        sameSite : "none",
         maxAge : 15 * 60 * 1000
     })
 
@@ -73,6 +74,7 @@ export const GenerateNewAccess = async (req,res)=>{
     res.cookie("refreshtoken",refreshtoken,{
         httpOnly : true,
         secure : true,
+        sameSite : "none",
         maxAge : 7 * 24 * 60 * 60 * 1000
     
     })
