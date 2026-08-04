@@ -35,7 +35,7 @@ export function SocketProvider({ children }) {
 
     if (socketRef?.current?.connected) return;
 
-    const socket = io(process.BACKEND_URL, {
+    const socket = io(process.env.BACKEND_URL, {
       withCredentials: true,
       query: {
         UserId: user?.id,
