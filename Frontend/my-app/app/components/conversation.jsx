@@ -9,6 +9,7 @@ import AddGroupModal from "./AddGroupModal";
 import CustomModal from "../../components/ui/modal";
 import { NavUser } from "../../components/ui/navbar";
 import { SocketContext } from "../context/socketContext";
+import { Spinner } from "@/components/ui/spinner";
 
 function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [conversationData, setConversationData] = useState(null);
@@ -17,8 +18,22 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [open, setOpen] = useState(false);
 
   const { OpenModal } = useContext(ModalContext);
-  const { user } = useContext(userAuthContext);
+  const { user,loading } = useContext(userAuthContext);
   const { newConversation,updatedGroup } = useContext(SocketContext);
+
+
+  if(loading){
+  return (
+
+  <Spinner className="size-10 text-white />
+
+    )
+
+  }
+  
+
+
+  
 
   useEffect(() => {
     async function fetchdata() {
@@ -245,7 +260,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
                   chatName.Profile_img = item?.group_table?.Group_image
                 } else {
                   chatName = item?.user_members?.find((value) => {
-                    return value?.id != user.id;
+                    return value?.id != user?.id;
                   });
                 }
                 console.log(item,"itemmmmmmmm")
