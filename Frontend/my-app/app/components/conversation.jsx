@@ -22,20 +22,12 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   const { newConversation,updatedGroup } = useContext(SocketContext);
 
 
-  if(loading){
-  return (
-
-  <Spinner className="size-10 text-white" />
-
-    )
-
-  }
-  
 
 
   
 
   useEffect(() => {
+    if(loading)return;
     async function fetchdata() {
       const response = await Apifetch("user/conversations", {});
       const data = await response.json();
@@ -46,11 +38,12 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     }
 
     fetchdata();
-  }, []);
+  }, [loading]);
 
 
 
   useEffect(()=>{
+    if(loading)return;
     if(!newConversation && !updatedGroup)return;
 
     if(newConversation){
@@ -92,11 +85,19 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
 
 
-  },[newConversation,updatedGroup])
+  },[loading,newConversation,updatedGroup])
 
 
-  console.log(updatedGroup,"fninfiufiuf")
-  console.log(filteredData,'ihgufriuhfriurfhiuhui')
+  if(loading){
+  return (
+
+  <Spinner className="size-10 text-white" />
+
+    )
+
+  }
+  
+
 
 
  
