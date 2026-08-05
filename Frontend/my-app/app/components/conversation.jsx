@@ -25,7 +25,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   if(loading){
   return (
 
-  <Spinner className="size-10 text-white />
+  <Spinner className="size-10 text-white" />
 
     )
 
