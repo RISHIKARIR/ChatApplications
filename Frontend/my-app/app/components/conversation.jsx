@@ -245,7 +245,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
                   chatName.Profile_img = item?.group_table?.Group_image
                 } else {
                   chatName = item?.user_members?.find((value) => {
-                    return value?.id != user.id;
+                    return value?.id != user?.id;
                   });
                 }
                 console.log(item,"itemmmmmmmm")
