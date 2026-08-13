@@ -328,7 +328,7 @@ function GroupDrawer({ open, setOpen, data }) {
                   <span>{member.name}</span>
 
                   <span className="text-gray-500 text-xs">
-                    {member.conversation_members_table.role}
+                    {member.conversation_members_table?.role}
                   </span>
 
                   {role === "ADMIN" && member.id != user.id && (

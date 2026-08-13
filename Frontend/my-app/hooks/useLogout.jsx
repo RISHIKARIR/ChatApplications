@@ -3,6 +3,7 @@ import React from "react";
 import { toast } from "sonner";
 import { useContext } from "react";
 import { SocketContext } from "../../my-app/app/context/socketContext";
+import { Apifetch } from "../lib/apifetch";
 
 function useLogout() {
   const router = useRouter();
@@ -11,12 +12,8 @@ function useLogout() {
   const logout = async () => {
     disconnectSocket();
 
-    const response = await fetch("https://chatapplications-production.up.railway.app/auth/logout", {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      credentials: "include",
+    const response = await Apifetch("auth/logout", {
+      method: "POST"
     });
 
     if (response.ok) {
