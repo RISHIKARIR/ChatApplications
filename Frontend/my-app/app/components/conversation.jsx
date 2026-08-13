@@ -16,6 +16,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [filteredData, setFilteredData] = useState(null);
   const [groupModal, setGroupModal] = useState(false);
   const [open, setOpen] = useState(false);
+  const [filter,setFilter] = useState(null);
 
   const { OpenModal } = useContext(ModalContext);
   const { user,loading } = useContext(userAuthContext);
@@ -122,9 +123,22 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   }
 
 
-  
 
-console.log(filteredData,"jflffffffjddijfijlif")
+  console.log(filteredData,"filteredddddd")
+
+
+   function filterBy(e){
+    const name = e.target.name
+    if(filter == name)return;
+
+    if(filter == "UNREAD"){
+      setFilter("UNREAD");
+      
+
+    }
+
+
+    }
 
 
   return (
@@ -145,7 +159,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
             C
           </div>
 
-          <div className="flex flex-1 flex-col items-center gap-5 text-zinc-300">
+          {/* <div className="flex flex-1 flex-col items-center gap-5 text-zinc-300">
             <button className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-white/10 hover:text-white">
               ⌂
             </button>
@@ -169,7 +183,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
             <button className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-white/10 hover:text-white">
               ▦
             </button>
-          </div>
+          </div> */}
 
           <div className="mb-3 flex flex-col items-center gap-3">
             <p className="text-[8px] font-bold uppercase text-white">
@@ -177,12 +191,12 @@ console.log(filteredData,"jflffffffjddijfijlif")
             </p>
           </div>
 
-          <div className="relative mt-auto h-9 w-9 rounded-full bg-[#d8d0b8] text-black">
+          {/* <div className="relative mt-auto h-9 w-9 rounded-full bg-[#d8d0b8] text-black">
             <div className="flex h-full w-full items-center justify-center text-xs font-black uppercase">
               {user?.name?.charAt(0) || "U"}
             </div>
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#121811] bg-[#22c55e]" />
-          </div>
+          </div> */}
         </div>
 
         {/* Conversation List */}
@@ -194,7 +208,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
                   Message
                 </h2>
                 <span className="mb-[1px] text-[9px] font-semibold text-zinc-400">
-                  20 new
+                  {/* 20 new */}
                 </span>
               </div>
 
@@ -230,14 +244,14 @@ console.log(filteredData,"jflffffffjddijfijlif")
               </span>
             </div>
 
-            <div className="mt-4 flex items-center gap-2">
-              <button className="rounded-md bg-white px-3 py-1.5 text-[9px] font-black uppercase text-black">
+              <div className="mt-4 flex items-center gap-2">
+              <button onClick={filterBy} name="All" className="rounded-md bg-white px-3 py-1.5 text-[9px] font-black uppercase text-black">
                 All
               </button>
-              <button className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
+              <button onClick={filterBy} name="Unread" className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
                 Unread
               </button>
-              <button className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
+              <button onClick={filterBy} name="Groups" className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
                 Groups
               </button>
             </div>
@@ -254,7 +268,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
               {filteredData?.map((item) => {
                 const otherUser = user?.id === item.userOneId ? item.userTwo : item.userOne;
 
-                let chatName = {};
+                let chatName = {};  
 
                 if (item.isGroup) {
                   chatName.name = item?.group_table?.Group_name;
@@ -321,13 +335,14 @@ console.log(filteredData,"jflffffffjddijfijlif")
                 </div>
               </div>
 
-              <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
+              {/* <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
                 ◕
               </button>
 
               <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
                 ◔
-              </button>
+              </button> */}
+
             </div>
           </div>
         </div>
