@@ -10,6 +10,7 @@ import CustomModal from "../../components/ui/modal";
 import { NavUser } from "../../components/ui/navbar";
 import { SocketContext } from "../context/socketContext";
 import { Spinner } from "@/components/ui/spinner";
+import { useSocketConversation } from "../../hooks/useConversation";
 
 function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [conversationData, setConversationData] = useState(null);
@@ -19,13 +20,16 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
   const { OpenModal } = useContext(ModalContext);
   const { user,loading } = useContext(userAuthContext);
-  const { newConversation,updatedGroup } = useContext(SocketContext);
+  const { socketRef,newConversation,updatedGroup } = useContext(SocketContext);
+   useSocketConversation(socketRef,setConversationData,setFilteredData)
   const [filter,setFilter] = useState("ALL");
 
 
 
+  // console.log(filter,"filterrrrrrrrrr")
 
-  
+
+  console.log(conversationData,"conversationnnnnnnnnnn")
 
   useEffect(() => {
     if(loading)return;
@@ -138,7 +142,7 @@ function filterBy(e) {
 
   setFilter(name);
 }
-    console.log(conversationData,"conversationnnn");
+     
     console.log(filter,"nfinfufihuffifn")
 
 
@@ -282,8 +286,6 @@ function filterBy(e) {
                     return value?.id != user?.id;
                   });
                 }
-                console.log(item,"itemmmmmmmm")
-                console.log(chatName, "miooifnfoi");
 
                 return (
                   <button
@@ -313,7 +315,9 @@ function filterBy(e) {
                         </p>
 
                         <span className="text-[8px] font-semibold uppercase text-zinc-300">
-                          12 pm
+                          {new Date(item.lastmessageDate).toLocaleTimeString("en-IN",{
+                            hour : "2-digit",minute : "2-digit"
+                          })}
                         </span>
                       </div>
 
@@ -323,7 +327,7 @@ function filterBy(e) {
                     </div>
 
                     <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white opacity-0 transition group-hover:opacity-100">
-                      2
+                      {/* 2 */}
                     </div>
                   </button>
                 );
@@ -378,7 +382,7 @@ function filterBy(e) {
                         </p>
 
                         <span className="text-[8px] font-semibold uppercase text-zinc-300">
-                          12 pm
+                          {/* 12 pm */}
                         </span>
                       </div>
 
@@ -444,7 +448,7 @@ function filterBy(e) {
                         </p>
 
                         <span className="text-[8px] font-semibold uppercase text-zinc-300">
-                          12 pm
+                          {/* 12 pm */}
                         </span>
                       </div>
 

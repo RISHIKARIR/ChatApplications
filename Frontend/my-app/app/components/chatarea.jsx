@@ -269,10 +269,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
-   async function showChatsOfcurrentUser(){
+async function showChatsOfcurrentUser(){
 
   try {
-
+    console.log("chlaaaaaaaaaaaaaa")
     socketRef?.current?.emit("mark_seen", {
     conversationId: selectedConversation,
   });
