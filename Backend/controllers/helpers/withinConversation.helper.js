@@ -7,15 +7,13 @@ export const WithinConversation = (socket,handler)=>{
     const userId = Number(socket.handshake.query.UserId);
     const conversationId = payload.conversation_id;
 
-     
-
     const conversation = await conversation_members.findOne({
         where : {
             conversation_id : conversationId,
             user_id : userId
         }
     })
-
+    
 
     if(!conversation){
       return callback({
