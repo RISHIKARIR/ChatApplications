@@ -13,8 +13,6 @@ const ChatSectionPage = () => {
 
 
   useEffect(() => {
-  
-
     function allowdrag(e) {
       if (!isDraggable.current) return;
       setWidth(e.clientX);

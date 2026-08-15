@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { conversation, groupTable } from "../models/conversation.js";
 import { conversation_members } from "../models/conversation.js";
 import { createUser } from "../models/userModel.js";
+import { messageModel } from "../models/message.js";
 
 export const showConversations = async (req, res) => {
   try {
@@ -21,12 +22,21 @@ export const showConversations = async (req, res) => {
               through: { model: conversation_members, attributes: ["role","is_left"],
                },
             },
+            
             { 
               model : groupTable,
               as : "group_table",
-            }
+            },{
+              model : messageModel,
+              as : "messages",
+            attributes : {  
+            exclude : ["updatedAt","createdAt"]
+              }
+          } 
+
+            
           ],
-          as: "conversations",
+          as: "conversations", 
           through: { model: conversation_members, attributes: [] },
         },
       ],

@@ -286,7 +286,7 @@ function Page() {
               </p>
             </div>
           </div>
-        </div>
+        </div>  
       </div>
     </div>
   );
