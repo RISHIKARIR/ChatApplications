@@ -103,17 +103,30 @@ export const initialiseSocket = (io) => {
             return;
           }
 
+          const members = await conversation_members.findAll({
+            where: {
+              conversation_id: data.conversation_id,
+              user_id: {
+                [Op.ne]: userId,
+              },
+              is_left: false,
+            },
+          });
 
+
+           
+
+
+
+    
           
 
            io.to(`conversation${conversationId}`).emit("update_Conversation", {
             conversationId : conversationId,
             lastmessage : savedMessage.message,
-            lastmessageDate : date
+            lastmessageDate : date,
+            members
           });
-
-
-
 
           if (media.length > 0) {
             const mediaitems = media.map((item) => {
@@ -144,15 +157,7 @@ export const initialiseSocket = (io) => {
             ],
           });
 
-          const members = await conversation_members.findAll({
-            where: {
-              conversation_id: data.conversation_id,
-              user_id: {
-                [Op.ne]: userId,
-              },
-              is_left: false,
-            },
-          });
+          
 
           const receiverIds = members.map((item) => {
             return item.user_id;
@@ -370,7 +375,7 @@ export const initialiseSocket = (io) => {
     socket.on("mark_seen", async (data) => {
       const conversationId = data.conversationId;
 
-
+  
 
       console.log(data, "user has seen the message");
 
@@ -404,11 +409,23 @@ export const initialiseSocket = (io) => {
       },
       {
         where : {
-          user_id :  userId,
+          user_id : {
+          [Op.ne]: userId
+          },
           conversation_id : conversationId
         }
       }
-    )
+    ) 
+
+   
+    if(updated > 0 ){
+      socket.emit("remove_unread_count",{
+        conversationId,
+      })
+      
+    }
+
+
 
 
       let markSeenSender = {};

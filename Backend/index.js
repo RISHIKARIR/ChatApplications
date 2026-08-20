@@ -16,6 +16,7 @@ import http, { createServer } from "http";
 import { Server } from "socket.io";
 import { initialiseSocket } from "./socket/index.js";
 import { AllTables } from "./models/relations.js";
+import { conversation_members } from "./models/conversation.js";
 
 const app = express();
 const server = createServer(app);
@@ -40,6 +41,9 @@ const path = process.env.PORT || 5000;
 
 // seq.sync({alter : true});
 
+
+
+
 app.use("/user", conversation);
 app.use("/user", messages);
 app.use("/user",user)
@@ -53,6 +57,8 @@ app.use("/auth", authRoutes);
 // export const  server = http.createServer(app);
 
 initialiseSocket(io);
+
+
 
 
 // initialiseSocket(server);
