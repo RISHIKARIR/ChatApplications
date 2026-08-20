@@ -26,9 +26,6 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
 
 
-  // console.log(filter,"filterrrrrrrrrr")
-
-
   console.log(conversationData,"conversationnnnnnnnnnn")
 
   useEffect(() => {
@@ -287,6 +284,9 @@ function filterBy(e) {
                   });
                 }
 
+               
+
+
                 return (
                   <button
                     type="button"
@@ -325,10 +325,11 @@ function filterBy(e) {
                         {chatName?.email}
                       </p>
                     </div>
-
-                    <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white opacity-0 transition group-hover:opacity-100">
-                      {/* 2 */}
+                      {chatName?.conversation_members?.unread_count > 0 &&
+                    <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white  transition ">
+                      {chatName?.conversation_members?.unread_count}
                     </div>
+                    }
                   </button>
                 );
               })
