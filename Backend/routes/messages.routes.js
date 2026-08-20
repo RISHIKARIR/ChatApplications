@@ -1,14 +1,14 @@
 import express from "express"
 import { showMessages,createMessage } from "../controllers/messages.controller.js";
 import { verifytoken } from "../middlewares/auth.middlewares.js";
-import { isActiveMember } from "../middlewares/isActiveGroupMember.js";
+// import { isActiveMember } from "../middlewares/isGroupAdmin.js";
 const router = express.Router();
 
 
 
 
-router.get("/:conversationId/messages",isActiveMember,verifytoken,showMessages);
-router.post("/:conversationId/message",verifytoken,isActiveMember,createMessage);
+router.get("/:conversationId/messages",verifytoken,showMessages);
+router.post("/:conversationId/message",verifytoken,createMessage);
 // router.put("/message/:id",verifytoken,editMessage);
 
 

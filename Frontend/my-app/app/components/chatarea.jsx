@@ -103,12 +103,16 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       Profile_img: conversationUserData.isGroup
         ? conversationUserData.group_table.Group_image
         : otherUser?.Profile_img,
+        userDetails : conversationUserData.user_members.find((member)=>member.id == user.id)
     });
   }, [conversationUserData]);
 
   //
   console.log(conversationUserData, "oniongoijn");
-  console.log(conversationData, "nfifiohfiufh");
+  console.log(conversationData, "ufuifuifuifiufuifhiufhfuih");
+
+
+
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -130,7 +134,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
         isDeleted: data.data.isDeleted,
         media: data.data.media,
       };
-      console.log(data, "datatatatatat");
+      console.log(data, "datatatatatata");
 
       setShowChats((prev) => {
         return {
@@ -317,19 +321,12 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       conversation_id: selectedConversation,
       isGroup: conversationUserData.isGroup,
       media: files.length > 0 ? response.urls : [],
-    }
-  ,(response)=>{
-    if(!response.success){
-      toast.error(response.message);
-      return;
-    }
-
-
-  }
-  
-  
-  
-  );
+    }, (response)=>{
+      if(!response.success){
+        toast.error(response.message);
+        return;
+      }
+    } );
 
     setMessage("");
   }
@@ -801,11 +798,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
         {selectedConversation && (
           <div className="bg-[#151c15] px-6 py-4">
+
+          {conversationData?.userDetails?.conversation_members_table?.is_left ? 
+          
+          <div className="text-center font-semibold text-sm">
+          <p>You cannot Message in this conversation as you are no longer a part of it</p>
+
+          </div>          
+            :
+
+          
             <div className="flex items-center gap-3">
-              <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-xs font-black uppercase text-black">
-                {user?.name?.charAt(0) || "U"}
-                <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#151c15] bg-[#22c55e]" />
-              </div>
+     
 
               <div className="flex min-w-0 flex-1 items-center gap-3 rounded-md bg-[#e7e5d8] px-4 shadow-sm">
                 <button
@@ -846,6 +850,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
                 <Send size={18} />
               </button>
             </div>
+
+            }
           </div>
         )}
       </div>
