@@ -9,7 +9,6 @@ const onlineMembers = new Map();
 let typingMembers = new Map();
 
 export const initialiseSocket = (io) => {
-
   io.on("connection", (socket) => {
     console.log("user is connected", socket.id, socket.handshake.query.UserId);
     const userId = Number(socket.handshake.query.UserId);
@@ -17,9 +16,6 @@ export const initialiseSocket = (io) => {
     socket.on("join_conversation", async (conversationId) => {
       socket.join(`conversation${conversationId}`);
     });
-
-
-  
 
     markPendingMessages(io, userId);
 
@@ -29,256 +25,280 @@ export const initialiseSocket = (io) => {
 
     onlineMembers.get(userId).add(socket.id);
 
-    console.log(onlineMembers,"onlineeee");
+    console.log(onlineMembers, "onlineeee");
 
+    const currentOnlineMembers = [...onlineMembers.keys()];
 
-     const currentOnlineMembers =  [...onlineMembers.keys()];
-
-
-   
-     socket.emit("onlineUsers",{
+    socket.emit("onlineUsers", {
       currentOnlineMembers,
-      response : "All online Members"
-     })
+      response: "All online Members",
+    });
 
-
-
-    socket.broadcast.emit("user-online",{
+    socket.broadcast.emit("user-online", {
       userId,
-      response : "Online User"
-    })
+      response: "Online User",
+    });
+
+    console.log(currentOnlineMembers, "Currrrrrr");
+
+    socket.on(
+      "send_message",
+      WithinConversation(socket, async (data, callback) => {
+        console.log(data, "ye data ayaaaaa");
+        const conversationId = data.conversation_id;
+        const message = data.message;
+        const isGroup = data.isGroup;
+        const senderId = userId;
+        const media = data.media;
 
 
 
-     console.log(currentOnlineMembers,"Currrrrrr")
 
 
-    socket.on("send_message", WithinConversation(socket,async (data,callback) => {
-    
-      console.log(data, "ye data ayaaaaa");
-      const conversationId = data.conversation_id;
-      const message = data.message;
-      const isGroup = data.isGroup;
-      const senderId = userId;
-      const media = data.media
-
-      try {
-
-        const conversation = await conversation_members.findOne({
-          where : {
-            conversation_id : conversationId,
-            user_id : senderId
-          }
-        })
+        try {
+          const savedMessage = await messageModel.create({
+            senderId: userId,
+            conversation_id: conversationId,
+            message: message,
+          });
 
 
-        if(conversation.is_left){
-         return callback({
-            success : false,
-            message : "You cannot send message to this conversation as you are no longer a part of it"
-          })
-        }
 
 
-        const savedMessage = await messageModel.create({
-          senderId: userId,
-          conversation_id: conversationId,
-          message: message,
-        });
-        
 
-        
-        if(media.length > 0){
+          const date = new Date(savedMessage.createdAt);
 
-          const mediaitems = media.map((item)=>{
-            return {
-              resource_type : item.resource_type,
-              url : item.url,
-              messageId : savedMessage.id
+          const [updatedConversation] = await conversation_members.increment({
+            unread_count : 1
+          },
+            {
+
+            where : {
+              user_id : {
+                [Op.ne] : senderId
+              },
+              conversation_id : conversationId
             }
           })
 
-          await mediaModel.bulkCreate(mediaitems);
 
-           
-        }
-
-
-        const messageWithReceiver = await messageModel.findOne({
-          where: {
-            id: savedMessage.id,
-          },
-          include: 
-          [
-          {
-            model: createUser,
-            as: "sender"
-
-
-          },{
-            model : mediaModel,
-            as : "media"
-          }
-
-          ]
-          
-        });
-
-        const members = await conversation_members.findAll({
-          where: {
-            conversation_id: data.conversation_id,
-            user_id: {
-              [Op.ne]: userId,
-            },
-            is_left : false
-          },
-        });
-
-
+          const [affectedrows] = await conversation.update( 
+            {
+              lastmessage: savedMessage.message,
+              lastmessageDate: date
+            },{
+              where: {
+                id: savedMessage.conversation_id,
+              }
+            }
+          )
 
         
-        const receiverIds = members.map((item) => {
-          return item.user_id;
-        });
 
-        let isReceiverOnline = false;
-
-        for (let i = 0; i < receiverIds.length; i++) {
-          if (onlineMembers.has(String(receiverIds[i]))) {
-            isReceiverOnline = true;
+          if (affectedrows == 0) {
+            socket.emit("error", {
+              message: "Error occured",
+              success: false,
+            });
+            return;
           }
+
+
+          
+
+           io.to(`conversation${conversationId}`).emit("update_Conversation", {
+            conversationId : conversationId,
+            lastmessage : savedMessage.message,
+            lastmessageDate : date
+          });
+
+
+
+
+          if (media.length > 0) {
+            const mediaitems = media.map((item) => {
+              return {
+                resource_type: item.resource_type,
+                url: item.url,
+                messageId: savedMessage.id,
+              };
+            });
+
+            await mediaModel.bulkCreate(mediaitems);
+          }
+
+          const messageWithReceiver = await messageModel.findOne({
+            where: {
+              id: savedMessage.id,
+            },
+            include: [
+              {
+                model: createUser,
+                as: "sender",
+              },
+              {
+                model: mediaModel,
+                as: "media",
+              },
+             
+            ],
+          });
+
+          const members = await conversation_members.findAll({
+            where: {
+              conversation_id: data.conversation_id,
+              user_id: {
+                [Op.ne]: userId,
+              },
+              is_left: false,
+            },
+          });
+
+          const receiverIds = members.map((item) => {
+            return item.user_id;
+          });
+
+          let isReceiverOnline = false;
+
+          for (let i = 0; i < receiverIds.length; i++) {
+            if (onlineMembers.has(String(receiverIds[i]))) {
+              isReceiverOnline = true;
+            }
+          }
+
+          console.log(onlineMembers, "online usersss");
+
+          console.log(isReceiverOnline, "user online haiiii???");
+
+          if (isReceiverOnline) {
+            await messageModel.update(
+              { isDelivered: true },
+              {
+                where: {
+                  conversation_id: conversationId,
+                },
+              },
+            );
+
+            savedMessage.isDelivered = true;
+          }
+
+          receiverIds.forEach((receiverid) => {
+            io.to(Number(receiverid)).emit("new_message", {
+              data: messageWithReceiver,
+              response: "Sent from backend",
+            });
+          });
+
+          io.to(Number(userId)).emit("new_message", {
+            data: messageWithReceiver,
+            response: "Sent from backend",
+          });
+        } catch (error) {
+          console.log(error, "error hai");
         }
+      }),
+    );
 
-        console.log(onlineMembers, "online usersss");
+    socket.on(
+      "edit_message",
+      WithinConversation(async (data, callback) => {
+        console.log(data, "ifiofhfi");
+        const { message, message_id, conversation_id } = data;
 
-        console.log(isReceiverOnline, "user online haiiii???");
+        try {
+          if (message.trim() === "" || Number.isNaN(Number(message_id))) {
+            socket.emit("error", {
+              message: "Invalid Input",
+            });
+            return;
+          }
 
-        if (isReceiverOnline) {
-          await messageModel.update(
-            { isDelivered: true },
+          const affectedrows = await messageModel.update(
+            {
+              message: message,
+              updatedAt: new Date(),
+            },
             {
               where: {
-                conversation_id: conversationId,
+                id: message_id,
               },
             },
           );
 
-          savedMessage.isDelivered = true;
-        }
-
-        receiverIds.forEach((receiverid) => {
-          io.to(Number(receiverid)).emit("new_message", {
-            data: messageWithReceiver,
-            response: "Sent from backend",
-          });
-        });
-
-        io.to(Number(userId)).emit("new_message", {
-          data: messageWithReceiver,
-          response: "Sent from backend",
-        });
-      } catch (error) {
-        console.log(error, "error hai");
-      }
-    })
-  
-  );
-
-    socket.on("edit_message", WithinConversation(async (data,callback) => {
-      console.log(data, "ifiofhfi");
-      const { message, message_id, conversation_id } = data;
-
-      try {
-        if (message.trim() === "" || Number.isNaN(Number(message_id))) {
-          socket.emit("error", {
-            message: "Invalid Input",
-          });
-          return;
-        }
-
-        const affectedrows = await messageModel.update(
-          {
-            message: message,
-            updatedAt: new Date(),
-          },
-          {
+          const updatedMessage = await messageModel.findOne({
             where: {
               id: message_id,
             },
-          },
-        );
+            include: {
+              model: createUser,
+              as: "sender",
+            },
+          });
 
-        const updatedMessage = await messageModel.findOne({
-          where: {
-            id: message_id,
-          },
-          include: {
-            model: createUser,
-            as: "sender",
-          },
-        });
+          io.to(`conversation${conversation_id}`).emit("edited_message", {
+            updatedMessage,
+          });
 
-        io.to(`conversation${conversation_id}`).emit("edited_message", {
-          updatedMessage,
-        });
+          if (affectedrows[0] === 0) {
+            socket.emit("error", {
+              message: "Saving failed",
+            });
+          }
+        } catch (err) {
+          console.log(err, "ifjifj");
 
-        if (affectedrows[0] === 0) {
           socket.emit("error", {
-            message: "Saving failed",
+            message: "Some socket error occured",
           });
         }
-      } catch (err) {
-        console.log(err, "ifjifj");
+      }),
+    );
 
-        socket.emit("error", {
-          message: "Some socket error occured",
-        });
-      }
-    }));
+    socket.on(
+      "delete_message",
+      WithinConversation(async (data, callback) => {
+        const messageId = data.deletedMessage.id;
+        const conversationId = data.deletedMessage.conversation_id;
 
-    socket.on("delete_message",WithinConversation(async (data,callback) => {
-      const messageId = data.deletedMessage.id;
-      const conversationId = data.deletedMessage.conversation_id;
+        try {
+          const affectedrows = await messageModel.update(
+            { isDeleted: true },
+            {
+              where: {
+                id: messageId,
+              },
+            },
+          );
 
-      try {
-        const affectedrows = await messageModel.update(
-          { isDeleted: true },
-          {
+          const deletedMessage = await messageModel.findOne({
             where: {
               id: messageId,
             },
-          },
-        );
+            include: {
+              model: createUser,
+              as: "sender",
+            },
+          });
 
-        const deletedMessage = await messageModel.findOne({
-          where: {
-            id: messageId,
-          },
-          include: {
-            model: createUser,
-            as: "sender"
-          },
-        });
+          if (affectedrows[0] == 0) {
+            return res.status(400).json({
+              message: "Some socket error occured",
+              success: false,
+            });
+          }
 
-        if (affectedrows[0] == 0) {
-          return res.status(400).json({
+          io.to(`conversation${conversationId}`).emit("deleted_message", {
+            deletedMessage,
+          });
+        } catch (err) {
+          return res.status(200).json({
             message: "Some socket error occured",
-            success: false,
+            sucess: false,
           });
         }
-
-        io.to(`conversation${conversationId}`).emit("deleted_message", {
-          deletedMessage,
-        });
-      } catch (err) {
-        return res.status(200).json({
-          message: "Some socket error occured",
-          sucess: false,
-        });
-      }
-    })
-  
-  );
+      }),
+    );
 
     socket.on("typing", async (data) => {
       const conversationId = data.conversationId;
@@ -343,10 +363,14 @@ export const initialiseSocket = (io) => {
         userId,
         typingMembers: payload,
       });
-    });
+    }); 
+
+
 
     socket.on("mark_seen", async (data) => {
       const conversationId = data.conversationId;
+
+
 
       console.log(data, "user has seen the message");
 
@@ -375,6 +399,18 @@ export const initialiseSocket = (io) => {
         },
       );
 
+      const [updated] = await conversation_members.update({
+        unread_count : 0
+      },
+      {
+        where : {
+          user_id :  userId,
+          conversation_id : conversationId
+        }
+      }
+    )
+
+
       let markSeenSender = {};
 
       for (let Message of Messages) {
@@ -385,7 +421,9 @@ export const initialiseSocket = (io) => {
         markSeenSender[Message.senderId].push(Message.id);
       }
 
+      
       for (const Sender in markSeenSender) {
+
         io.to(String(Sender)).emit("seen_messages", {
           MessageIds: markSeenSender[Sender],
         });
@@ -393,13 +431,10 @@ export const initialiseSocket = (io) => {
     });
 
     socket.on("disconnect", (reason) => {
+      socket.broadcast.emit("user-offline", {
+        userId,
+      });
 
-
-      socket.broadcast.emit("user-offline",{
-        userId
-      })
-
-      
       const isUserStillonApp = onlineMembers.get(userId);
 
       if (isUserStillonApp) {
@@ -409,7 +444,6 @@ export const initialiseSocket = (io) => {
       if (isUserStillonApp?.size == 0) {
         onlineMembers.delete(userId);
       }
-
     });
   });
 };

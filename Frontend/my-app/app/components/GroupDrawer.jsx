@@ -3,67 +3,49 @@ import { X, Pencil, Camera, Trash2, Check } from "lucide-react";
 import { useImageUpload } from "../../hooks/usePreviewImage";
 import { Apifetch } from "../../lib/apifetch";
 import { userAuthContext } from "../context/authContext";
-import { SquareArrowRightExit } from 'lucide-react';
+import { SquareArrowRightExit } from "lucide-react";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
-import { DoorOpen } from 'lucide-react';
+import { DoorOpen } from "lucide-react";
 import { Spinner } from "../../components/ui/spinner";
-
-
+import { MakeAdmin, removeUser } from "../services/group.service.js";
+import { toast } from "sonner";
 
 function GroupDrawer({ open, setOpen, data }) {
   const { preview, File, uploadRef, previewImage, removeImage } =
-  useImageUpload();
+    useImageUpload();
   const { user } = useContext(userAuthContext);
-  
+
   console.log(data, "kjffpojfpojpfo");
-  
-  // const otherUser = useMemo(()=>{
-    //   const other = data.user_members((member)=>member.id != user.id)
-    //   return other;
-    // },[data])
-    
-    // console.log(otherUser,"jiofjiorn")
-    
-    
-    
-    
 
-    
+  const [editing, setEditing] = useState(false);
+  const [openLeave, setOpenLeave] = useState(false);
 
-    const [editing, setEditing] = useState(false);
-  const [openLeave,setOpenLeave] = useState(false);
-  
-
-  
-  
-  
-  
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  
+
   console.log(name, "jfoihfihfihfif");
   console.log(data, "inrfirkfrom");
-  
+
   const [saving, setSaving] = useState(false);
-  
+
   const role = useMemo(() => {
     const currentUser = data?.user_members?.find(
       (Member) => Member.id == user.id,
     );
-    
+
     return currentUser?.conversation_members_table?.role;
   }, [data]);
-  
-  if(data == null){
-    return 
+
+  if (data == null) {
+    return;
     <div className="h-screen w-screen bg-black flex flex-col justify-center items-center ">
-      <Spinner/>
-       </div>
+      <Spinner />
+    </div>;
   }
   function enterEdit() {
     setEditing(true);
   }
-  
+
   function cancelEdit() {
     setName(data?.group_table?.Group_name || "");
     setDescription(data.group_table?.Group_Description || "");
@@ -71,25 +53,41 @@ function GroupDrawer({ open, setOpen, data }) {
     setEditing(false);
   }
 
-
-  
-
-  async function leaveGroup(){
-    try{
-      const response = Apifetch(`user/${data.id}/leave`,{
-        method : "PUT"
-      })
-
-      
-
-    }catch(err){
-      console.log(err,"error haiiii");
+  async function leaveGroup() {
+    try {
+      const response = Apifetch(`user/${data.id}/leave`, {
+        method: "PUT",
+      });
+    } catch (err) {
+      console.log(err, "error haiiii");
     }
+  }
+
+  async function removeUserFromGroup(member, conversation) {
+    const MemberId = member.id;
+    const conversationId = conversation.id;
+
+
+
+    
+
+    try {
+      const response = await removeUser({ MemberId, conversationId });
 
 
 
 
 
+
+      if (!response.success) {
+        throw new Error("Failed to remove user,Please try again Later");
+      }
+
+      toast.success(response.message);
+    } catch (err) {
+      console.log(err,"foijfiofjfoijf")
+      toast.error(err.message  || "Something went wrong");
+    }
   }
 
 
@@ -111,24 +109,47 @@ function GroupDrawer({ open, setOpen, data }) {
 
 
 
-    async function handleSave() {
+  async function makeUserAdmin(member, conversation){
+    const memberId = member.id;
+    const conversationId = conversation.id;
+  
+
+       try {
+      const response = await MakeAdmin({ memberId, conversationId });
+
+      if (!response.success) {
+        throw new Error("Failed to Promote user,Please try again Later");
+      }
+
+      toast.success(response.message);
+    } catch (err) {
+      toast.error(err.message || "Something went wrong");
+    }
+
+
+    
+  }
+
+
+
+
+
+
+  async function handleSave() {
     if (saving) return;
     try {
       setSaving(true);
 
       const formData = new FormData();
 
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("group_image", File);
 
-      formData.append("name",name);
-      formData.append("description",description);
-      formData.append("group_image",File);
-
-      const res = await Apifetch(`user/${data.id}/update`,{
-        method : "PUT",
-        body : formData
-        }
-        
-      );
+      const res = await Apifetch(`user/${data.id}/update`, {
+        method: "PUT",
+        body: formData,
+      });
 
       setEditing(false);
     } catch (err) {
@@ -137,9 +158,6 @@ function GroupDrawer({ open, setOpen, data }) {
       setSaving(false);
     }
   }
-
-
-
 
   return (
     <div
@@ -160,8 +178,6 @@ function GroupDrawer({ open, setOpen, data }) {
             Group info
           </span>
 
-
-
           {role == "ADMIN" ? (
             <div className="flex items-center gap-3">
               {!editing ? (
@@ -180,6 +196,7 @@ function GroupDrawer({ open, setOpen, data }) {
                   Cancel
                 </button>
               )}
+
               <span
                 onClick={() => setOpen(false)}
                 className="cursor-pointer text-white/40 hover:text-white transition-colors"
@@ -190,37 +207,37 @@ function GroupDrawer({ open, setOpen, data }) {
           ) : (
             ""
           )}
-
-          
         </div>
 
         {/* scrollable content */}
         <div className="flex-1 overflow-y-auto px-5 py-6">
-          
-          
-          <span onClick={()=>{setOpenLeave(true)}}>
-            <SquareArrowRightExit size={20}/>
-                
-                </span>
+          <span
+            onClick={() => {
+              setOpenLeave(true);
+            }}
+          >
+            <SquareArrowRightExit size={20} />
+          </span>
           {/* avatar */}
-            <AlertDialogDestructive
+          <AlertDialogDestructive
             open={openLeave}
             setOpen={setOpenLeave}
             onconfirm={leaveGroup}
             title={"Leave Group?"}
-            message={"Are you sure that you want to leave this Group.This action cannot be undone"}
-            icon={<DoorOpen/>}
+            message={
+              "Are you sure that you want to leave this Group.This action cannot be undone"
+            }
+            icon={<DoorOpen />}
             confirmMessage={"Leave"}
-            />    
+          />
           <div className="flex flex-col items-center">
-            
             <div className="relative">
               <div
                 className={`h-20 w-20 shrink-0 overflow-hidden rounded-full ring-1 ${
                   editing ? "ring-white/20" : "ring-white/[0.06]"
                 }`}
               >
-                {(preview || data?.group_table?.Group_image )? (
+                {preview || data?.group_table?.Group_image ? (
                   <img
                     src={preview ? preview : data?.group_table?.Group_image}
                     alt="group"
@@ -328,8 +345,32 @@ function GroupDrawer({ open, setOpen, data }) {
                   <span>{member.name}</span>
 
                   <span className="text-gray-500 text-xs">
-                    {member.conversation_members_table.role}
+                    {member.conversation_members_table?.role}
                   </span>
+
+                  {role === "ADMIN" && member.id != user.id && (
+                    <span
+                      onClick={() => {
+                        removeUserFromGroup(member, data);
+                      }}
+                      className="text-[10px] text-red-500 font-semibold"
+                    >
+                      REMOVE
+                    </span> 
+                  )}
+
+                  {role === "ADMIN" &&
+                    member.id != user.id &&
+                    member.conversation_members_table.role == "MEMBER" && (
+                      <span
+                        onClick={() => {
+                          makeUserAdmin(member, data);
+                        }}
+                        className="text-[10px] text-white font-semibold"
+                      >
+                        MAKE ADMIN
+                      </span>
+                    )}
                 </div>
               ))}
             </div>

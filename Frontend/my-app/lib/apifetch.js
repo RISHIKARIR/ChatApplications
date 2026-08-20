@@ -1,11 +1,14 @@
-let BaseUrl = "http://localhost:5000";
+let BaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+
+console.log(BaseUrl,"baseeeeee")
+
 
 export async function Apifetch(url, options) {
 
   const isFormData = options.body instanceof FormData;
 
   const headers = isFormData ? {} : { "content-type" : "application/json"}
-
 
 
   let response = await fetch(`${BaseUrl}/${url}`, {

@@ -48,6 +48,7 @@ import { EditDialog } from "../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../components/ui/deleteDialog";
 import Dropdown from "../../components/dropdown";
 import ImageShowModal from "./modals/ImageShowModal";
+import { loadchats } from "../services/message.service";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -114,7 +115,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
-  useEffect(() => {
+  useEffect(() => { 
     const socket = socketRef.current;
 
     if (!socket) return;
@@ -258,27 +259,47 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   const [isTyping, setIsTyping] = useState(false);
   const timeOutRef = useRef(null);
+  const chatMessageRef = useRef(null);
+  const [hasMore,setHasMore] = useState(true);
+
+
 
   useEffect(() => {
-    async function loadchats() {
-      if (!selectedConversation) return;
 
-      socketRef?.current?.emit("mark_seen", {
-        conversationId: selectedConversation,
-      });
 
-      socketRef?.current?.emit("join_conversation", selectedConversation);
 
-      const response = await Apifetch(`user/${selectedConversation}/messages`, {
-        method: "GET",
-      });
 
-      const data = await response.json();
+async function showChatsOfcurrentUser(){
 
-      setShowChats(data);
+  try {
+    console.log("chlaaaaaaaaaaaaaa")
+    socketRef?.current?.emit("mark_seen", {
+    conversationId: selectedConversation,
+  });
+  
+  socketRef?.current?.emit("join_conversation", selectedConversation);
+
+  console.log("ye effect chla")
+ 
+
+
+    const response = await loadchats(selectedConversation)
+    console.log(response,"ofoifhfiuh")
+    
+    setShowChats(response);
+    
+  }catch(err){
+      toast.error(err.message || "Something went wrong");
     }
 
-    loadchats();
+
+
+    }
+
+
+
+    showChatsOfcurrentUser();
+
 
     return () => {
       socketRef?.current?.emit("leave_conversation", selectedConversation);
@@ -306,6 +327,11 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     console.log(response, "responseeee");
 
     setOpenFile(false);
+
+
+
+
+
 
     const socket = socketRef.current;
 
@@ -467,6 +493,57 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   console.log(conversationData, "mnfifiorriojroi");
 
+
+
+  const handlePagination = async ()=>{
+
+    console.log(chatMessageRef.current.scrollTop,"mfoinfiofnjfoinfi");
+
+    console.log(showChats,"foijfoifjifojfio")
+
+    if(!showChats || !selectedConversation)return;
+
+
+    if(chatMessageRef.current.scrollTop == 0){
+      const lastMessageId = showChats.data[0].id
+      
+
+      if(hasMore){
+     const response = await loadchats(selectedConversation,lastMessageId);
+
+     if(response.data.length == 0){
+      setHasMore(false);
+     }
+
+      setShowChats((prev)=>{
+       return {
+        ...prev,
+        data : [...response.data,...(prev?.data || [])]
+       }
+      })
+
+      }
+      
+
+    }
+
+
+
+
+
+
+
+  }
+
+
+
+
+
+console.log(showChats?.data,"fniufhuifhuif")
+
+
+
+
   return (
     <div className="flex h-full bg-[#1c231b] text-white">
       <div className="flex h-full min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_center,#30362f_0%,#242b23_45%,#151c15_100%)]">
@@ -554,7 +631,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
           )}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_center,#30362f_0%,#252b23_48%,#151c15_100%)] px-8 py-6">
+        <div
+        ref={chatMessageRef}
+        onScroll={handlePagination}
+        className="min-h-0 flex-1 overflow-y-auto bg-[radial-gradient(circle_at_center,#30362f_0%,#252b23_48%,#151c15_100%)] px-8 py-6">
           {!selectedConversation && (
             <div className="flex h-full items-center justify-center">
               <div className="max-w-sm text-center">
@@ -576,7 +656,8 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
           {selectedConversation && (
             <div>
-              <ul className="space-y-9">
+              <ul 
+               className="space-y-9">
                 {showChats &&
                   showChats?.data?.map((item) => {
                     return (

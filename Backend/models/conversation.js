@@ -16,6 +16,16 @@ export const conversation = seq.define(
     isGroup : {
       type : DataTypes.BOOLEAN,
       defaultValue : false
+    },
+    lastmessage : {
+        type : DataTypes.TEXT,
+        allowNull : true,
+        defaultValue : null
+    },
+    lastmessageDate : {
+      type : DataTypes.DATE,
+      allowNull : true,
+      defaultValue : null
     }
   },
   {
@@ -55,6 +65,10 @@ export const conversation_members = seq.define("conversation_members_table",{
   is_left : {
     type : DataTypes.BOOLEAN,
     defaultValue : false 
+  },
+  unread_count : {
+    type : DataTypes.INTEGER,
+    defaultValue : 0
   }
 
 }, { tableName : "conversation_members_table"}

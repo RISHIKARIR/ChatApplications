@@ -9,6 +9,8 @@ import AddGroupModal from "./AddGroupModal";
 import CustomModal from "../../components/ui/modal";
 import { NavUser } from "../../components/ui/navbar";
 import { SocketContext } from "../context/socketContext";
+import { Spinner } from "@/components/ui/spinner";
+import { useSocketConversation } from "../../hooks/useConversation";
 
 function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [conversationData, setConversationData] = useState(null);
@@ -17,10 +19,20 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   const [open, setOpen] = useState(false);
 
   const { OpenModal } = useContext(ModalContext);
-  const { user } = useContext(userAuthContext);
-  const { newConversation,updatedGroup } = useContext(SocketContext);
+  const { user,loading } = useContext(userAuthContext);
+  const { socketRef,newConversation,updatedGroup } = useContext(SocketContext);
+   useSocketConversation(socketRef,setConversationData,setFilteredData)
+  const [filter,setFilter] = useState("All");
+
+
+
+  console.log(filter,"filterrrrrrrrrr")
+
+
+  console.log(conversationData,"conversationnnnnnnnnnn")
 
   useEffect(() => {
+    if(loading)return;
     async function fetchdata() {
       const response = await Apifetch("user/conversations", {});
       const data = await response.json();
@@ -31,11 +43,12 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     }
 
     fetchdata();
-  }, []);
+  }, [loading]);
 
 
 
   useEffect(()=>{
+    if(loading)return;
     if(!newConversation && !updatedGroup)return;
 
     if(newConversation){
@@ -48,7 +61,7 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
     }
 
 
-    console.log(updatedGroup.id,"jnfkjfjkfnfjknfj");
+
 
 
     if(updatedGroup){
@@ -77,11 +90,19 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
 
 
 
-  },[newConversation,updatedGroup])
+  },[loading,newConversation,updatedGroup])
 
 
-  console.log(updatedGroup,"fninfiufiuf")
-  console.log(filteredData,'ihgufriuhfriurfhiuhui')
+  if(loading){
+  return (
+
+  <Spinner className="size-10 text-white" />
+
+    )
+
+  }
+  
+
 
 
  
@@ -106,9 +127,23 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   }
 
 
-  
 
-console.log(filteredData,"jflffffffjddijfijlif")
+  console.log(filteredData,"filteredddddd")
+
+
+function filterBy(e) {
+  const name = e.currentTarget.name;
+
+
+  if (filter === name) {
+    return;
+  }
+
+
+  setFilter(name);
+}
+     
+    console.log(filter,"nfinfufihuffifn")
 
 
   return (
@@ -129,7 +164,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
             C
           </div>
 
-          <div className="flex flex-1 flex-col items-center gap-5 text-zinc-300">
+          {/* <div className="flex flex-1 flex-col items-center gap-5 text-zinc-300">
             <button className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-white/10 hover:text-white">
               ⌂
             </button>
@@ -153,7 +188,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
             <button className="flex h-8 w-8 items-center justify-center rounded-md transition hover:bg-white/10 hover:text-white">
               ▦
             </button>
-          </div>
+          </div> */}
 
           <div className="mb-3 flex flex-col items-center gap-3">
             <p className="text-[8px] font-bold uppercase text-white">
@@ -161,12 +196,12 @@ console.log(filteredData,"jflffffffjddijfijlif")
             </p>
           </div>
 
-          <div className="relative mt-auto h-9 w-9 rounded-full bg-[#d8d0b8] text-black">
+          {/* <div className="relative mt-auto h-9 w-9 rounded-full bg-[#d8d0b8] text-black">
             <div className="flex h-full w-full items-center justify-center text-xs font-black uppercase">
               {user?.name?.charAt(0) || "U"}
             </div>
             <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#121811] bg-[#22c55e]" />
-          </div>
+          </div> */}
         </div>
 
         {/* Conversation List */}
@@ -178,7 +213,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
                   Message
                 </h2>
                 <span className="mb-[1px] text-[9px] font-semibold text-zinc-400">
-                  20 new
+                  {/* 20 new */}
                 </span>
               </div>
 
@@ -214,14 +249,14 @@ console.log(filteredData,"jflffffffjddijfijlif")
               </span>
             </div>
 
-            <div className="mt-4 flex items-center gap-2">
-              <button className="rounded-md bg-white px-3 py-1.5 text-[9px] font-black uppercase text-black">
+              <div className="mt-4 flex items-center gap-2">
+              <button onClick={filterBy} name="All" className={`${filter == "All" ? "rounded-md text-black bg-white px-3 py-1.5 text-[9px] font-black uppercase" : "text-[9px] font-black uppercase"} `}>
                 All
               </button>
-              <button className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
+              <button onClick={filterBy} name="Unread" className={`${filter == "Unread" ? "rounded-md text-black bg-white px-3 py-1.5 text-[9px] font-black uppercase" : "text-[9px] font-black uppercase"} `}>
                 Unread
               </button>
-              <button className="rounded-md px-3 py-1.5 text-[9px] font-bold uppercase text-zinc-400 transition hover:bg-white/10 hover:text-white">
+              <button onClick={filterBy} name="Groups" className={`${filter == "Groups" ? "rounded-md text-black bg-white px-3 py-1.5 text-[9px] font-black uppercase" : "text-[9px] font-black uppercase"} `}>
                 Groups
               </button>
             </div>
@@ -233,19 +268,87 @@ console.log(filteredData,"jflffffffjddijfijlif")
                 All Message
               </p>
             </div>
-
+              
             <div className="space-y-1">
-              {filteredData?.map((item) => {
+
+            { filter == "ALL" ?   
+            
+              filteredData?.map((item) => {
                 const otherUser = user?.id === item.userOneId ? item.userTwo : item.userOne;
 
-                let chatName = {};
+                let chatName = {};  
 
                 if (item.isGroup) {
                   chatName.name = item?.group_table?.Group_name;
                   chatName.Profile_img = item?.group_table?.Group_image
                 } else {
                   chatName = item?.user_members?.find((value) => {
-                    return value?.id != user.id;
+                    return value?.id != user?.id;
+                  });
+                }
+
+                return (
+                  <button
+                    type="button"
+                    className="group flex w-full items-center gap-2 rounded-md px-1.5 py-2 text-left transition hover:bg-white/10 active:scale-[0.99]"
+                    onClick={() => {
+                      setSelectedConversation(item.id);
+                      setConversationUserData(item);
+                    }}
+                    key={item.id}>
+                    {chatName?.Profile_img ? (
+                       <img
+                      src={chatName?.Profile_img}
+                      className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
+                    ></img>
+                    ) : (
+                      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-[11px] font-black uppercase text-black">
+                        {chatName?.name?.charAt(0)}
+
+                        <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#1d241b] bg-[#22c55e]" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-[11px] font-bold text-white">
+                          {chatName?.name}
+                        </p>
+
+                        <span className="text-[8px] font-semibold uppercase text-zinc-300">
+                          {new Date(item.lastmessageDate).toLocaleTimeString("en-IN",{
+                            hour : "2-digit",minute : "2-digit"
+                          })}
+                        </span>
+                      </div>
+
+                      <p className="mt-[2px] truncate text-[9px] font-medium text-zinc-400">
+                        {chatName?.email}
+                      </p>
+                    </div>
+
+                    <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white opacity-0 transition group-hover:opacity-100">
+                      {/* 2 */}
+                    </div>
+                  </button>
+                );
+              })
+              
+              : 
+              filter == "Groups" ? 
+              (
+                  filteredData?.map((item) => {
+                    if(!item.isGroup)return;
+
+                const otherUser = user?.id === item.userOneId ? item.userTwo : item.userOne;
+
+                let chatName = {};  
+
+                if (item.isGroup) {
+                  chatName.name = item?.group_table?.Group_name;
+                  chatName.Profile_img = item?.group_table?.Group_image
+                } else {
+                  chatName = item?.user_members?.find((value) => {
+                    return value?.id != user?.id;
                   });
                 }
                 console.log(item,"itemmmmmmmm")
@@ -279,7 +382,7 @@ console.log(filteredData,"jflffffffjddijfijlif")
                         </p>
 
                         <span className="text-[8px] font-semibold uppercase text-zinc-300">
-                          12 pm
+                          {/* 12 pm */}
                         </span>
                       </div>
 
@@ -293,7 +396,76 @@ console.log(filteredData,"jflffffffjddijfijlif")
                     </div>
                   </button>
                 );
-              })}
+              })
+
+
+
+              )
+              :
+
+              (
+                 filteredData?.map((item) => {
+                const otherUser = user?.id === item.userOneId ? item.userTwo : item.userOne;
+
+                let chatName = {};  
+
+                if (item.isGroup) {
+                  chatName.name = item?.group_table?.Group_name;
+                  chatName.Profile_img = item?.group_table?.Group_image
+                } else {
+                  chatName = item?.user_members?.find((value) => {
+                    return value?.id != user?.id;
+                  });
+                }
+                console.log(item,"itemmmmmmmm")
+                console.log(chatName, "miooifnfoi");
+
+                return (
+                  <button
+                    type="button"
+                    className="group flex w-full items-center gap-2 rounded-md px-1.5 py-2 text-left transition hover:bg-white/10 active:scale-[0.99]"
+                    onClick={() => {
+                      setSelectedConversation(item.id);
+                      setConversationUserData(item);
+                    }}
+                    key={item.id}>
+                    {chatName?.Profile_img ? (
+                       <img
+                      src={chatName?.Profile_img}
+                      className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
+                    ></img>
+                    ) : (
+                      <div className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#d8d0b8] text-[11px] font-black uppercase text-black">
+                        {chatName?.name?.charAt(0)}
+
+                        <span className="absolute bottom-[-1px] right-[-1px] h-2.5 w-2.5 rounded-full border-2 border-[#1d241b] bg-[#22c55e]" />
+                      </div>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="truncate text-[11px] font-bold text-white">
+                          {chatName?.name}
+                        </p>
+
+                        <span className="text-[8px] font-semibold uppercase text-zinc-300">
+                          {/* 12 pm */}
+                        </span>
+                      </div>
+
+                      <p className="mt-[2px] truncate text-[9px] font-medium text-zinc-400">
+                        {chatName?.email}
+                      </p>
+                    </div>
+
+                    <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white opacity-0 transition group-hover:opacity-100">
+                      2
+                    </div>
+                  </button>
+                );
+              })
+              )
+
+              }
             </div>
           </div>
 
@@ -305,13 +477,14 @@ console.log(filteredData,"jflffffffjddijfijlif")
                 </div>
               </div>
 
-              <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
+              {/* <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
                 ◕
               </button>
 
               <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
                 ◔
-              </button>
+              </button> */}
+
             </div>
           </div>
         </div>

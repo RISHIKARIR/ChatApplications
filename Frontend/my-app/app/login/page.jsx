@@ -52,10 +52,7 @@ function Page() {
     try {
       const response = await Apifetch("auth/login", {
         method: "POST",
-        // headers: {
-        //   "content-type": "application/json",
-        // },
-        // credentials: "include",
+
         body: JSON.stringify(formData),
       });
 
@@ -289,7 +286,7 @@ function Page() {
               </p>
             </div>
           </div>
-        </div>
+        </div>  
       </div>
     </div>
   );

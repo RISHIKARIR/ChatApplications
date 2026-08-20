@@ -6,8 +6,9 @@ import { conversation_members } from "../models/conversation.js";
 
 const showMessages = async (req, res) => {
   const { conversationId } = req.params;
+  const { lastMessageId } = req.query;
 
-  console.log(req.params, "paramsssssssss");
+  
 
   try {
     if (!conversationId) {
@@ -31,31 +32,71 @@ const showMessages = async (req, res) => {
       });
     }
 
-    const allMessages = await messageModel.findAll({
-      where: {
-        conversation_id: conversationId,
-      },
-      include: [
-        {
-          model: createUser,
-          as: "sender",
-          attributes: ["email", "name", "id"],
-        },
 
-        {
-          model : mediaModel,
-          as : "media"
-                    
-        }
-      ],
 
-      order: [["createdAt", "ASC"]],
-    });
+    let allMessages;
+
+
+    if(!lastMessageId){
+      allMessages = await messageModel.findAll({
+       where: {
+         conversation_id: conversationId,
+       },
+       include: [
+         {
+           model: createUser,
+           as: "sender",
+           attributes: ["email", "name", "id"],
+         },
+  
+         {
+           model : mediaModel,
+           as : "media"
+                     
+         }
+       ],
+       limit : 30,
+       order: [["createdAt", "DESC"]],
+     });
+    }
+
+
+  if(lastMessageId){
+    allMessages = await messageModel.findAll({
+       where: {
+         conversation_id: conversationId,
+         id : {
+          [Op.lt] : lastMessageId
+         }
+       },
+       include: [
+         {
+           model: createUser,
+           as: "sender",
+           attributes: ["email", "name", "id"],
+         },
+  
+         {
+           model : mediaModel,
+           as : "media"
+                     
+         }
+       ],
+       limit : 30,
+       order: [["createdAt", "DESC"]],
+     }
+    )
+
+
+  }
+
+
+
 
     return res.status(200).json({
       message: "Messages returned successfully",
       success: true,
-      data: allMessages,
+      data: allMessages.reverse()
     });
   } catch (err) {
     console.log(err, "error");

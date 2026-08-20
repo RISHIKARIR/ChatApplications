@@ -22,7 +22,7 @@ function Logout() {
 
     
 
-    const response = await fetch("http://localhost:5000/auth/logout", {
+    const response = await fetch("https://chatapplications-production.up.railway.app/auth/logout", {
       method: "POST",
       headers: {
         "content-type": "application/json",

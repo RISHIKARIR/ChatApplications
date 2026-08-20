@@ -35,7 +35,7 @@ export function SocketProvider({ children }) {
 
     if (socketRef?.current?.connected) return;
 
-    const socket = io("http://localhost:5000", {
+    const socket = io(process.env.NEXT_PUBLIC_BACKEND_URL, {
       withCredentials: true,
       query: {
         UserId: user?.id,
