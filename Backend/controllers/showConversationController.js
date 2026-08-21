@@ -12,7 +12,6 @@ export const showConversations = async (req, res) => {
         id: req.user.id,
       },
       attributes: [],
-      logging: console.log,
       include: [
         {
           model: conversation,
