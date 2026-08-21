@@ -29,8 +29,8 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   console.log(conversationData,"conversationnnnnnnnnnn")
 
   useEffect(() => {
-    if(loading)return;
-    async function fetchdata() {
+      if(loading)return;
+      async function fetchdata() {
       const response = await Apifetch("user/conversations", {});
       const data = await response.json();
 
@@ -284,9 +284,6 @@ function filterBy(e) {
                   });
                 }
 
-               
-
-
                 return (
                   <button
                     type="button"
@@ -321,7 +318,7 @@ function filterBy(e) {
                         </span>
                       </div>
 
-                      <p className="mt-[2px] truncate text-[9px] font-medium text-zinc-400">
+                      <p className="mt-0.5 truncate text-[9px] font-medium text-zinc-400">
                         {chatName?.email}
                       </p>
                     </div>
