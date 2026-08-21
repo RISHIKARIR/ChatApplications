@@ -17,7 +17,9 @@ export const initialiseSocket = (io) => {
       socket.join(`conversation${conversationId}`);
     });
 
+
     markPendingMessages(io, userId);
+
 
     if (!onlineMembers.has(userId)) {
       onlineMembers.set(userId, new Set());
@@ -372,6 +374,7 @@ export const initialiseSocket = (io) => {
 
 
 
+
       console.log(data, "user has seen the message");
 
       const Messages = await messageModel.findAll({
@@ -383,6 +386,8 @@ export const initialiseSocket = (io) => {
           isSeen: false,
         },
       });
+
+
 
       const MarkMessages = await messageModel.update(
         {
@@ -413,6 +418,9 @@ export const initialiseSocket = (io) => {
 
       let markSeenSender = {};
 
+    console.log(Messages,"messagesssssssssss")
+
+    
       for (let Message of Messages) {
         if (!markSeenSender[Message.senderId]) {
           markSeenSender[Message.senderId] = [];
@@ -421,11 +429,14 @@ export const initialiseSocket = (io) => {
         markSeenSender[Message.senderId].push(Message.id);
       }
 
+
+
+      console.log(markSeenSender,"markkkkkkkkkkkk")
       
       for (const Sender in markSeenSender) {
 
-        io.to(String(Sender)).emit("seen_messages", {
-          MessageIds: markSeenSender[Sender],
+        io.to(Number(Sender)).emit("seen_messages", {
+          MessageIds: markSeenSender[Sender]
         });
       }
     });

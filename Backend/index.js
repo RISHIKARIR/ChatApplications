@@ -20,6 +20,9 @@ import { AllTables } from "./models/relations.js";
 const app = express();
 const server = createServer(app);
 
+
+
+console.log(process.env.CLIENT_URL,"hfiuhffuihbfu");
 export const io = new Server(server,{
     cors : {
         origin : process.env.CLIENT_URL,
