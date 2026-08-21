@@ -266,13 +266,10 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   useEffect(() => {
 
-
-
-
 async function showChatsOfcurrentUser(){
 
   try {
-    console.log("chlaaaaaaaaaaaaaa")
+
     socketRef?.current?.emit("mark_seen", {
     conversationId: selectedConversation,
   });
@@ -302,6 +299,7 @@ async function showChatsOfcurrentUser(){
 
 
     return () => {
+      
       socketRef?.current?.emit("leave_conversation", selectedConversation);
     };
   }, [selectedConversation]);

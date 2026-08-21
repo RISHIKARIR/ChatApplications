@@ -96,10 +96,12 @@ export function SocketProvider({ children }) {
       });
     });
 
-    socketRef.current.on("seen_messages", (data) => {
-      setSeenMessages(data);
-    });
+    // socketRef.current.on("seen_messages", (data) => {
+    //   setSeenMessages(data);
+    // });
 
+
+    
     socketRef.current.on("group_updated",(data)=>{
       setUpdatedGroup(data.data);
     })

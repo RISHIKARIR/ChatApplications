@@ -6,20 +6,26 @@ import { messageModel } from "../models/message.js";
 
 export const showConversations = async (req, res) => {
   try {
+
     const conversations = await createUser.findOne({
       where: {
         id: req.user.id,
       },
       attributes: [],
+      logging: console.log,
       include: [
         {
           model: conversation,
+            as: "conversations", 
+          through: { model: conversation_members, attributes: [] },
           include: [
             {
               model: createUser,
               as: "user_members",
               attributes: ["id", "name", "email","Profile_img"],
-              through: { model: conversation_members, attributes: ["role","is_left"],
+              through: { model: conversation_members, 
+                attributes: ["role","is_left","unread_count","conversation_id"],
+                
                },
             },
             
@@ -32,15 +38,15 @@ export const showConversations = async (req, res) => {
             attributes : {  
             exclude : ["updatedAt","createdAt"]
               }
-          } 
-
-            
+          }
           ],
-          as: "conversations", 
-          through: { model: conversation_members, attributes: [] },
+       
         },
       ],
     });
+
+
+    console.log(conversations,"nfjkfnjkfnfjk")
 
     return res.status(200).json({
       message: "All conversations Returned",
@@ -62,18 +68,15 @@ export const showConversations = async (req, res) => {
     // });
 
 
-    return res.status(200).json({
-      message: "returned",
-      data: conversationdIds,
-    });
+    // return res.status(200).json({
+    //   message: "returned",
+    //   data: conversationdIds,
+    // });
 
-
-
-
-    return res.status(200).json({
-      message: "All conversations",
-      // data: conversations,
-    });
+    // return res.status(200).json({
+    //   message: "All conversations",
+    //   // data: conversations,
+    // });
   } catch (err) {
     console.log(err, "errprrr");
   }

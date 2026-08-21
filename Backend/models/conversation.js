@@ -36,7 +36,7 @@ export const conversation = seq.define(
 //Junction Table//
 
 
-export const conversation_members = seq.define("conversation_members_table",{
+export const conversation_members = seq.define("conversation_members",{
   id : {
     type : DataTypes.INTEGER,
     allowNull : false,

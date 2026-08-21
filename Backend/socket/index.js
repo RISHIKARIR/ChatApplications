@@ -7,6 +7,9 @@ import { WithinConversation } from "../controllers/helpers/withinConversation.he
 
 const onlineMembers = new Map();
 let typingMembers = new Map();
+let inChatUsers = new Map();
+
+
 
 export const initialiseSocket = (io) => {
   io.on("connection", (socket) => {
@@ -54,7 +57,7 @@ export const initialiseSocket = (io) => {
         const media = data.media;
 
 
-
+        console.log([...inChatUsers],"inchatttt")
 
 
         try {
@@ -65,9 +68,6 @@ export const initialiseSocket = (io) => {
           });
 
 
-
-
-
           const date = new Date(savedMessage.createdAt);
 
           const [updatedConversation] = await conversation_members.increment({
@@ -76,12 +76,11 @@ export const initialiseSocket = (io) => {
             {
 
             where : {
-              user_id : {
-                [Op.ne] : senderId
-              },
+              user_id : senderId,
               conversation_id : conversationId
             }
           })
+
 
 
           const [affectedrows] = await conversation.update( 
@@ -95,8 +94,6 @@ export const initialiseSocket = (io) => {
             }
           )
 
-        
-
           if (affectedrows == 0) {
             socket.emit("error", {
               message: "Error occured",
@@ -105,17 +102,26 @@ export const initialiseSocket = (io) => {
             return;
           }
 
-
+          const members = await conversation_members.findAll({
+            where: {
+              conversation_id: data.conversation_id,
+              user_id: {
+                [Op.ne]: userId,
+              },
+              is_left: false,
+            },
+          });
           
+
 
            io.to(`conversation${conversationId}`).emit("update_Conversation", {
             conversationId : conversationId,
             lastmessage : savedMessage.message,
-            lastmessageDate : date
+            lastmessageDate : date,
+            members,
+            senderId : userId
           });
-
-
-
+          
 
           if (media.length > 0) {
             const mediaitems = media.map((item) => {
@@ -129,50 +135,48 @@ export const initialiseSocket = (io) => {
             await mediaModel.bulkCreate(mediaitems);
           }
 
-          const messageWithReceiver = await messageModel.findOne({
-            where: {
-              id: savedMessage.id,
-            },
-            include: [
-              {
-                model: createUser,
-                as: "sender",
-              },
-              {
-                model: mediaModel,
-                as: "media",
-              },
-             
-            ],
-          });
 
-          const members = await conversation_members.findAll({
-            where: {
-              conversation_id: data.conversation_id,
-              user_id: {
-                [Op.ne]: userId,
-              },
-              is_left: false,
-            },
-          });
+          
 
           const receiverIds = members.map((item) => {
             return item.user_id;
           });
 
+
+         
           let isReceiverOnline = false;
+          let isReceiverInChat  = false;
+
+
+          console.log(conversationId,"nnnfnfnifni")
 
           for (let i = 0; i < receiverIds.length; i++) {
-            if (onlineMembers.has(String(receiverIds[i]))) {
+            if (onlineMembers.has(Number(receiverIds[i]))) {
               isReceiverOnline = true;
             }
+            
+            if(inChatUsers.get(conversationId).has(Number(receiverIds[i]))){
+              isReceiverInChat = true;  
+            }
+
           }
 
-          console.log(onlineMembers, "online usersss");
+          console.log([...inChatUsers],"chat usersssss");
+          console.log(isReceiverInChat,"fjiffif");
 
-          console.log(isReceiverOnline, "user online haiiii???");
 
-          if (isReceiverOnline) {
+          if(isReceiverInChat){
+             await messageModel.update(
+              { isSeen: true },
+              {
+                where: {
+                  conversation_id: conversationId,
+                },
+              },
+            );
+
+            savedMessage.isSeen = true;
+          }else if (isReceiverOnline) {
             await messageModel.update(
               { isDelivered: true },
               {
@@ -184,6 +188,42 @@ export const initialiseSocket = (io) => {
 
             savedMessage.isDelivered = true;
           }
+
+            const messageWithReceiver = await messageModel.findOne({
+            where: {
+              id: savedMessage.id,
+            },
+            include: [
+              {
+                model: createUser,
+                as: "sender",
+                attributes : {
+                  exclude : ["refreshtoken","password","createdAt","updatedAt"]
+                  
+
+                },
+                // include : [
+                //   {
+                //     model : conversation,
+                //     as : "conversations",
+                //     // attributes : [],
+                //     through : { model : conversation_members,
+                //        where : {
+                //       conversation_id : conversationId
+                //     },
+                //       attributes : ["user_id","conversation_id","unread_count"] }
+                //   }
+                // ]
+              },
+              {
+                model: mediaModel,
+                as: "media",
+              },
+             
+            ],
+          });
+
+
 
           receiverIds.forEach((receiverid) => {
             io.to(Number(receiverid)).emit("new_message", {
@@ -372,8 +412,13 @@ export const initialiseSocket = (io) => {
     socket.on("mark_seen", async (data) => {
       const conversationId = data.conversationId;
 
+      if(!inChatUsers.has(conversationId)){
+        inChatUsers.set(conversationId,new Set());
+      }
 
+      inChatUsers.get(conversationId).add(userId);
 
+      console.log([...inChatUsers],"fufbfhffff")
 
       console.log(data, "user has seen the message");
 
@@ -386,7 +431,6 @@ export const initialiseSocket = (io) => {
           isSeen: false,
         },
       });
-
 
 
       const MarkMessages = await messageModel.update(
@@ -409,11 +453,23 @@ export const initialiseSocket = (io) => {
       },
       {
         where : {
-          user_id :  userId,
+          user_id : {
+          [Op.ne]: userId
+          },
           conversation_id : conversationId
         }
       }
-    )
+    ) 
+
+   
+    if(updated > 0 ){
+      socket.emit("remove_unread_count",{
+        conversationId,
+      })
+      
+    }
+
+
 
 
       let markSeenSender = {};
@@ -436,10 +492,31 @@ export const initialiseSocket = (io) => {
       for (const Sender in markSeenSender) {
 
         io.to(Number(Sender)).emit("seen_messages", {
-          MessageIds: markSeenSender[Sender]
+          MessageIds: markSeenSender[Sender],
+
         });
       }
     });
+
+    socket.on("leave_conversation",(selectedConversation)=>{
+      const conversationId = selectedConversation;
+
+
+
+      if(inChatUsers.has(conversationId)){
+
+        const conversationSize = inChatUsers.get(conversationId);
+        inChatUsers.get(conversationId).delete(userId);
+        if(conversationSize.size == 0){
+          inChatUsers.delete(conversationId);
+        }
+
+    }
+
+
+    })
+
+
 
     socket.on("disconnect", (reason) => {
       socket.broadcast.emit("user-offline", {
