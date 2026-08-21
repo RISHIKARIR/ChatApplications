@@ -21,6 +21,9 @@ import { conversation_members } from "./models/conversation.js";
 const app = express();
 const server = createServer(app);
 
+
+
+console.log(process.env.CLIENT_URL,"hfiuhffuihbfu");
 export const io = new Server(server,{
     cors : {
         origin : process.env.CLIENT_URL,

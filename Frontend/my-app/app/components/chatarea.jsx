@@ -299,6 +299,7 @@ async function showChatsOfcurrentUser(){
 
 
     return () => {
+      
       socketRef?.current?.emit("leave_conversation", selectedConversation);
     };
   }, [selectedConversation]);
@@ -349,7 +350,7 @@ async function showChatsOfcurrentUser(){
         toast.error(response.message);
         return;
       }
-    }    );
+    } );
 
     setMessage("");
   }
@@ -624,7 +625,6 @@ console.log(showChats?.data,"fniufhuifhuif")
                 setOpen={setOpenDrawer}
                 data={conversationUserData}
               />
-              {/* } */}
             </div>
           )}
         </div>
