@@ -31,11 +31,6 @@ export const useSocketConversation = (
       });
     });
 
-    
-
-
-
-
     setFilteredData((prev) => {
       return prev?.map((item) => {
         if (item.id == data.conversationId) {
@@ -92,6 +87,11 @@ export const useSocketConversation = (
       });
     });
   };
+
+
+
+
+
 
   socketRef?.current?.on("update_Conversation", updateLastMessage);
   socketRef?.current?.on("remove_unread_count", removeUnreadCount);
