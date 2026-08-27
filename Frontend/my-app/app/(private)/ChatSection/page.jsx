@@ -1,7 +1,7 @@
 "use client";
 
 import Conversations from "../../components/conversation";
-import ChatArea from "../../components/chatarea";
+import ChatArea from "../../components/chatarea/chatarea";
 import { useEffect, useRef, useState } from "react";
 
 
