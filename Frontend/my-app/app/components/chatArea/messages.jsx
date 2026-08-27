@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useContext } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,9 +8,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu-sidebar";
-import { SquarePen, Trash2 } from "lucide-react";
+import { SquarePen, Trash2,Trash2Icon,EllipsisVertical } from "lucide-react";
 import { EditDialog } from "../../../components/ui/editDialog";
 import { AlertDialogDestructive } from "../../../components/ui/deleteDialog";
+import { useState } from "react";
+import { SocketContext } from "../../context/socketContext";
 
 function Messages({
   showChats,
@@ -21,10 +23,14 @@ function Messages({
   editUserMessage,
   deleteUserMessage,
 }) {
+  
   const [open, setOpen] = useState(false);
   const [editMessage, setEditmessage] = useState(null);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deletedMessage, setDeletedMessage] = useState(null);
+
+
+  const { socketRef } = useContext(SocketContext)
 
 
 
@@ -40,10 +46,22 @@ function Messages({
   }
 
 
+    async function deleteMessage() {
+      const socket = socketRef.current;
+  
+      if (!socket) return;
+  
+      socket.emit("delete_message", {
+        deletedMessage,
+      });
+    }
   
 
   return (
     <div>
+      
+
+
       <ul className="space-y-9">
         {showChats &&
           showChats?.data?.map((item) => {

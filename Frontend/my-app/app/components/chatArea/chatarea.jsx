@@ -3,42 +3,18 @@ import React, {
   useState,
   useContext,
   useRef,
-  use,
   useMemo,
 } from "react";
 import { toast } from "sonner";
 import { userAuthContext } from "../../context/authContext";
-import { Apifetch } from "../../../lib/apifetch";
 import { SocketContext } from "../../context/socketContext";
-import { Button } from "@/components/ui/button";
-import GroupDrawer from "../GroupDrawer";
-import {
-  EllipsisVertical,
-  Trash2,
-  SquarePen,
-  Phone,
-  Search,
-  Grid2X2,
-  Menu,
-  Trash2Icon,
-} from "lucide-react";
-import { uploadConfig } from "../../config/uploadconfig";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { EditDialog } from "../../../components/ui/editDialog";
-import { AlertDialogDestructive } from "../../../components/ui/deleteDialog";
-import Dropdown from "../../../components/dropdown";
 import ImageShowModal from "../modals/ImageShowModal";
 import { loadchats } from "../../services/message.service";
 import ChatInput from "./chatInput";
 import Messages from "./messages";
+import Header from "./header";
+import { useMessage } from "../../../hooks/useMessage";
 
 function ChatArea({ selectedConversation, conversationUserData }) {
   const { user } = useContext(userAuthContext);
@@ -47,7 +23,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     socketRef,
     deliveredMessages,
     seenMessages,
-    onlineUsers,
     updatedGroup,
   } = useContext(SocketContext);
 
@@ -58,18 +33,15 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   }, [user]);
 
   const bottomRef = useRef(null);
-  const [typingUser, setTypingUser] = useState(null);
-  const [typingMembers, setTypingMembers] = useState([]);
-  const [files, setFiles] = useState([]);
+ 
+ 
+
   const [imageDetails, setImageDetails] = useState(null);
-  const [openDrawer, setOpenDrawer] = useState(false);
+  const [typingMembers, setTypingMembers] = useState([]);
+    const [typingUser, setTypingUser] = useState(null);
 
-  console.log(conversationUserData, "convooooooo");
 
-  let convoData = conversationUserData;
 
-  console.log(updatedGroup, "ifjoirjiorjf");
-  console.log(convoData, "oifhoifhiofh");
 
   const [conversationData, setConversationData] = useState(null);
 
@@ -100,9 +72,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
   }, [conversationUserData]);
 
-  //
-  console.log(conversationUserData, "oniongoijn");
-  console.log(conversationData, "ufuifuifuifiufuifhiufhfuih");
+  
+
+
+
+  useMessage(setShowChats,setTypingUser,selectedConversation)
+  
+
 
   useEffect(() => {
     const socket = socketRef.current;
@@ -150,7 +126,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     function handleDeletedMessage(data) {
       console.log(data.deletedMessage.id, "jifh");
 
-      console.log(data, deletedMessage, "fjibfb");
+
 
       setShowChats((prev) => {
         if (!prev) return;
@@ -207,7 +183,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
       );
     }
 
-    console.log(typingMembers, "fiifiofiof");
 
     socket.on("new_message", handleNewMessage);
 
@@ -229,7 +204,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
       socket.off("stop_typing", hanldeStopTyping);
     };
-  }, [sendMessage]);
+  }, [selectedConversation, user]);
 
   console.log(conversationData, "covvoiv0f9f");
 
@@ -239,10 +214,6 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
 
 
-
-
-  const [uploading, setUploading] = useState(false);
-  const [openfile, setOpenFile] = useState(true);
   const [openImage, setOpenImage] = useState(false);
 
   const [isTyping, setIsTyping] = useState(false);
@@ -285,47 +256,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     });
   }, [selectedConversation, showChats?.data?.length]);
 
-  async function sendMessage() {
-    if (message.trim() === "" && files.length == 0) return;
 
-    const response = await uploadFiles();
-
-    if (!selectedConversation) {
-      toast.error("Please select a conversation");
-      return;
-    }
-
-    console.log(response, "responseeee");
-
-    setOpenFile(false);
-
-    const socket = socketRef.current;
-
-    if (!socket?.connected) {
-      toast.error("Socket not connected");
-      return;
-    }
-
-    setFiles([]);
-
-    socket.emit(
-      "send_message",
-      {
-        message: message.trim(),
-        conversation_id: selectedConversation,
-        isGroup: conversationUserData.isGroup,
-        media: files.length > 0 ? response.urls : [],
-      },
-      (response) => {
-        if (!response.success) {
-          toast.error(response.message);
-          return;
-        }
-      },
-    );
-
-    setMessage("");
-  }
 
   useEffect(() => {
     setShowChats((prev) => {
@@ -385,53 +316,13 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }, 10000);
   }
 
-  async function uploadFiles() {
-    setOpenFile(true);
 
-    if (files.length == 0) return [];
-    try {
-      setUploading(true);
-
-      const formdata = new FormData();
-
-      files.forEach((file) => {
-        formdata.append("files", file);
-      });
-
-      const response = await Apifetch("user/media/uploadMedia", {
-        method: "POST",
-        body: formdata,
-      });
-
-      if (!response.ok) {
-        console.log(err, "errorrr");
-        return;
-      }
-
-      const data = await response.json();
-
-      return data;
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setUploading(false);
-    }
-  }
 
   function handleImageModal(item) {
     setOpenImage(true);
     setImageDetails(item);
   }
 
-  async function deleteMessage() {
-    const socket = socketRef.current;
-
-    if (!socket) return;
-
-    socket.emit("delete_message", {
-      deletedMessage,
-    });
-  }
 
   useEffect(() => {
     if (!updatedGroup || !conversationData) return;
@@ -484,95 +375,19 @@ function ChatArea({ selectedConversation, conversationUserData }) {
     }
   };
 
-  console.log(showChats?.data, "fniufhuifhuif");
+
 
   return (
     <div className="flex h-full bg-[#1c231b] text-white">
       <div className="flex h-full min-w-0 flex-1 flex-col bg-[radial-gradient(circle_at_center,#30362f_0%,#242b23_45%,#151c15_100%)]">
-        <div className="flex h-16 items-center justify-between border-b border-black/20 bg-[#182017]/95 px-6">
-          <div className="flex items-center gap-3">
-            <div className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-[#d8d0b8] text-sm font-black uppercase text-black ring-1 ring-white/10">
-              {selectedConversation ? (
-                conversationData?.Profile_img ? (
-                  <img
-                    src={conversationData?.Profile_img}
-                    className="flex h-10 rounded-full  w-10 items-center justify-center text-xl font-bold text-zinc-500"
-                  ></img>
-                ) : (
-                  conversationData?.chatName?.charAt(0)
-                )
-              ) : (
-                "C"
-              )}
-
-              {selectedConversation && (
-                <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-[#182017] bg-[#22c55e]"></span>
-              )}
-            </div>
-
-            <div>
-              <h3 className="text-sm font-bold leading-none text-white">
-                {selectedConversation
-                  ? conversationData?.chatName
-                  : "No Conversation Selected"}
-              </h3>
-
-              <p className="mt-1 text-[10px] font-medium text-zinc-400">
-                {selectedConversation
-                  ? conversationData?.isGroup
-                    ? typingMembers.length > 1
-                      ? `${typingMembers.length} Members are typing`
-                      : typingMembers.length === 1
-                        ? `${typingMembers[0]} is typing`
-                        : ""
-                    : typingUser &&
-                        selectedConversation === typingUser.conversationId
-                      ? "typing..."
-                      : onlineUsers?.includes(receiverUser?.id)
-                        ? "Active"
-                        : ""
-                  : "Please select a conversation"}
-              </p>
-            </div>
-          </div>
-
-          {selectedConversation && (
-            <div className="hidden items-center gap-4 sm:flex">
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
-              >
-                <Phone size={17} />
-              </button>
-
-              <button
-                type="button"
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
-              >
-                <Search size={17} />
-              </button>
-
-              <div className="h-7 w-px bg-white/20" />
-
-              <button
-                type="button"
-                onClick={() => {
-                  setOpenDrawer(true);
-                }}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-zinc-300 transition hover:bg-white/10 hover:text-white"
-              >
-                <EllipsisVertical size={17} />
-              </button>
-
-              <GroupDrawer
-                open={openDrawer}
-                setOpen={setOpenDrawer}
-                data={conversationUserData}
-              />
-            </div>
-          )}
-        </div>
-
+      <Header
+      selectedConversation={selectedConversation}
+      conversationData={conversationData}
+     conversationUserData={conversationUserData}
+      receiverUser={receiverUser}
+     typingMembers={typingMembers}
+     typingUser={typingUser}
+/>
         <div
           ref={chatMessageRef}
           onScroll={handlePagination}
@@ -610,26 +425,14 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
         {selectedConversation && (
           <div className="bg-[#151c15] px-6 py-4">
-            {conversationData?.userDetails?.conversation_members_table
-              ?.is_left ? (
-              <div className="text-center font-semibold text-sm">
-                <p>
-                  You cannot Message in this conversation as you are no longer a
-                  part of it
-                </p>
-              </div>
-            ) : (
               <ChatInput
+                conversationData={conversationData}
                 selectedConversation={selectedConversation}
-                setFiles={setFiles}
-                uploading={uploading}
-                openfile={openfile}
                 handleTyping={handleTyping}
                 message={message}
-                sendMessage={sendMessage}
-                files={files}
+                conversationUserData={conversationUserData}
               />
-            )}
+            
           </div>
         )}
       </div>
