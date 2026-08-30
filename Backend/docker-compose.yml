@@ -1,0 +1,30 @@
+services:
+ redis: 
+  image : redis:latest
+  container_name : redis-implement
+  ports : 
+    - "6379:6379"
+  command : ["redis-server","--appendonly","yes"]
+  volumes:
+     - redis-data:/data
+
+
+
+ postgres :
+    image: postgres:18
+    container_name: postgres-implement
+    ports :
+      - "5432:5432"
+    environment:
+       POSTGRES_USER: ${DB_USER}
+       POSTGRES_PASSWORD: ${DB_PASSWORD}
+       POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+
+
+volumes:
+  redis-data:
+  postgres-data:
+      

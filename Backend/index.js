@@ -17,10 +17,18 @@ import { Server } from "socket.io";
 import { initialiseSocket } from "./socket/index.js";
 import { AllTables } from "./models/relations.js";
 import { conversation_members } from "./models/conversation.js";
+import { redis } from "./db/redis.js";
+import "./workers/index.js"
+
+
+
 
 const app = express();
 const server = createServer(app);
 
+
+
+console.log(process.env.CLIENT_URL,"hfiuhffuihbfu");
 export const io = new Server(server,{
     cors : {
         origin : process.env.CLIENT_URL,
@@ -40,6 +48,59 @@ connectDb();
 const path = process.env.PORT || 5000;
 
 // seq.sync({alter : true});
+
+
+
+
+const queue_key = 'queue:emails';
+
+
+
+app.post('/emails',async (req,res)=>{
+    const job = {
+        to : req.body.to,
+        subject : req.body.subject,
+        content : req.body.content,
+        createdAt : new Date().toISOString()
+    }
+
+    await redis.lpush(queue_key,JSON.stringify(job));
+    
+    res.status(200).json({
+        enqueued : true,
+        job
+    })
+
+
+
+
+})
+
+
+
+
+app.get("/getjob",async (req,res)=>{
+    const rawJob = await redis.rpop(queue_key);
+
+    if(!rawJob){
+        return res.status(200).json({
+            message : "no jobs queued"
+        })
+    }
+
+
+    const job = JSON.parse(rawJob);
+
+
+    
+    return res.status(200).json({
+        message : "jobs returned",
+        job
+    })
+
+
+
+})
 
 
 

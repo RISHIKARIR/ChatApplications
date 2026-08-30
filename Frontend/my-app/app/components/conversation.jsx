@@ -21,7 +21,9 @@ function Conversation({ setSelectedConversation, setConversationUserData }) {
   const { OpenModal } = useContext(ModalContext);
   const { user,loading } = useContext(userAuthContext);
   const { socketRef,newConversation,updatedGroup } = useContext(SocketContext);
-   useSocketConversation(socketRef,setConversationData,setFilteredData)
+   
+  useSocketConversation(socketRef,setConversationData,setFilteredData,user?.id)
+  
   const [filter,setFilter] = useState("ALL");
 
 
@@ -322,6 +324,7 @@ function filterBy(e) {
                         {chatName?.email}
                       </p>
                     </div>
+                    {console.log(chatName,"finibguibg")}
                       {chatName?.conversation_members?.unread_count > 0 &&
                     <div className="h-4 min-w-4 rounded-full bg-[#7c5cff] px-1 text-center text-[9px] font-bold leading-4 text-white  transition ">
                       {chatName?.conversation_members?.unread_count}
@@ -475,13 +478,6 @@ function filterBy(e) {
                 </div>
               </div>
 
-              {/* <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
-                ◕
-              </button>
-
-              <button className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm text-black">
-                ◔
-              </button> */}
 
             </div>
           </div>

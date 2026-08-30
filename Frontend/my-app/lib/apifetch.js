@@ -1,5 +1,8 @@
-let BaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
-;
+let BaseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+
+
+console.log(BaseUrl,"baseeeeee")
+
 
 export async function Apifetch(url, options) {
 

@@ -91,6 +91,23 @@ function GroupDrawer({ open, setOpen, data }) {
   }
 
 
+    async function handleSave() {
+    if (saving) return;
+    try {
+      setSaving(true);
+      
+      const res = await Apifetch('')
+
+
+      setEditing(false);
+    } catch (err) {
+      console.error("Failed to save group:", err);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+
 
   async function makeUserAdmin(member, conversation){
     const memberId = member.id;
