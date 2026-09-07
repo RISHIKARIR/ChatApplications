@@ -39,6 +39,18 @@ function ChatArea({ selectedConversation, conversationUserData }) {
   const [imageDetails, setImageDetails] = useState(null);
   const [typingMembers, setTypingMembers] = useState([]);
     const [typingUser, setTypingUser] = useState(null);
+    const [showChats, setShowChats] = useState(null);
+
+  const [message, setMessage] = useState("");
+
+
+
+  const [openImage, setOpenImage] = useState(false);
+
+  const [isTyping, setIsTyping] = useState(false);
+  const timeOutRef = useRef(null);
+  const chatMessageRef = useRef(null);
+  const [hasMore, setHasMore] = useState(true);
 
 
 
@@ -208,18 +220,7 @@ function ChatArea({ selectedConversation, conversationUserData }) {
 
   console.log(conversationData, "covvoiv0f9f");
 
-  const [showChats, setShowChats] = useState(null);
 
-  const [message, setMessage] = useState("");
-
-
-
-  const [openImage, setOpenImage] = useState(false);
-
-  const [isTyping, setIsTyping] = useState(false);
-  const timeOutRef = useRef(null);
-  const chatMessageRef = useRef(null);
-  const [hasMore, setHasMore] = useState(true);
 
   useEffect(() => {
     async function showChatsOfcurrentUser() {
